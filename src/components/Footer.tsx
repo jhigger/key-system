@@ -1,0 +1,35 @@
+import { FaDiscord } from "react-icons/fa";
+import { Button } from "./ui/button";
+
+const Footer = () => {
+  return (
+    <footer>
+      <div className="container mx-auto flex flex-col flex-wrap items-center justify-between gap-2 p-5 md:flex-row">
+        <p className="mb-4 md:mb-0">
+          Made with ❤️ by{" "}
+          <a
+            href="https://discord.com/users/284489990598295552"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-4"
+          >
+            Kairos
+          </a>
+        </p>
+        <div className="flex gap-2">
+          <Button size={"icon"} className="p-2" asChild>
+            <a
+              href="https://discord.gg/MXT"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaDiscord className="size-full" />
+            </a>
+          </Button>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
