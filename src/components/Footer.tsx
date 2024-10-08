@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer>
       <div className="container mx-auto flex flex-col flex-wrap items-center justify-between gap-2 p-5 md:flex-row">
-        <p className="mb-4 md:mb-0">
+        <p className="mb-4 text-sm md:mb-0">
           Made with ❤️ by{" "}
           <a
             href="https://discord.com/users/284489990598295552"
