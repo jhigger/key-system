@@ -6,7 +6,7 @@ const Register = () => {
   return (
     <>
       <Head>
-        <title>Login - Reseller Panel</title>
+        <title>Register - Reseller Panel</title>
         <link rel="icon" href="/icon.png" />
       </Head>
       <DefaultLayout>
