@@ -10,9 +10,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Key System</title>
-        <meta name="description" content="Made by Kairos" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Reseller Panel</title>
+        <link rel="icon" href="/icon.png" />
       </Head>
       <DefaultLayout>
         {user ? (

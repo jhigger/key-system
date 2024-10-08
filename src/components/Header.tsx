@@ -13,7 +13,7 @@ const Header = () => {
           <div className="size-10 rounded-full bg-accent p-2">
             <KeyRound className="size-full text-white" />
           </div>
-          <h1 className="ml-3 text-xl">Key System</h1>
+          <h1 className="ml-3 text-xl">Reseller Panel</h1>
         </Link>
         <nav className="flex flex-wrap items-center justify-center gap-2 md:ml-auto">
           {user ? (
