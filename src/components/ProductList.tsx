@@ -11,6 +11,7 @@ import {
 import { z } from "zod";
 import { formatPrice } from "~/lib/utils";
 import { type PricingType } from "~/types/pricing";
+import { products, type ProductType } from "~/types/product";
 import { variants } from "~/types/variant";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
@@ -23,35 +24,9 @@ import {
   SelectValue,
 } from "./ui/select";
 
-type ProductType = {
-  name: string;
-  value: string;
-  pricing: [PricingType, ...PricingType[]];
-  stock: number;
-};
-
 const DEFAULT_PRICING: [PricingType, ...PricingType[]] = variants;
 
-const INITIAL_PRODUCTS: [ProductType, ...ProductType[]] = [
-  {
-    name: "Distortion",
-    value: "distortion",
-    pricing: DEFAULT_PRICING,
-    stock: 999,
-  },
-  {
-    name: "Densho",
-    value: "densho",
-    pricing: DEFAULT_PRICING,
-    stock: 99,
-  },
-  {
-    name: "Unlock All",
-    value: "unlock-all",
-    pricing: DEFAULT_PRICING,
-    stock: 0,
-  },
-];
+const INITIAL_PRODUCTS: [ProductType, ...ProductType[]] = products;
 
 const productSchema = z.object({
   products: z.array(
