@@ -1,4 +1,4 @@
-import { KeyRound, LogOut } from "lucide-react";
+import { CircleUser, History, KeyRound, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -57,20 +57,27 @@ const Header = () => {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant={"outline"}>Account</Button>
+                  <Button variant={"outline"} className="gap-2">
+                    Account <CircleUser size={16} />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align={isSmallScreen ? "center" : "end"}>
                   <DropdownMenuLabel className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap md:max-w-full">
                     {user.email}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>My Keys</DropdownMenuItem>
-                  <DropdownMenuItem>Order History</DropdownMenuItem>
+                  <DropdownMenuItem className="flex justify-between gap-4">
+                    My Keys <KeyRound size={16} />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex justify-between gap-4">
+                    Order History <History size={16} />
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex justify-between gap-4"
                     onClick={handleThemeChange}
                   >
-                    Toggle Theme
+                    Toggle Theme{" "}
+                    {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
