@@ -43,6 +43,9 @@ export function LoginForm() {
     setUser({
       id: "1",
       email: values.email,
+      keys: [],
+      createdAt: "",
+      updatedAt: "",
     });
     router.push("/");
   };

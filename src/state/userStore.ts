@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { type User } from "~/types/user";
+import { type UserType } from "~/types/user";
 
 type UserStore = {
-  user: User | null;
+  user: UserType | null;
   isLoading: boolean;
-  setUser: (user: User) => void;
+  setUser: (user: UserType) => void;
   setIsLoading: (isLoading: boolean) => void;
   logout: () => void;
 };

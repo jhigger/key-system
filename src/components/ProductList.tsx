@@ -10,6 +10,8 @@ import {
 } from "react-hook-form";
 import { z } from "zod";
 import { formatPrice } from "~/lib/utils";
+import { type PricingType } from "~/types/pricing";
+import { variants } from "~/types/variant";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";
@@ -21,11 +23,6 @@ import {
   SelectValue,
 } from "./ui/select";
 
-type PricingType = {
-  name: string;
-  value: string;
-};
-
 type ProductType = {
   name: string;
   value: string;
@@ -33,13 +30,7 @@ type ProductType = {
   stock: number;
 };
 
-const DEFAULT_PRICING: [PricingType, ...PricingType[]] = [
-  { name: "1 Day - $1.50", value: "1.5" },
-  { name: "3 Days - $3.00", value: "3" },
-  { name: "7 Days - $5.00", value: "5" },
-  { name: "30 Days - $13.00", value: "13" },
-  { name: "Lifetime - $150.00", value: "150" },
-];
+const DEFAULT_PRICING: [PricingType, ...PricingType[]] = variants;
 
 const INITIAL_PRODUCTS: [ProductType, ...ProductType[]] = [
   {
