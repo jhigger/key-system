@@ -124,7 +124,7 @@ const ProductList = () => {
         name: product.productName,
         keys: Object.entries(priceGroups).map(([price, { quantity }]) => ({
           quantity,
-          price,
+          price: Number(price),
         })),
         totalPrice: Object.entries(priceGroups).reduce(
           (acc, [price, { quantity }]) => acc + quantity * Number(price),
