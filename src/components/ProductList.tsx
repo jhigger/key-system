@@ -175,7 +175,7 @@ const ProductList = () => {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-2xl">
+    <Card className="mx-auto w-full max-w-3xl">
       <CardHeader>
         <div className="w-full rounded-md bg-green-400/80 p-4 text-sm text-green-50">
           <b>Note:</b> You can now proceed to checkout! Spend over $1200 to
@@ -261,7 +261,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
   }, 0);
 
   return (
-    <Card className="mx-auto w-full max-w-2xl">
+    <Card className="mx-auto w-full">
       <CardHeader className="flex-row items-center justify-between gap-2 border-b py-4">
         <div>
           🔑 Product: <b>{product.name}</b>
