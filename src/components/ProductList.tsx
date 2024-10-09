@@ -1,3 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useForm,
+  useFormContext,
+} from "react-hook-form";
+import { z } from "zod";
+import { formatPrice } from "~/lib/utils";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";
@@ -9,16 +21,19 @@ import {
   SelectValue,
 } from "./ui/select";
 
+type PricingType = {
+  name: string;
+  value: string;
+};
+
 type ProductType = {
   name: string;
   value: string;
-  pricing: {
-    name: string;
-    value: string;
-  }[];
+  pricing: [PricingType, ...PricingType[]];
+  stock: number;
 };
 
-const DEFAULT_PRICING = [
+const DEFAULT_PRICING: [PricingType, ...PricingType[]] = [
   { name: "1 Day - $1.50", value: "1.5" },
   { name: "3 Days - $3.00", value: "3" },
   { name: "7 Days - $5.00", value: "5" },
@@ -26,25 +41,124 @@ const DEFAULT_PRICING = [
   { name: "Lifetime - $150.00", value: "150" },
 ];
 
-const PRODUCTS: ProductType[] = [
+const INITIAL_PRODUCTS: [ProductType, ...ProductType[]] = [
   {
     name: "Distortion",
     value: "distortion",
     pricing: DEFAULT_PRICING,
+    stock: 999,
   },
   {
     name: "Densho",
     value: "densho",
     pricing: DEFAULT_PRICING,
+    stock: 99,
   },
   {
     name: "Unlock All",
     value: "unlock-all",
     pricing: DEFAULT_PRICING,
+    stock: 0,
   },
 ];
 
+const productSchema = z.object({
+  products: z.array(
+    z.object({
+      productName: z.string(),
+      keys: z.array(
+        z.object({
+          quantity: z
+            .number({ invalid_type_error: "Quantity must be a number" })
+            .min(1, { message: "Quantity must be at least 1" }),
+          price: z.string().min(1, { message: "Price is required" }),
+        }),
+      ),
+    }),
+  ),
+});
+
+type ProductFormValues = z.infer<typeof productSchema>;
+
 const ProductList = () => {
+  const [currentProducts, setCurrentProducts] =
+    useState<ProductType[]>(INITIAL_PRODUCTS);
+
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      products: [], // Start with an empty array
+    },
+    mode: "all",
+  });
+
+  const {
+    fields: productFields,
+    append,
+    replace,
+  } = useFieldArray({
+    control: form.control,
+    name: "products",
+  });
+
+  useEffect(() => {
+    const formattedProducts = INITIAL_PRODUCTS.map((product) => ({
+      keys: [],
+      productName: product.name,
+    }));
+
+    replace(formattedProducts); // Set the initial products once
+  }, [replace]);
+
+  const onSubmit = (data: ProductFormValues) => {
+    const filteredData = data.products.filter(
+      (product) => product.keys.length > 0,
+    );
+    const cart = filteredData.map((product) => ({
+      name: product.productName,
+      keys: product.keys.map((key) => ({
+        quantity: key.quantity,
+        price: key.price,
+      })),
+      totalPrice: product.keys.reduce(
+        (acc, key) => acc + key.quantity * Number(key.price),
+        0,
+      ),
+    }));
+    console.log("Submitted Data", cart);
+  };
+
+  const addNewProduct = () => {
+    const newProduct: ProductType = {
+      name: "New Product",
+      value: "new-product",
+      pricing: DEFAULT_PRICING,
+      stock: 999,
+    };
+
+    const newProductForm = {
+      productName: newProduct.name,
+      keys: [],
+    };
+
+    append(newProductForm); // Append the new product to the form
+    setCurrentProducts((currentProducts) => [...currentProducts, newProduct]);
+  };
+
+  const calculateTotal = (products: ProductFormValues["products"]) => {
+    return formatPrice(
+      products.reduce((total, product) => {
+        return (
+          total +
+          product.keys.reduce(
+            (acc, key) => acc + Number(key.price) * key.quantity,
+            0,
+          )
+        );
+      }, 0),
+    );
+  };
+
   return (
     <Card className="mx-auto w-full max-w-2xl">
       <CardHeader>
@@ -54,28 +168,123 @@ const ProductList = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex flex-col gap-4">
-          {PRODUCTS.map((product) => (
-            <ProductCard key={product.value} product={product} />
-          ))}
-        </div>
-        <Button className="w-full">Proceed to checkout</Button>
+        <Button type="button" variant={"outline"} onClick={addNewProduct}>
+          Test: Add New Product
+        </Button>
+        <FormProvider {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-4"
+          >
+            {productFields.map((productField, productIndex) => {
+              const product = currentProducts[productIndex];
+              if (!product) return null;
+
+              return (
+                <ProductCard
+                  key={productField.id}
+                  product={product}
+                  productIndex={productIndex}
+                />
+              );
+            })}
+
+            <div className="flex w-full items-baseline justify-between">
+              <span>Total</span>
+              <span
+                className="mx-2 flex-grow"
+                style={{
+                  height: "1px", // Set height for the dashed line
+                  backgroundImage: `url("data:image/svg+xml,%3csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3ccircle cx=\'1\' cy=\'1\' r=\'1\' fill=\'white\'/%3e%3c/svg%3e")`,
+                  backgroundSize: "8px 1px", // Adjust the spacing of the dashes
+                  backgroundRepeat: "repeat-x", // Repeat the background image horizontally
+                }}
+              />
+              <span className="font-bold">
+                {calculateTotal(form.watch("products"))}
+              </span>
+            </div>
+
+            <Button className="w-full" type="submit">
+              Proceed to checkout
+            </Button>
+          </form>
+        </FormProvider>
       </CardContent>
     </Card>
   );
 };
 
-type ProductCardProps = { product: ProductType };
+type ProductCardProps = {
+  product: ProductType;
+  productIndex: number;
+};
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, productIndex }: ProductCardProps) => {
+  const { control, watch } = useFormContext<ProductFormValues>();
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `products.${productIndex}.keys`,
+  });
+
+  const formValues = watch(`products.${productIndex}.keys`);
+
+  const calculateSubtotal = (quantity: number, price: string) =>
+    formatPrice(Number(price) * quantity);
+
+  // Calculate the current total quantity for this product
+  const totalQuantityAdded = formValues.reduce((total, item) => {
+    return total + (item.quantity || 0); // Sum up quantities
+  }, 0);
+
   return (
     <Card className="mx-auto w-full max-w-2xl">
-      <CardHeader className="flex-row gap-2 border-b py-4">
-        🔑 Product: <b>{product.name}</b>
+      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-4">
+        <div>
+          🔑 Product: <b>{product.name}</b>
+        </div>
+        <div>{product.stock} Keys Left</div>
       </CardHeader>
       <CardContent className="space-y-6 divide-y divide-dashed md:space-y-0 md:divide-y-0">
-        <KeyRow product={product} />
-        <Button className="!mt-6" size={"sm"} variant={"secondary"}>
+        {fields.map((field, index) => (
+          <div key={field.id} className="flex gap-4 pt-6">
+            <KeyRow
+              key={field.id}
+              index={index}
+              product={product}
+              subtotal={calculateSubtotal(
+                formValues[index]?.quantity ?? 1,
+                formValues[index]?.price ?? "0",
+              )}
+              productIndex={productIndex}
+            />
+            {/* Remove KeyRow Button */}
+            <Button
+              type="button"
+              className="col-span-1 shrink-0 text-destructive hover:underline"
+              onClick={() => remove(index)}
+              variant={"outline"}
+              size={"icon"}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
+        ))}
+
+        <Button
+          className="!mt-6"
+          size={"sm"}
+          variant={"secondary"}
+          type="button"
+          onClick={() =>
+            append({
+              quantity: 1,
+              price: product.pricing[0].value,
+            })
+          }
+          disabled={product.stock === 0 || totalQuantityAdded >= product.stock}
+        >
           ➕ Add Key
         </Button>
       </CardContent>
@@ -83,34 +292,116 @@ const ProductCard = ({ product }: ProductCardProps) => {
   );
 };
 
-type KeyRowProps = { product: ProductType };
+type KeyRowProps = {
+  product: ProductType;
+  subtotal: string;
+  index: number;
+  productIndex: number;
+};
 
-const KeyRow = ({ product }: KeyRowProps) => {
+const KeyRow = ({ product, subtotal, index, productIndex }: KeyRowProps) => {
+  const {
+    control,
+    formState: { errors },
+    watch,
+  } = useFormContext<ProductFormValues>();
+
+  const formValues = watch(`products.${productIndex}.keys`);
+
+  // Calculate the current total quantity for this product
+  const totalQuantityAdded = formValues.reduce((total, item) => {
+    return total + item.quantity; // Sum up quantities
+  }, 0);
+
+  // Maximum allowable quantity for this row
+  const maxQuantityForRow =
+    product.stock - (totalQuantityAdded - (formValues[index]?.quantity ?? 0));
+
+  const handleQuantityChange = (
+    field: {
+      value: number;
+      onChange: (value: number) => void;
+    },
+    numericValue: number,
+  ) => {
+    // Allow decreasing the quantity
+    if (numericValue < field.value) {
+      return field.onChange(numericValue);
+    }
+    // Prevent increasing the quantity if total already meets/exceeds stock
+    if (totalQuantityAdded >= product.stock && numericValue > field.value) {
+      return; // Do not increase the quantity
+    }
+    // Ensure quantity does not exceed available stock
+    if (numericValue > maxQuantityForRow) {
+      return field.onChange(maxQuantityForRow);
+    }
+    // Update the quantity if valid
+    field.onChange(numericValue);
+  };
+
   return (
-    <div className="grid gap-4 pt-6 md:grid-cols-3">
-      <Input
-        className="col-span-1"
-        placeholder="Quantity"
-        type="number"
-        defaultValue={1}
+    <div className="grid w-full gap-4 md:grid-cols-3">
+      {/* Quantity Input */}
+      <Controller
+        name={`products.${productIndex}.keys.${index}.quantity`}
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-col">
+            <Input
+              {...field}
+              className="col-span-1"
+              placeholder="Quantity"
+              type="number"
+              min={1}
+              max={product.stock}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Convert the value to a number
+                const numericValue = value === "" ? 1 : Number(value);
+                handleQuantityChange(field, numericValue);
+              }}
+            />
+            {errors.products?.[productIndex]?.keys?.[index]?.quantity && (
+              <span className="text-sm text-destructive">
+                {errors.products[productIndex].keys[index].quantity?.message}
+              </span>
+            )}
+          </div>
+        )}
       />
 
-      <Select defaultValue="1.5">
-        <SelectTrigger className="col-span-1">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {product.pricing.map((price) => (
-            <SelectItem key={price.name} value={price.value}>
-              {price.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Price Select */}
+      <Controller
+        name={`products.${productIndex}.keys.${index}.price`}
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-col">
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger className="col-span-1">
+                <SelectValue placeholder="Select Price" />
+              </SelectTrigger>
+              <SelectContent>
+                {product.pricing.map((price) => (
+                  <SelectItem key={price.name} value={price.value}>
+                    {price.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.products?.[productIndex]?.keys?.[index]?.price && (
+              <span className="text-sm text-destructive">
+                {errors.products[productIndex].keys[index].price?.message}
+              </span>
+            )}
+          </div>
+        )}
+      />
 
-      <div className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm">
-        <span>Subtotal:</span>
-        <span>$69.00</span>
+      {/* Subtotal Display */}
+      <div className="col-span-1 flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm">
+        <span>Subtotal: </span>
+        <span>{subtotal}</span>
       </div>
     </div>
   );
