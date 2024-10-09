@@ -1,4 +1,5 @@
 import { KeyRound, LogOut } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUserStore } from "~/state/userStore";
@@ -18,6 +19,12 @@ const Header = () => {
   const { user, logout } = useUserStore();
 
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  const { theme, setTheme } = useTheme();
+
+  const handleThemeChange = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,7 +48,7 @@ const Header = () => {
       <div className="container mx-auto flex flex-col flex-wrap items-center gap-2 p-5 md:flex-row">
         <Link href="/" className="mb-4 flex items-center font-medium md:mb-0">
           <div className="size-10 rounded-full bg-accent p-2">
-            <KeyRound className="size-full text-white" />
+            <KeyRound className="size-full text-foreground" />
           </div>
           <h1 className="ml-3 text-xl">Reseller Panel</h1>
         </Link>
@@ -59,8 +66,17 @@ const Header = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>My Keys</DropdownMenuItem>
                   <DropdownMenuItem>Order History</DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="flex justify-between gap-4"
+                    onClick={handleThemeChange}
+                  >
+                    Toggle Theme
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex justify-between" asChild>
+                  <DropdownMenuItem
+                    className="flex justify-between gap-2"
+                    asChild
+                  >
                     <Link href="/login" onClick={logout}>
                       Logout
                       <LogOut className="ml-2 size-3.5" />

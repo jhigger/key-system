@@ -73,6 +73,6 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply dark rounded-full border-[1px] border-solid border-transparent bg-border bg-clip-padding;
+    @apply rounded-full border-[1px] border-solid border-transparent bg-border bg-clip-padding;
   }
 }
