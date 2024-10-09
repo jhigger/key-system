@@ -48,7 +48,7 @@ const Header = () => {
       <div className="container mx-auto flex flex-col flex-wrap items-center gap-2 p-5 md:flex-row">
         <Link href="/" className="mb-4 flex items-center font-medium md:mb-0">
           <div className="size-10 rounded-full bg-accent p-2">
-            <KeyRound className="size-full text-foreground" />
+            <img src="/icon.png" alt="icon" className="invert dark:invert-0" />
           </div>
           <h1 className="ml-3 text-xl">Reseller Panel</h1>
         </Link>
