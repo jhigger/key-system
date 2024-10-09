@@ -1,10 +1,40 @@
 import { KeyRound, LogOut } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useUserStore } from "~/state/userStore";
 import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+
+const BREAKPOINT = 768; // Adjust this breakpoint as needed
 
 const Header = () => {
   const { user, logout } = useUserStore();
+
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < BREAKPOINT);
+    };
+
+    if (typeof window !== "undefined") {
+      handleResize();
+      window.addEventListener("resize", handleResize);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", handleResize);
+      }
+    };
+  }, []);
 
   return (
     <header>
@@ -17,12 +47,28 @@ const Header = () => {
         </Link>
         <nav className="flex flex-wrap items-center justify-center gap-2 md:ml-auto">
           {user ? (
-            <Button variant={"ghost"} asChild>
-              <Link href="/login" onClick={logout}>
-                Logout
-                <LogOut className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant={"outline"}>Account</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align={isSmallScreen ? "center" : "end"}>
+                  <DropdownMenuLabel className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap md:max-w-full">
+                    {user.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>My Keys</DropdownMenuItem>
+                  <DropdownMenuItem>Order History</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex justify-between" asChild>
+                    <Link href="/login" onClick={logout}>
+                      Logout
+                      <LogOut className="ml-2 size-3.5" />
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Button variant={"outline"} asChild>
