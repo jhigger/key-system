@@ -54,44 +54,42 @@ const Header = () => {
         </Link>
         <nav className="flex flex-wrap items-center justify-center gap-2 md:ml-auto">
           {user ? (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant={"outline"} className="gap-2">
-                    Account <CircleUser size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align={isSmallScreen ? "center" : "end"}>
-                  <DropdownMenuLabel className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap md:max-w-full">
-                    {user.email}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex justify-between gap-4">
-                    My Keys <KeyRound size={16} />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex justify-between gap-4">
-                    Order History <History size={16} />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="flex justify-between gap-4"
-                    onClick={handleThemeChange}
-                  >
-                    Toggle Theme{" "}
-                    {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="flex justify-between gap-2"
-                    asChild
-                  >
-                    <Link href="/login" onClick={logout}>
-                      Logout
-                      <LogOut className="ml-2 size-3.5" />
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant={"outline"} className="gap-2">
+                  Account <CircleUser size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={isSmallScreen ? "center" : "end"}>
+                <DropdownMenuLabel className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap md:max-w-full">
+                  {user.email}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="flex justify-between gap-4">
+                  My Keys <KeyRound size={16} />
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex justify-between gap-4">
+                  Order History <History size={16} />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex justify-between gap-4"
+                  onClick={handleThemeChange}
+                >
+                  Toggle Theme{" "}
+                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="flex justify-between gap-2"
+                  asChild
+                >
+                  <Link href="/login" onClick={logout}>
+                    Logout
+                    <LogOut className="ml-2 size-3.5" />
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
               <Button variant={"outline"} asChild>
