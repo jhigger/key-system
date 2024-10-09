@@ -146,17 +146,15 @@ const ProductList = () => {
   };
 
   const calculateTotal = (products: ProductFormValues["products"]) => {
-    return formatPrice(
-      products.reduce((total, product) => {
-        return (
-          total +
-          product.keys.reduce(
-            (acc, key) => acc + Number(key.price) * key.quantity,
-            0,
-          )
-        );
-      }, 0),
-    );
+    return products.reduce((total, product) => {
+      return (
+        total +
+        product.keys.reduce(
+          (acc, key) => acc + Number(key.price) * key.quantity,
+          0,
+        )
+      );
+    }, 0);
   };
 
   return (
@@ -201,11 +199,18 @@ const ProductList = () => {
                 }}
               />
               <span className="font-bold">
-                {calculateTotal(form.watch("products"))}
+                {formatPrice(calculateTotal(form.watch("products")))}
               </span>
             </div>
 
-            <Button className="w-full" type="submit">
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={
+                form.formState.isSubmitting ||
+                calculateTotal(form.watch("products")) <= 0
+              }
+            >
               Proceed to checkout
             </Button>
           </form>
