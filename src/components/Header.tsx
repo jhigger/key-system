@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useUserStore } from "~/state/userStore";
 import { Button } from "./ui/button";
@@ -29,6 +30,8 @@ const Header = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   const { theme, setTheme } = useTheme();
+
+  const { pathname } = useRouter();
 
   const handleThemeChange = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -63,14 +66,21 @@ const Header = () => {
         <nav className="flex flex-wrap items-center justify-center gap-2 md:ml-auto">
           {user ? (
             <>
-              <Button variant={"ghost"} className="gap-2" asChild>
+              <Button
+                variant={pathname === "/" ? "outline" : "ghost"}
+                className="gap-2"
+                asChild
+              >
                 <Link href="/">
                   Buy <Store size={16} />
                 </Link>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant={"ghost"} className="gap-2">
+                  <Button
+                    variant={pathname === "/account" ? "outline" : "ghost"}
+                    className="gap-2"
+                  >
                     Account <CircleUser size={16} />
                   </Button>
                 </DropdownMenuTrigger>
