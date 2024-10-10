@@ -41,11 +41,12 @@ export function LoginForm() {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.table(values);
     setUser({
-      id: "1",
+      uuid: "1",
+      role: "user",
       email: values.email,
       keys: [],
-      createdAt: "",
-      updatedAt: "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
     router.push("/");
   };

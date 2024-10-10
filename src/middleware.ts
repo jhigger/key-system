@@ -8,7 +8,9 @@ export function middleware(request: NextRequest) {
   // If the user is logged in and trying to access /login or /register, redirect to home
   if (
     user !== null &&
-    ["/login", "/register", "/account"].includes(request.nextUrl.pathname)
+    ["/login", "/register", "/account", "/admin"].includes(
+      request.nextUrl.pathname,
+    )
   ) {
     console.log("User is logged in, redirecting to home");
     return NextResponse.redirect(new URL("/", request.url));
@@ -19,5 +21,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/register", "/account"],
+  matcher: ["/login", "/register", "/account", "/admin"],
 };

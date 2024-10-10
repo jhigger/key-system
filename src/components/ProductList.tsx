@@ -9,10 +9,11 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { z } from "zod";
+import { DEFAULT_PRICING, fakeProducts } from "~/lib/fakeData";
 import { formatPrice } from "~/lib/utils";
-import { type PricingType } from "~/types/pricing";
-import { products, type ProductType } from "~/types/product";
-import { variants } from "~/types/variant";
+import { useUserStore } from "~/state/userStore";
+import { type ProductType } from "~/types/product";
+import PleaseLoginToView from "./PleaseLoginToView";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";
@@ -23,10 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-
-const DEFAULT_PRICING: [PricingType, ...PricingType[]] = variants;
-
-const INITIAL_PRODUCTS: [ProductType, ...ProductType[]] = products;
 
 const productSchema = z.object({
   products: z.array(
@@ -47,8 +44,10 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
+  const { user } = useUserStore();
+
   const [currentProducts, setCurrentProducts] =
-    useState<ProductType[]>(INITIAL_PRODUCTS);
+    useState<ProductType[]>(fakeProducts);
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -68,7 +67,7 @@ const ProductList = () => {
   });
 
   useEffect(() => {
-    const formattedProducts = INITIAL_PRODUCTS.map((product) => ({
+    const formattedProducts = fakeProducts.map((product) => ({
       keys: [],
       productName: product.name,
     }));
@@ -139,6 +138,10 @@ const ProductList = () => {
       );
     }, 0);
   };
+
+  if (!user) {
+    return <PleaseLoginToView />;
+  }
 
   return (
     <Card className="mx-auto w-full max-w-3xl">

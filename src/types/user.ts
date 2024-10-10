@@ -1,9 +1,12 @@
 import { type PurchasedKeyType } from "./purchasedKey";
 
+type RoleType = "admin" | "user" | "reseller";
+
 export type UserType = {
-  id: string;
+  uuid: string;
+  role: RoleType;
   email: string;
-  keys: PurchasedKeyType[];
+  keys: PurchasedKeyType[] | null;
   createdAt: string;
   updatedAt: string;
 };
