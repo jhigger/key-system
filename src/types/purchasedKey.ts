@@ -1,12 +1,11 @@
 import { type VariantType } from "./variant";
 
-export const statuses = ["active", "inactive"];
-
 export type PurchasedKeyType = {
   uuid: string;
+  product: string;
   key: string;
-  variant: VariantType;
-  expiry: string;
-  status: (typeof statuses)[number];
+  invoiceLink: string;
+  variant: VariantType["name"];
+  expiry: string | null;
   purchasedAt: string;
 };
