@@ -55,7 +55,13 @@ export const getColumns = ({
 
       if (!createdAt) return null;
 
-      return formatISOStringToDate(createdAt);
+      const { formattedDate, formattedTime } = formatISOStringToDate(createdAt);
+      return (
+        <div className="flex flex-col gap-1">
+          <span>{formattedDate}</span>
+          <span>{formattedTime}</span>
+        </div>
+      );
     },
     filterFn: filterFn,
   },

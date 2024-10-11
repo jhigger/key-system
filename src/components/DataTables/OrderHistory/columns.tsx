@@ -14,10 +14,13 @@ export const columns: ColumnDef<Partial<PurchasedKeyType>>[] = [
 
       if (!purchasedAt) return null;
 
+      const { formattedDate, formattedTime } =
+        formatISOStringToDate(purchasedAt);
       return (
-        <span className="font-medium">
-          {formatISOStringToDate(purchasedAt)}
-        </span>
+        <div className="flex flex-col gap-1">
+          <span>{formattedDate}</span>
+          <span>{formattedTime}</span>
+        </div>
       );
     },
     filterFn: filterFn,

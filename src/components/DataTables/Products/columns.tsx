@@ -106,7 +106,14 @@ export const getColumns = ({
 
       if (!purchasedAt) return null;
 
-      return formatISOStringToDate(purchasedAt);
+      const { formattedDate, formattedTime } =
+        formatISOStringToDate(purchasedAt);
+      return (
+        <div className="flex flex-col gap-1">
+          <span>{formattedDate}</span>
+          <span>{formattedTime}</span>
+        </div>
+      );
     },
     filterFn: filterFn,
   },

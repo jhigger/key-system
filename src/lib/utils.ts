@@ -13,12 +13,25 @@ export const formatPrice = (price: number) => {
   }).format(price);
 };
 
-export const formatISOStringToDate = (date: string) => {
-  return new Intl.DateTimeFormat("en-US", {
+export const formatISOStringToDate = (
+  date: string,
+): { formattedDate: string; formattedTime: string } => {
+  const dateObj = new Date(date);
+
+  const formattedDate = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(dateObj);
+
+  const formattedTime = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hour12: true,
+  }).format(dateObj);
+
+  return { formattedDate, formattedTime };
 };
 
 export const filterFn = <T extends Record<string, unknown>>(

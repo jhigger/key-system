@@ -26,7 +26,16 @@ export const getColumns = ({
     ),
     cell: ({ row }) => {
       const { expiry } = row.original;
-      return expiry ? formatISOStringToDate(expiry) : "No Expiry";
+
+      if (!expiry) return "No Expiry";
+
+      const { formattedDate, formattedTime } = formatISOStringToDate(expiry);
+      return (
+        <div className="flex flex-col gap-1">
+          <span>{formattedDate}</span>
+          <span>{formattedTime}</span>
+        </div>
+      );
     },
     sortingFn: (rowA, rowB) => {
       const expiryA = rowA.original.expiry;
