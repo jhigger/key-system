@@ -10,7 +10,6 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  type PaginationState,
   type SortingState,
   type Table as TableType,
   useReactTable,
@@ -151,11 +150,12 @@ export function DataTable<TData extends Partial<ProductType>, TValue>({
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: (updater) => {
-      const newPagination =
-        typeof updater === "function"
-          ? updater({} as PaginationState)
-          : updater;
-      setRowsPerPage(newPagination.pageSize);
+      if (typeof updater === "function") {
+        const newState = updater({ pageIndex: 0, pageSize: rowsPerPage });
+        setRowsPerPage(newState.pageSize);
+      } else {
+        setRowsPerPage(updater.pageSize);
+      }
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
