@@ -10,6 +10,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type PaginationState,
   type SortingState,
   type Table as TableType,
   useReactTable,
@@ -129,6 +130,7 @@ export function DataTable<TData extends Partial<ProductType>, TValue>({
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const { rowsPerPage, setRowsPerPage } = useUIStore();
 
   const table = useReactTable<TData>({
     data,
@@ -137,6 +139,10 @@ export function DataTable<TData extends Partial<ProductType>, TValue>({
       sorting,
       columnFilters,
       globalFilter,
+      pagination: {
+        pageIndex: 0,
+        pageSize: rowsPerPage,
+      },
     },
     filterFns: {
       fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
@@ -144,6 +150,13 @@ export function DataTable<TData extends Partial<ProductType>, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: (updater) => {
+      const newPagination =
+        typeof updater === "function"
+          ? updater({} as PaginationState)
+          : updater;
+      setRowsPerPage(newPagination.pageSize);
+    },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
