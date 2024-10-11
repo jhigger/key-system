@@ -19,7 +19,7 @@ const Footer = () => {
         <div className="flex gap-2">
           <Button size={"icon"} className="p-2" asChild>
             <a
-              href="https://discord.gg/MXT"
+              href="https://discord.gg/ctx"
               target="_blank"
               rel="noopener noreferrer"
             >
