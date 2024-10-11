@@ -43,7 +43,7 @@ const DatePicker = <TData,>({ className, table }: DatePickerProps<TData>) => {
             id="date"
             variant={"outline"}
             className={cn(
-              "h-8 min-w-60 justify-start text-left font-normal",
+              "h-8 min-w-60 justify-start px-2 text-left font-normal",
               !date && "text-muted-foreground",
             )}
           >
