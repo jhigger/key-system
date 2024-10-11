@@ -8,6 +8,7 @@ import {
   useForm,
   useFormContext,
 } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { DEFAULT_PRICING, fakeProducts } from "~/lib/fakeData";
 import { formatPrice } from "~/lib/utils";
@@ -116,6 +117,9 @@ const ProductList = () => {
       value: "new-product",
       pricing: DEFAULT_PRICING,
       stock: 999,
+      uuid: uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const newProductForm = {
