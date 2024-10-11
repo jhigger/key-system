@@ -2,11 +2,10 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import AccountTabs from "~/components/AccountTabs";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
-import useTitle from "~/hooks/useTitle";
+import { TITLE } from "~/constants";
 import { useUserStore } from "~/state/user.store";
 
 const Account = () => {
-  const title = useTitle();
   const { user } = useUserStore();
   const { pathname, push } = useRouter();
 
@@ -18,7 +17,7 @@ const Account = () => {
   return (
     <>
       <Head>
-        <title>Account - {title}</title>
+        <title>Account - {TITLE}</title>
         <link rel="icon" href="/icon.png" />
       </Head>
       <DefaultLayout>{user?.role !== "admin" && <AccountTabs />}</DefaultLayout>

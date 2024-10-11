@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { formatISOStringToDate } from "~/lib/utils";
+import { filterFn, formatISOStringToDate } from "~/lib/utils";
 import { type PurchasedKeyType } from "~/types/purchasedKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 import { Badge } from "../../ui/badge";
@@ -47,17 +47,7 @@ export const getColumns = ({
       // Compare dates
       return dateA.getTime() - dateB.getTime(); // Ascending order
     },
-    filterFn: (row, columnId, filterValue: [Date, Date]) => {
-      const { expiry } = row.original;
-
-      if (!expiry) return false;
-
-      const expiryDate = new Date(expiry);
-      const [startDate, endDate] = filterValue;
-
-      // Check if the expiry date falls within the specified range
-      return expiryDate >= startDate && expiryDate <= endDate;
-    },
+    filterFn: filterFn,
   },
 
   {

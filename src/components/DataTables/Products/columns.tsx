@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { formatISOStringToDate, formatPrice } from "~/lib/utils";
+import { filterFn, formatISOStringToDate, formatPrice } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
@@ -90,7 +90,6 @@ const ProductCell: React.FC<{
 type TableProps = {
   onEdit: (product: Partial<ProductType>) => void;
   onDelete: (uuid: string) => void;
-
 };
 
 export const getColumns = ({
@@ -109,17 +108,7 @@ export const getColumns = ({
 
       return formatISOStringToDate(purchasedAt);
     },
-    filterFn: (row, _, filterValue: [Date, Date]) => {
-      const { createdAt } = row.original;
-
-      if (!createdAt) return false;
-
-      const createdAtDate = new Date(createdAt);
-      const [startDate, endDate] = filterValue;
-
-      // Check if the createdAt date falls within the specified range
-      return createdAtDate >= startDate && createdAtDate <= endDate;
-    },
+    filterFn: filterFn,
   },
   {
     accessorKey: "product",

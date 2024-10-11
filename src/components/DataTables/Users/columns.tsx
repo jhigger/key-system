@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { formatISOStringToDate } from "~/lib/utils";
+import { filterFn, formatISOStringToDate } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { roles, type RoleType, type UserType } from "~/types/user";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
@@ -57,17 +57,7 @@ export const getColumns = ({
 
       return formatISOStringToDate(createdAt);
     },
-    filterFn: (row, columnId, filterValue: [Date, Date]) => {
-      const { createdAt } = row.original;
-
-      if (!createdAt) return false;
-
-      const createdAtDate = new Date(createdAt);
-      const [startDate, endDate] = filterValue;
-
-      // Check if the createdAt date falls within the specified range
-      return createdAtDate >= startDate && createdAtDate <= endDate;
-    },
+    filterFn: filterFn,
   },
   {
     accessorKey: "email",

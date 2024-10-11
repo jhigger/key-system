@@ -13,7 +13,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import useTitle from "~/hooks/useTitle";
+import { TITLE } from "~/constants";
 import { useUserStore } from "~/state/user.store";
 import { Button } from "./ui/button";
 import {
@@ -165,8 +165,6 @@ const NavigationItems = () => {
 };
 
 const Header = () => {
-  const title = useTitle();
-
   return (
     <header>
       <div className="container mx-auto flex flex-col flex-wrap items-center gap-2 p-5 md:flex-row">
@@ -174,7 +172,7 @@ const Header = () => {
           <div className="size-10 rounded-full bg-accent p-2">
             <img src="/icon.png" alt="icon" className="invert dark:invert-0" />
           </div>
-          <h1 className="ml-3 text-xl">{title}</h1>
+          <h1 className="ml-3 text-xl">{TITLE}</h1>
         </Link>
         <DevRoleSwitch />
         <nav className="flex flex-wrap items-center justify-center gap-2 md:ml-auto">

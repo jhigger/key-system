@@ -1,5 +1,5 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { formatISOStringToDate } from "~/lib/utils";
+import { filterFn, formatISOStringToDate } from "~/lib/utils";
 import { type PurchasedKeyType } from "~/types/purchasedKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 
@@ -20,17 +20,7 @@ export const columns: ColumnDef<Partial<PurchasedKeyType>>[] = [
         </span>
       );
     },
-    filterFn: (row, columnId, filterValue: [Date, Date]) => {
-      const { createdAt } = row.original;
-
-      if (!createdAt) return false;
-
-      const createdAtDate = new Date(createdAt);
-      const [startDate, endDate] = filterValue;
-
-      // Check if the createdAt date falls within the specified range
-      return createdAtDate >= startDate && createdAtDate <= endDate;
-    },
+    filterFn: filterFn,
   },
   {
     accessorKey: "product",
