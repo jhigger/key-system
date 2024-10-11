@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { useUserStore } from "~/state/userStore";
+import { useUserStore } from "~/state/user.store";
 import {
   Form,
   FormControl,

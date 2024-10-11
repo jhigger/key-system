@@ -1,19 +1,19 @@
-import { type InputHTMLAttributes, useEffect, useState } from "react";
+import { useEffect, useState, type InputHTMLAttributes } from "react";
 import { Input } from "./ui/input";
 
-type DebouncedInputProps = {
-  value: string | number;
-  onChange: (value: string | number) => void;
+export type DebouncedInputProps<T extends string | number> = {
+  value: T;
+  onChange: (value: T) => void;
   debounce?: number;
-} & Omit<InputHTMLAttributes<HTMLInputElement>, "onChange">;
+} & Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">;
 
-const DebouncedInput = ({
+function DebouncedInput<T extends string | number>({
   value: initialValue,
   onChange,
   debounce = 500,
   ...props
-}: DebouncedInputProps) => {
-  const [value, setValue] = useState(initialValue);
+}: DebouncedInputProps<T>) {
+  const [value, setValue] = useState<T>(initialValue);
 
   useEffect(() => {
     setValue(initialValue);
@@ -21,19 +21,21 @@ const DebouncedInput = ({
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      onChange(value);
+      if (value !== initialValue) {
+        onChange(value);
+      }
     }, debounce);
 
     return () => clearTimeout(timeout);
-  }, [value, onChange, debounce]);
+  }, [value, onChange, debounce, initialValue]);
 
   return (
     <Input
       {...props}
       value={value}
-      onChange={(e) => setValue(e.target.value)}
+      onChange={(e) => setValue(e.target.value as T)}
     />
   );
-};
+}
 
 export default DebouncedInput;

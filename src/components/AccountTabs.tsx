@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import MyKeys from "~/components/DataTables/MyKeys";
 import OrderHistory from "~/components/DataTables/OrderHistory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { useUserStore } from "~/state/userStore";
+import { useUserStore } from "~/state/user.store";
 import PleaseLoginToView from "./PleaseLoginToView";
 
 const path = "/account";

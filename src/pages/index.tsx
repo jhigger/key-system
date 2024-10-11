@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
 import ProductList from "~/components/ProductList";
 import useTitle from "~/hooks/useTitle";
-import { useUserStore } from "~/state/userStore";
+import { useUserStore } from "~/state/user.store";
 
 export default function Home() {
   const title = useTitle();

@@ -20,8 +20,12 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Eye,
+  FilePenLine,
+  PackagePlus,
   Search,
 } from "lucide-react";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import {
   Table,
@@ -33,12 +37,26 @@ import {
 } from "~/components/ui/table";
 import { fakeProducts } from "~/lib/fakeData";
 import { cn } from "~/lib/utils";
+import { useUIStore } from "~/state/ui.store";
+import { useUserStore } from "~/state/user.store";
+import { variants } from "~/types/pricing";
+import { type ProductType } from "~/types/product";
 import { roles } from "~/types/user";
-import { variants } from "~/types/variant";
 import DatePicker from "../DatePicker";
 import DebouncedInput from "../DebouncedInput";
+import ProductForm from "../ProductForm";
 import { Button } from "./button";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "./drawer";
 import { Label } from "./label";
 import {
   Select,
@@ -47,10 +65,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
+import { Switch } from "./switch";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends Partial<ProductType>, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  handleAdd?: (newRow: Partial<ProductType>) => void;
 }
 
 declare module "@tanstack/react-table" {
@@ -92,9 +112,10 @@ const isAccessorColumn = <TData, TValue>(
   return "accessorKey" in column;
 };
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Partial<ProductType>, TValue>({
   columns,
   data,
+  handleAdd,
 }: DataTableProps<TData, TValue>) {
   const expiryColumn = columns.find(
     (column) => isAccessorColumn(column) && column.accessorKey === "expiry",
@@ -133,7 +154,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      <DataTableToolBar table={table} />
+      <DataTableToolBar table={table} handleAdd={handleAdd} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -194,9 +215,13 @@ export function DataTable<TData, TValue>({
 
 type ToolBarProps<TData> = {
   table: TableType<TData>;
+  handleAdd?: (newRow: ProductType) => void;
 };
 
-const DataTableToolBar = <TData,>({ table }: ToolBarProps<TData>) => {
+const DataTableToolBar = <TData,>({
+  table,
+  handleAdd,
+}: ToolBarProps<TData>) => {
   const productColumn = table
     .getAllColumns()
     .find((column) => column.id === "product");
@@ -210,20 +235,80 @@ const DataTableToolBar = <TData,>({ table }: ToolBarProps<TData>) => {
     .getAllColumns()
     .find((column) => column.id === "role");
 
+  const { user } = useUserStore();
+  const { editMode, toggleEditMode } = useUIStore();
+  const { asPath } = useRouter();
+  const [showForm, setShowForm] = useState(false);
+  const hash = asPath.split("#")[1];
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative w-full">
-        <Label htmlFor="search">
-          <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
-        </Label>
-        <DebouncedInput
-          id="search"
-          type="search"
-          placeholder="Search..."
-          value={table.getState().globalFilter as string}
-          onChange={(value) => table.setGlobalFilter(String(value))}
-          className="h-8 max-w-sm pl-8"
-        />
+      <div className="flex items-center justify-between gap-2">
+        <div className="relative w-full">
+          <Label htmlFor="search">
+            <Search className="absolute left-2.5 top-2 h-4 w-4 text-muted-foreground" />
+          </Label>
+          <DebouncedInput
+            id="search"
+            type="search"
+            placeholder="Search..."
+            value={table.getState().globalFilter as string}
+            onChange={(value) => table.setGlobalFilter(String(value))}
+            className="h-8 max-w-sm pl-8"
+          />
+        </div>
+        {user?.role === "admin" && hash === "products" && (
+          <Drawer open={showForm} onOpenChange={setShowForm}>
+            <DrawerTrigger asChild>
+              <div className="flex items-center gap-2">
+                <Button variant={"outline"} size={"icon"} className="size-8">
+                  <PackagePlus size={20} />
+                </Button>
+              </div>
+            </DrawerTrigger>
+            <DrawerContent className="items-center justify-center">
+              <div className="w-full max-w-screen-sm">
+                <DrawerHeader>
+                  <DrawerTitle>Add a new product</DrawerTitle>
+                  <DrawerDescription>
+                    Click submit when you&apos;re done or cancel to discard
+                    changes.
+                  </DrawerDescription>
+                </DrawerHeader>
+                <ProductForm
+                  handleSubmit={(values) => {
+                    setShowForm(false);
+                    handleAdd?.(values);
+                  }}
+                />
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </div>
+            </DrawerContent>
+          </Drawer>
+        )}
+        {user?.role === "admin" && (
+          <div className="flex items-center gap-2">
+            <Label htmlFor="mode" className="sr-only capitalize">
+              {editMode ? "Edit" : "View"} Mode
+            </Label>
+            <Switch
+              id="mode"
+              checked={editMode}
+              onCheckedChange={toggleEditMode}
+              icon={
+                editMode ? (
+                  <FilePenLine className="h-3 w-3" />
+                ) : (
+                  <Eye className="h-3 w-3" />
+                )
+              }
+            />
+          </div>
+        )}
       </div>
       <div className="flex w-full flex-wrap items-center gap-2">
         <DatePicker table={table} />
@@ -254,8 +339,8 @@ const DataTableToolBar = <TData,>({ table }: ToolBarProps<TData>) => {
             column={variantColumn}
             title="Variant"
             options={variants.map((variant) => ({
-              label: variant.name,
-              value: variant.name,
+              label: variant,
+              value: variant,
             }))}
           />
         )}

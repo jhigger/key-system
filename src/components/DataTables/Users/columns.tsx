@@ -1,10 +1,50 @@
 import { type ColumnDef } from "@tanstack/react-table";
+import { Badge } from "~/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import { formatISOStringToDate } from "~/lib/utils";
-import { type UserType } from "~/types/user";
+import { useUIStore } from "~/state/ui.store";
+import { roles, type RoleType, type UserType } from "~/types/user";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
-import { Badge } from "../../ui/badge";
 
-export const columns: ColumnDef<Partial<UserType>>[] = [
+const RoleCell: React.FC<{
+  value: RoleType;
+  onEdit: (value: RoleType) => void;
+}> = ({ value, onEdit }) => {
+  const { editMode } = useUIStore();
+
+  if (editMode) {
+    return (
+      <Select defaultValue={value} onValueChange={onEdit}>
+        <SelectTrigger className="w-[180px] capitalize">
+          <SelectValue placeholder="Select a role" />
+        </SelectTrigger>
+        <SelectContent>
+          {roles.map((option) => (
+            <SelectItem key={option} value={option} className="capitalize">
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  return <Badge className="capitalize">{value}</Badge>;
+};
+
+type TableProps = {
+  onEdit: (product: Partial<UserType>) => void;
+};
+
+export const getColumns = ({
+  onEdit,
+}: TableProps): ColumnDef<Partial<UserType>>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -15,9 +55,7 @@ export const columns: ColumnDef<Partial<UserType>>[] = [
 
       if (!createdAt) return null;
 
-      return (
-        <span className="font-medium">{formatISOStringToDate(createdAt)}</span>
-      );
+      return formatISOStringToDate(createdAt);
     },
     filterFn: (row, columnId, filterValue: [Date, Date]) => {
       const { createdAt } = row.original;
@@ -36,10 +74,6 @@ export const columns: ColumnDef<Partial<UserType>>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email" />
     ),
-    cell: ({ row }) => {
-      const { email } = row.original;
-      return <span className="font-medium">{email}</span>;
-    },
   },
   {
     accessorKey: "role",
@@ -47,8 +81,13 @@ export const columns: ColumnDef<Partial<UserType>>[] = [
       <DataTableColumnHeader column={column} title="Role" />
     ),
     cell: ({ row }) => {
-      const { role } = row.original;
-      return <Badge className="capitalize">{role}</Badge>;
+      const role: RoleType = row.getValue("role");
+      return (
+        <RoleCell
+          value={role}
+          onEdit={(value) => onEdit({ ...row.original, role: value })}
+        />
+      );
     },
     filterFn: (row, id, value: string) => {
       return value.includes(row.getValue(id));

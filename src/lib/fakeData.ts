@@ -1,18 +1,18 @@
 import { v4 as uuidv4 } from "uuid";
-import { type PricingType } from "~/types/pricing";
+import { variants, type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { type PurchasedKeyType } from "~/types/purchasedKey";
 import { type UserType } from "~/types/user";
-import { variants } from "~/types/variant";
-import { formatPrice } from "./utils";
 
 const fakeOwner = uuidv4();
 
-export const DEFAULT_PRICING: [PricingType, ...PricingType[]] = variants.map(
-  ({ name, value }) => {
-    return { name: `${name} - ${formatPrice(Number(value))}`, value };
-  },
-) as [PricingType, ...PricingType[]];
+export const DEFAULT_PRICING: PricingType[] = [
+  { name: "1 Day", value: "1.5" },
+  { name: "3 Days", value: "3" },
+  { name: "7 Days", value: "5" },
+  { name: "30 Days", value: "13" },
+  { name: "Lifetime", value: "150" },
+];
 
 export const fakeProducts: [ProductType, ...ProductType[]] = [
   {
@@ -50,7 +50,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[0].product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[2]!.name,
+    variant: variants[2],
     expiry: new Date(2024, 10 - 1, 9 + 7).toISOString(),
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
     hardwareId: null,
@@ -61,7 +61,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[0].product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[1]!.name,
+    variant: variants[1],
     expiry: new Date(2024, 10 - 1, 8 + 3).toISOString(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     hardwareId: uuidv4(),
@@ -72,7 +72,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[1]!.product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[0].name,
+    variant: variants[0],
     expiry: new Date(2024, 10 - 1, 7 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
     hardwareId: uuidv4(),
@@ -83,7 +83,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[1]!.product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[0].name,
+    variant: variants[0],
     expiry: new Date(2024, 10 - 1, 6 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 6).toISOString(),
     hardwareId: uuidv4(),
@@ -94,7 +94,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[0]?.product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[4]!.name,
+    variant: variants[4],
     expiry: null,
     createdAt: new Date(2024, 10 - 1, 5).toISOString(),
     hardwareId: null,
@@ -105,7 +105,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[1]!.product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[3]!.name,
+    variant: variants[3],
     expiry: new Date(2024, 10 - 1, 4 + 30).toISOString(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     hardwareId: uuidv4(),
@@ -116,7 +116,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[0].product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[3]!.name,
+    variant: variants[3],
     expiry: new Date(2024, 10 - 1, 3 + 30).toISOString(),
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),
     hardwareId: uuidv4(),
@@ -127,7 +127,7 @@ export const fakeOrders: PurchasedKeyType[] = [
     product: fakeProducts[0].product,
     key: uuidv4(),
     invoiceLink: uuidv4(),
-    variant: variants[0].name,
+    variant: variants[0],
     expiry: new Date(2024, 10 - 1, 11 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 11).toISOString(),
     hardwareId: uuidv4(),
@@ -162,7 +162,7 @@ export const fakeUsers: UserType[] = [
         product: fakeProducts[0]?.product,
         key: uuidv4(),
         invoiceLink: uuidv4(),
-        variant: variants[1]!.name,
+        variant: variants[1],
         expiry: new Date(
           new Date().setDate(new Date().getDate()),
         ).toISOString(),

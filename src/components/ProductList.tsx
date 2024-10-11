@@ -12,7 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { DEFAULT_PRICING, fakeProducts } from "~/lib/fakeData";
 import { formatPrice } from "~/lib/utils";
-import { useUserStore } from "~/state/userStore";
+import { useUserStore } from "~/state/user.store";
 import { type ProductType } from "~/types/product";
 import PleaseLoginToView from "./PleaseLoginToView";
 import { Button } from "./ui/button";
@@ -275,7 +275,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
           onClick={() =>
             append({
               quantity: 1,
-              price: product.pricing[0].value,
+              price: product.pricing?.[0]?.value ?? "0",
             })
           }
           disabled={product.stock === 0 || totalQuantityAdded >= product.stock}
@@ -379,7 +379,7 @@ const KeyRow = ({ product, subtotal, index, productIndex }: KeyRowProps) => {
               <SelectContent>
                 {product.pricing.map((price) => (
                   <SelectItem key={price.name} value={price.value}>
-                    {price.name}
+                    {`${price.name} - ${price.value}`}
                   </SelectItem>
                 ))}
               </SelectContent>

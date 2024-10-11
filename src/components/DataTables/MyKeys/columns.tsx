@@ -142,7 +142,7 @@ export const getColumns = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem
-              className="flex justify-between gap-4 leading-normal"
+              className="flex w-full justify-between gap-4 leading-normal"
               asChild
             >
               <Button

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useUserStore } from "~/state/userStore";
+import { useUserStore } from "~/state/user.store";
 import Products from "./DataTables/Products";
 import Users from "./DataTables/Users";
 import PleaseLoginToView from "./PleaseLoginToView";

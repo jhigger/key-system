@@ -6,6 +6,6 @@ export type ProductType = {
   updatedAt: string;
   product: string;
   value: string;
-  pricing: [PricingType, ...PricingType[]];
+  pricing: PricingType[];
   stock: number;
 };

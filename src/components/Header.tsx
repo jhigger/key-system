@@ -14,7 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import useTitle from "~/hooks/useTitle";
-import { useUserStore } from "~/state/userStore";
+import { useUserStore } from "~/state/user.store";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,

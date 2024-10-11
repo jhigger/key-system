@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import AdminDashboard from "~/components/AdminTabs";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
 import useTitle from "~/hooks/useTitle";
-import { useUserStore } from "~/state/userStore";
+import { useUserStore } from "~/state/user.store";
 
 const Admin = () => {
   const { user } = useUserStore();

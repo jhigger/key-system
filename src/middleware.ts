@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { useUserStore } from "./state/userStore";
+import { useUserStore } from "./state/user.store";
 
 export function middleware(request: NextRequest) {
   const user = useUserStore.getState().user; // TODO: change to cookie
