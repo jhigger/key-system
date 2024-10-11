@@ -1,19 +1,11 @@
-import {
-  CircleUser,
-  History,
-  KeyRound,
-  LogOut,
-  Moon,
-  PackageSearch,
-  Store,
-  Sun,
-  UserSearch,
-} from "lucide-react";
+import { CircleUser, LogOut, Moon, Store, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { TITLE } from "~/constants";
+import { ACCOUNT_TABS } from "~/pages/account";
+import { ADMIN_TABS } from "~/pages/admin";
 import { useUserStore } from "~/state/user.store";
 import { Button } from "./ui/button";
 import {
@@ -119,29 +111,31 @@ const NavigationItems = () => {
           <DropdownMenuSeparator />
           {user.role === "admin" ? (
             <>
-              <DropdownMenuItem className="flex justify-between gap-4" asChild>
-                <Link href="/admin#products">
-                  Products <PackageSearch size={16} />
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex justify-between gap-4" asChild>
-                <Link href="/admin#users">
-                  Users <UserSearch size={16} />
-                </Link>
-              </DropdownMenuItem>
+              {ADMIN_TABS.map((tab) => (
+                <DropdownMenuItem
+                  key={tab.value}
+                  className="flex justify-between gap-4"
+                  asChild
+                >
+                  <Link href={`/admin#${tab.value}`}>
+                    {tab.label} {tab.icon}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
             </>
           ) : (
             <>
-              <DropdownMenuItem className="flex justify-between gap-4" asChild>
-                <Link href="/account#my-keys">
-                  My Keys <KeyRound size={16} />
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex justify-between gap-4" asChild>
-                <Link href="/account#order-history">
-                  Order History <History size={16} />
-                </Link>
-              </DropdownMenuItem>
+              {ACCOUNT_TABS.map((tab) => (
+                <DropdownMenuItem
+                  key={tab.value}
+                  className="flex justify-between gap-4"
+                  asChild
+                >
+                  <Link href={`/account#${tab.value}`}>
+                    {tab.label} {tab.icon}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
             </>
           )}
           <DropdownMenuItem

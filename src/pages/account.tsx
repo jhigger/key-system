@@ -1,9 +1,29 @@
+import { History, KeyRound } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import AccountTabs from "~/components/AccountTabs";
+import MyKeys from "~/components/DataTables/MyKeys";
+import OrderHistory from "~/components/DataTables/OrderHistory";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
+import TabsLayout, { type TabType } from "~/components/layouts/TabsLayout";
 import { TITLE } from "~/constants";
 import { useUserStore } from "~/state/user.store";
+
+const PATH = "/account";
+
+export const ACCOUNT_TABS: (TabType & { icon: React.ReactNode })[] = [
+  {
+    label: "My Keys",
+    value: "my-keys",
+    content: <MyKeys />,
+    icon: <KeyRound size={16} />,
+  },
+  {
+    label: "Order History",
+    value: "order-history",
+    content: <OrderHistory />,
+    icon: <History size={16} />,
+  },
+] as const;
 
 const Account = () => {
   const { user } = useUserStore();
@@ -20,7 +40,11 @@ const Account = () => {
         <title>Account - {TITLE}</title>
         <link rel="icon" href="/icon.png" />
       </Head>
-      <DefaultLayout>{user?.role !== "admin" && <AccountTabs />}</DefaultLayout>
+      <DefaultLayout>
+        {user?.role !== "admin" && (
+          <TabsLayout path={PATH} tabs={ACCOUNT_TABS} />
+        )}
+      </DefaultLayout>
     </>
   );
 };
