@@ -252,7 +252,7 @@ const DataTableToolBar = <TData,>({
   const { editMode, toggleEditMode } = useUIStore();
   const { asPath } = useRouter();
   const [showForm, setShowForm] = useState(false);
-  const hash = asPath.split("#")[1];
+  const isAdminPage = asPath === "/admin" || asPath === "/admin#products";
 
   return (
     <div className="flex flex-col gap-2">
@@ -270,7 +270,7 @@ const DataTableToolBar = <TData,>({
             className="h-8 max-w-sm pl-8"
           />
         </div>
-        {user?.role === "admin" && hash === "products" && (
+        {user?.role === "admin" && isAdminPage && (
           <Drawer open={showForm} onOpenChange={setShowForm}>
             <DrawerTrigger asChild>
               <div className="flex items-center gap-2">
