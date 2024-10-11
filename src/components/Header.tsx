@@ -2,11 +2,12 @@ import {
   CircleUser,
   History,
   KeyRound,
-  LayoutDashboard,
   LogOut,
   Moon,
+  PackageSearch,
   Store,
   Sun,
+  UserSearch,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -25,7 +26,7 @@ import {
 } from "./ui/dropdown-menu";
 import { Switch } from "./ui/switch";
 
-const BREAKPOINT = 768; // Adjust this breakpoint as needed\
+const BREAKPOINT = 768; // Adjust this breakpoint as needed
 
 const DevRoleSwitch = () => {
   const { user } = useUserStore();
@@ -117,11 +118,18 @@ const NavigationItems = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {user.role === "admin" ? (
-            <DropdownMenuItem className="flex justify-between gap-4" asChild>
-              <Link href="/admin">
-                Admin Dashboard <LayoutDashboard size={16} />
-              </Link>
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuItem className="flex justify-between gap-4" asChild>
+                <Link href="/admin#products">
+                  Products <PackageSearch size={16} />
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex justify-between gap-4" asChild>
+                <Link href="/admin#users">
+                  Users <UserSearch size={16} />
+                </Link>
+              </DropdownMenuItem>
+            </>
           ) : (
             <>
               <DropdownMenuItem className="flex justify-between gap-4" asChild>
