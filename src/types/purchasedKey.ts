@@ -7,5 +7,7 @@ export type PurchasedKeyType = {
   invoiceLink: string;
   variant: VariantType["name"];
   expiry: string | null;
+  hardwareId: string | null;
+  owner: string | null;
   createdAt: string;
 };

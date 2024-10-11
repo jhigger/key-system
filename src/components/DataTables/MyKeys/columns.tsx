@@ -1,10 +1,24 @@
 import { type ColumnDef } from "@tanstack/react-table";
+import { Menu, Trash } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { formatISOStringToDate } from "~/lib/utils";
 import { type PurchasedKeyType } from "~/types/purchasedKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 import { Badge } from "../../ui/badge";
 
-export const columns: ColumnDef<Partial<PurchasedKeyType>>[] = [
+type TableProps = {
+  onDelete: (hardwareId?: string | null) => void;
+};
+
+export const getColumns = ({
+  onDelete,
+}: TableProps): ColumnDef<Partial<PurchasedKeyType>>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (
@@ -45,25 +59,7 @@ export const columns: ColumnDef<Partial<PurchasedKeyType>>[] = [
       return expiryDate >= startDate && expiryDate <= endDate;
     },
   },
-  {
-    accessorKey: "product",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Product" />
-    ),
-    cell: ({ row }) => {
-      const { product } = row.original;
-      return <span className="font-medium">{product}</span>;
-    },
-    filterFn: (row, id, value: string) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: "key",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Key" />
-    ),
-  },
+
   {
     accessorKey: "status",
     header: ({ column }) => (
@@ -97,5 +93,67 @@ export const columns: ColumnDef<Partial<PurchasedKeyType>>[] = [
       return filterValue.includes(status);
     },
     enableSorting: false,
+  },
+  {
+    accessorKey: "product",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Product" />
+    ),
+    cell: ({ row }) => {
+      const { product } = row.original;
+      return <span className="font-medium">{product}</span>;
+    },
+    filterFn: (row, id, value: string) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: "key",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Key" />
+    ),
+  },
+  {
+    accessorKey: "hardwareId",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Hardware ID" />
+    ),
+    cell: ({ row }) => {
+      const { hardwareId } = row.original;
+      const censoredHardwareId = hardwareId
+        ? hardwareId.slice(0, -12) + "*".repeat(12)
+        : "None";
+      return hardwareId ? <span>{censoredHardwareId}</span> : "None";
+    },
+  },
+  {
+    header: "Actions",
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { hardwareId, expiry } = row.original;
+      const isExpired = expiry ? new Date(expiry) < new Date() : false;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={"ghost"} size={"icon"} className="gap-2">
+              <Menu size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem className="flex justify-between gap-4" asChild>
+              <Button
+                variant={"destructive"}
+                size={"sm"}
+                onClick={() => onDelete(hardwareId)}
+                disabled={!hardwareId || isExpired}
+              >
+                Reset HWID <Trash size={16} />
+              </Button>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];

@@ -6,6 +6,8 @@ import { type UserType } from "~/types/user";
 import { variants } from "~/types/variant";
 import { formatPrice } from "./utils";
 
+const fakeOwner = uuidv4();
+
 export const DEFAULT_PRICING: [PricingType, ...PricingType[]] = variants.map(
   ({ name, value }) => {
     return { name: `${name} - ${formatPrice(Number(value))}`, value };
@@ -51,6 +53,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[2]!.name,
     expiry: new Date(2024, 10 - 1, 9 + 7).toISOString(),
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
+    hardwareId: null,
+    owner: fakeOwner,
   },
   {
     uuid: uuidv4(),
@@ -60,6 +64,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[1]!.name,
     expiry: new Date(2024, 10 - 1, 8 + 3).toISOString(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwner,
   },
   {
     uuid: uuidv4(),
@@ -69,6 +75,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[0].name,
     expiry: new Date(2024, 10 - 1, 7 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwner,
   },
   {
     uuid: uuidv4(),
@@ -78,6 +86,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[0].name,
     expiry: new Date(2024, 10 - 1, 6 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 6).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwner,
   },
   {
     uuid: uuidv4(),
@@ -87,6 +97,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[4]!.name,
     expiry: null,
     createdAt: new Date(2024, 10 - 1, 5).toISOString(),
+    hardwareId: null,
+    owner: fakeOwner,
   },
   {
     uuid: uuidv4(),
@@ -96,6 +108,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[3]!.name,
     expiry: new Date(2024, 10 - 1, 4 + 30).toISOString(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwner,
   },
   {
     uuid: uuidv4(),
@@ -105,6 +119,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[3]!.name,
     expiry: new Date(2024, 10 - 1, 3 + 30).toISOString(),
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwner,
   },
   {
     uuid: uuidv4(),
@@ -114,6 +130,8 @@ export const fakeOrders: PurchasedKeyType[] = [
     variant: variants[0].name,
     expiry: new Date(2024, 10 - 1, 11 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 11).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwner,
   },
 ];
 
@@ -135,7 +153,7 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeOwner,
     role: "user",
     email: "email_three@example.com",
     keys: [
@@ -149,6 +167,8 @@ export const fakeUsers: UserType[] = [
           new Date().setDate(new Date().getDate()),
         ).toISOString(),
         createdAt: new Date(2024, 10 - 1, 7 + 1).toISOString(),
+        hardwareId: uuidv4(),
+        owner: fakeOwner,
       },
     ],
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
