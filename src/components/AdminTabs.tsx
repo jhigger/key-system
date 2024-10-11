@@ -2,10 +2,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useUserStore } from "~/state/userStore";
+import Products from "./DataTables/Products";
+import Users from "./DataTables/Users";
 import PleaseLoginToView from "./PleaseLoginToView";
-import Products from "./Products";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import Users from "./Users";
 
 const path = "/admin";
 
@@ -34,7 +34,7 @@ const AdminDashboard = () => {
   return (
     <Tabs
       defaultValue={tabs[0].value}
-      className="w-full max-w-screen-md"
+      className="w-full max-w-screen-lg grow"
       value={id}
     >
       <TabsList className="grid w-full grid-cols-2">

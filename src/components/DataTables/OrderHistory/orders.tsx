@@ -2,9 +2,9 @@ import { fakeOrders } from "~/lib/fakeData";
 import { type PurchasedKeyType } from "~/types/purchasedKey";
 
 export const orders: Partial<PurchasedKeyType>[] = fakeOrders.map(
-  ({ purchasedAt, product, invoiceLink, variant }) => {
+  ({ createdAt, product, invoiceLink, variant }) => {
     return {
-      purchasedAt,
+      createdAt,
       product,
       invoiceLink,
       variant,

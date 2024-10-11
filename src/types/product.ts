@@ -1,7 +1,10 @@
 import { type PricingType } from "./pricing";
 
 export type ProductType = {
-  name: string;
+  uuid: string;
+  createdAt: string;
+  updatedAt: string;
+  product: string;
   value: string;
   pricing: [PricingType, ...PricingType[]];
   stock: number;

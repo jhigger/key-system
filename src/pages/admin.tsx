@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import AdminDashboard from "~/components/AdminDashboard";
+import AdminDashboard from "~/components/AdminTabs";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
 import useTitle from "~/hooks/useTitle";
 import { useUserStore } from "~/state/userStore";

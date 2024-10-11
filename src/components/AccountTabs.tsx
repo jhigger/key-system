@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import MyKeys from "~/components/MyKeys";
-import OrderHistory from "~/components/OrderHistory";
+import MyKeys from "~/components/DataTables/MyKeys";
+import OrderHistory from "~/components/DataTables/OrderHistory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useUserStore } from "~/state/userStore";
 import PleaseLoginToView from "./PleaseLoginToView";
@@ -34,7 +34,7 @@ const AccountTabs = () => {
   return (
     <Tabs
       defaultValue={tabs[0].value}
-      className="w-full max-w-screen-md"
+      className="w-full max-w-screen-lg grow"
       value={id}
     >
       <TabsList className="grid w-full grid-cols-2">

@@ -1,4 +1,4 @@
-import { DataTable } from "../ui/data-table";
+import { DataTable } from "../../ui/data-table";
 import { columns } from "./columns";
 import { products } from "./products";
 

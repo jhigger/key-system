@@ -7,5 +7,5 @@ export type PurchasedKeyType = {
   invoiceLink: string;
   variant: VariantType["name"];
   expiry: string | null;
-  purchasedAt: string;
+  createdAt: string;
 };

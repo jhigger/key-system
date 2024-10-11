@@ -2,9 +2,10 @@ import { fakeProducts } from "~/lib/fakeData";
 import { type ProductType } from "~/types/product";
 
 export const products: Partial<ProductType>[] = fakeProducts.map(
-  ({ name, pricing, stock }) => {
+  ({ createdAt, product, pricing, stock }) => {
     return {
-      name,
+      createdAt,
+      product,
       pricing,
       stock,
     };
