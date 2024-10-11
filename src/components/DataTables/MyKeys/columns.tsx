@@ -74,11 +74,11 @@ export const getColumns = ({
         new Date() >= new Date(expiry);
 
       return isExpired ? (
-        <Badge variant="destructive" className="w-full justify-center p-0">
+        <Badge variant="destructive" className="w-full justify-center px-1">
           Expired
         </Badge>
       ) : (
-        <Badge className="w-full justify-center bg-green-500/80 p-0 text-white hover:bg-green-500/60">
+        <Badge className="w-full justify-center bg-green-500/80 px-1 text-white hover:bg-green-500/60">
           Active
         </Badge>
       );
