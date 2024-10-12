@@ -277,8 +277,8 @@ const DataTableToolBar = <TData,>({
           <Drawer open={showForm} onOpenChange={setShowForm}>
             <DrawerTrigger asChild>
               <div className="flex items-center gap-2">
-                <Button variant={"outline"} size={"icon"} className="size-8">
-                  <PackagePlus size={20} />
+                <Button variant={"outline"} size={"sm"} className="gap-2 px-2">
+                  <PackagePlus size={20} /> Add
                 </Button>
               </div>
             </DrawerTrigger>
