@@ -130,6 +130,7 @@ export function DataTable<TData extends Partial<ProductType>, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const { rowsPerPage, setRowsPerPage } = useUIStore();
+  const [pageIndex, setPageIndex] = useState(0);
 
   const table = useReactTable<TData>({
     data,
@@ -139,21 +140,23 @@ export function DataTable<TData extends Partial<ProductType>, TValue>({
       columnFilters,
       globalFilter,
       pagination: {
-        pageIndex: 0,
+        pageIndex,
         pageSize: rowsPerPage,
       },
     },
     filterFns: {
-      fuzzy: fuzzyFilter, //define as a filter function that can be used in column definitions
+      fuzzy: fuzzyFilter,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: (updater) => {
       if (typeof updater === "function") {
-        const newState = updater({ pageIndex: 0, pageSize: rowsPerPage });
+        const newState = updater({ pageIndex, pageSize: rowsPerPage });
+        setPageIndex(newState.pageIndex);
         setRowsPerPage(newState.pageSize);
       } else {
+        setPageIndex(updater.pageIndex);
         setRowsPerPage(updater.pageSize);
       }
     },
