@@ -9,6 +9,7 @@ export type TabType = {
   label: string;
   value: string;
   content: React.ReactNode;
+  icon: React.ReactNode;
 };
 
 type TabLayoutProps = {
@@ -44,9 +45,16 @@ const TabsLayout = ({ path, tabs }: TabLayoutProps) => {
       value={activeTab}
     >
       <TabsList className="flex w-full">
-        {tabs.map(({ label, value }) => (
-          <TabsTrigger key={value} value={value} asChild className="flex-1">
-            <Link href={`${path}#${value}`}>{label}</Link>
+        {tabs.map(({ label, value, icon }) => (
+          <TabsTrigger
+            key={value}
+            value={value}
+            className="flex flex-1 items-center justify-center gap-2"
+            asChild
+          >
+            <Link href={`${path}#${value}`}>
+              {icon} {label}
+            </Link>
           </TabsTrigger>
         ))}
       </TabsList>

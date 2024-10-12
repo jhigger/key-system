@@ -9,7 +9,7 @@ import { useUserStore } from "~/state/user.store";
 
 const PATH = "/account";
 
-export const ACCOUNT_TABS: (TabType & { icon: React.ReactNode })[] = [
+export const ACCOUNT_TABS: TabType[] = [
   {
     label: "My Keys",
     value: "my-keys",
