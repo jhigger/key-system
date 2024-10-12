@@ -9,4 +9,5 @@ export type ProductKeyType = {
   hardwareId: string | null;
   owner: string | null;
   createdAt: string;
+  updatedAt: string;
 };

@@ -1,6 +1,7 @@
 import { type Row } from "@tanstack/react-table";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { validate as uuidValidate, version as uuidVersion } from "uuid";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -48,4 +49,11 @@ export const filterFn = <T extends Record<string, unknown>>(
 
   // Check if the date falls within the specified range
   return date >= startDate && date <= endDate;
+};
+
+export const censorUUID = (uuid: string) => {
+  if (!uuidValidate(uuid) || uuidVersion(uuid) !== 4) {
+    return uuid;
+  }
+  return uuid.slice(0, -12) + "*".repeat(12);
 };

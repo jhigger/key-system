@@ -1,5 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { Menu, Trash } from "lucide-react";
+import { Copy, Menu, Trash } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -7,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { filterFn, formatISOStringToDate } from "~/lib/utils";
+import { censorUUID, filterFn, formatISOStringToDate } from "~/lib/utils";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 import { Badge } from "../../ui/badge";
@@ -107,6 +108,30 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Key" />
     ),
+    cell: ({ row }) => {
+      const { key } = row.original;
+      const censoredKey = key ? censorUUID(key) : "None";
+
+      const copyToClipboard = () => {
+        if (key) {
+          navigator.clipboard
+            .writeText(key)
+            .then(() => toast.success("Key copied to clipboard"))
+            .catch(() => toast.error("Failed to copy key"));
+        }
+      };
+
+      return (
+        <div
+          className="flex cursor-pointer items-center gap-2 rounded p-1 hover:bg-gray-100"
+          onClick={copyToClipboard}
+          title={key ? "Click to copy full key" : "No key available"}
+        >
+          <span>{key ? censoredKey : "None"}</span>
+          {key && <Copy size={16} className="text-gray-500" />}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "hardwareId",
@@ -115,10 +140,8 @@ export const getColumns = ({
     ),
     cell: ({ row }) => {
       const { hardwareId } = row.original;
-      const censoredHardwareId = hardwareId
-        ? hardwareId.slice(0, -12) + "*".repeat(12)
-        : "None";
-      return hardwareId ? <span>{censoredHardwareId}</span> : "None";
+      const censoredHardwareId = hardwareId ? censorUUID(hardwareId) : "None";
+      return hardwareId ? censoredHardwareId : "None";
     },
   },
   {

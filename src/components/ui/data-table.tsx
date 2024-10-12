@@ -26,7 +26,7 @@ import {
   Search,
 } from "lucide-react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -41,10 +41,12 @@ import { useUIStore } from "~/state/ui.store";
 import { useUserStore } from "~/state/user.store";
 import { variants } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
+import { type ProductKeyType } from "~/types/productKey";
 import { roles } from "~/types/user";
 import DatePicker from "../DatePicker";
 import DebouncedInput from "../DebouncedInput";
-import ProductForm from "../ProductForm";
+import ProductForm, { type ProductFormRef } from "../ProductForm";
+import ProductKeyForm, { type ProductKeyFormRef } from "../ProductKeyForm";
 import { Button } from "./button";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import {
@@ -231,7 +233,7 @@ export function DataTable<TData extends Partial<ProductType>, TValue>({
 
 type ToolBarProps<TData> = {
   table: TableType<TData>;
-  handleAdd?: (newRow: ProductType) => void;
+  handleAdd?: (newRow: ProductType | ProductKeyType) => void;
 };
 
 const DataTableToolBar = <TData,>({
@@ -255,7 +257,23 @@ const DataTableToolBar = <TData,>({
   const { editMode, toggleEditMode } = useUIStore();
   const { asPath } = useRouter();
   const [showForm, setShowForm] = useState(false);
-  const isAdminPage = asPath === "/admin" || asPath === "/admin#products";
+  const isAdminPage = asPath === "/admin";
+  const isProductsPage = asPath === "/admin#products";
+  const isProductKeysPage = asPath === "/admin#product-keys";
+  const productFormRef = useRef<ProductFormRef>(null);
+  const productKeyFormRef = useRef<ProductKeyFormRef>(null);
+
+  useEffect(() => {
+    if (showForm) {
+      setTimeout(() => {
+        if (isProductsPage) {
+          productFormRef.current?.focus();
+        } else if (isProductKeysPage) {
+          productKeyFormRef.current?.focus();
+        }
+      }, 100);
+    }
+  }, [showForm, isProductsPage, isProductKeysPage]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -273,39 +291,54 @@ const DataTableToolBar = <TData,>({
             className="h-8 max-w-sm pl-8"
           />
         </div>
-        {user?.role === "admin" && isAdminPage && (
-          <Drawer open={showForm} onOpenChange={setShowForm}>
-            <DrawerTrigger asChild>
-              <div className="flex items-center gap-2">
+        {user?.role === "admin" &&
+          (isAdminPage || isProductsPage || isProductKeysPage) && (
+            <Drawer open={showForm} onOpenChange={setShowForm}>
+              <DrawerTrigger asChild>
                 <Button variant={"outline"} size={"sm"} className="gap-2 px-2">
                   <PackagePlus size={20} /> Add
                 </Button>
-              </div>
-            </DrawerTrigger>
-            <DrawerContent className="items-center justify-center">
-              <div className="w-full max-w-screen-sm">
-                <DrawerHeader>
-                  <DrawerTitle>Add a new product</DrawerTitle>
-                  <DrawerDescription>
-                    Click submit when you&apos;re done or cancel to discard
-                    changes.
-                  </DrawerDescription>
-                </DrawerHeader>
-                <ProductForm
-                  handleSubmit={(values) => {
-                    setShowForm(false);
-                    handleAdd?.(values);
-                  }}
-                />
-                <DrawerFooter>
-                  <DrawerClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DrawerClose>
-                </DrawerFooter>
-              </div>
-            </DrawerContent>
-          </Drawer>
-        )}
+              </DrawerTrigger>
+              <DrawerContent>
+                <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
+                  <div className="mx-auto w-full max-w-screen-sm">
+                    <DrawerHeader>
+                      <DrawerTitle>
+                        Add a new {isProductsPage ? "product" : "product key"}
+                      </DrawerTitle>
+                      <DrawerDescription>
+                        Click submit when you&apos;re done or cancel to discard
+                        changes.
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    {isProductsPage && (
+                      <ProductForm
+                        ref={productFormRef}
+                        handleSubmit={(values) => {
+                          setShowForm(false);
+                          handleAdd?.(values);
+                        }}
+                      />
+                    )}
+                    {isProductKeysPage && (
+                      <ProductKeyForm
+                        ref={productKeyFormRef}
+                        handleSubmit={(values) => {
+                          setShowForm(false);
+                          handleAdd?.(values);
+                        }}
+                      />
+                    )}
+                    <DrawerFooter>
+                      <DrawerClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </div>
+                </div>
+              </DrawerContent>
+            </Drawer>
+          )}
         {user?.role === "admin" && (
           <div className="flex items-center gap-2">
             <Label htmlFor="mode" className="sr-only capitalize">

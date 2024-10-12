@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { fakeProducts } from "~/lib/fakeData";
-import { filterFn, formatISOStringToDate } from "~/lib/utils";
+import { censorUUID, filterFn, formatISOStringToDate } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductKeyType } from "~/types/productKey";
@@ -96,7 +96,7 @@ const KeyCell: React.FC<{
     );
   }
 
-  return value;
+  return censorUUID(value);
 };
 
 type TableProps = {
