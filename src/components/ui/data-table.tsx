@@ -258,7 +258,7 @@ const DataTableToolBar = <TData,>({
   const { asPath } = useRouter();
   const [showForm, setShowForm] = useState(false);
   const isAdminPage = asPath === "/admin";
-  const isProductsPage = asPath === "/admin#products";
+  const isProductsPage = isAdminPage || asPath === "/admin#products";
   const isProductKeysPage = asPath === "/admin#product-keys";
   const productFormRef = useRef<ProductFormRef>(null);
   const productKeyFormRef = useRef<ProductKeyFormRef>(null);
