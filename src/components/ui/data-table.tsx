@@ -334,9 +334,8 @@ const DataTableToolBar = <TData,>({
             title="Product"
             options={fakeProducts.map((product) => ({
               label:
-                product.product.charAt(0).toUpperCase() +
-                product.product.slice(1),
-              value: product.product,
+                product.name.charAt(0).toUpperCase() + product.name.slice(1),
+              value: product.name,
             }))}
           />
         )}

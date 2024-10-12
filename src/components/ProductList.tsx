@@ -70,7 +70,7 @@ const ProductList = () => {
   useEffect(() => {
     const formattedProducts = fakeProducts.map((product) => ({
       keys: [],
-      productName: product.product,
+      productName: product.name,
     }));
 
     replace(formattedProducts); // Set the initial products once
@@ -113,7 +113,7 @@ const ProductList = () => {
 
   const addNewProduct = () => {
     const newProduct: ProductType = {
-      product: "New Product",
+      name: "New Product",
       value: "new-product",
       pricing: DEFAULT_PRICING,
       stock: 999,
@@ -123,7 +123,7 @@ const ProductList = () => {
     };
 
     const newProductForm = {
-      productName: newProduct.product,
+      productName: newProduct.name,
       keys: [],
     };
 
@@ -237,7 +237,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
     <Card className="mx-auto w-full">
       <CardHeader className="flex-row items-center justify-between gap-2 border-b py-4">
         <div>
-          🔑 Product: <b>{product.product}</b>
+          🔑 Product: <b>{product.name}</b>
         </div>
         <div>{product.stock} Keys Left</div>
       </CardHeader>

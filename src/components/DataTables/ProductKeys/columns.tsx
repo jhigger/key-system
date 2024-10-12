@@ -39,10 +39,10 @@ const ProductCell: React.FC<{
           {fakeProducts.map((product) => (
             <SelectItem
               key={product.uuid}
-              value={product.product}
+              value={product.name}
               className="capitalize"
             >
-              {product.product}
+              {product.name}
             </SelectItem>
           ))}
         </SelectContent>

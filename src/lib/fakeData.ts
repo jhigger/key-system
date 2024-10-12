@@ -20,7 +20,7 @@ export const fakeProducts: ProductType[] = [
     uuid: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
-    product: "Distortion",
+    name: "Distortion",
     value: "distortion",
     pricing: DEFAULT_PRICING,
     stock: 999,
@@ -29,7 +29,7 @@ export const fakeProducts: ProductType[] = [
     uuid: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
-    product: "Densho",
+    name: "Densho",
     value: "densho",
     pricing: DEFAULT_PRICING,
     stock: 99,
@@ -38,7 +38,7 @@ export const fakeProducts: ProductType[] = [
     uuid: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
-    product: "Unlock All",
+    name: "Unlock All",
     value: "unlock-all",
     pricing: DEFAULT_PRICING,
     stock: 0,
@@ -48,7 +48,7 @@ export const fakeProducts: ProductType[] = [
 export const fakeProductKeys: ProductKeyType[] = [
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.product,
+    product: fakeProducts[0]!.name,
     key: uuidv4(),
     variant: variants[1],
     expiry: undefined,
@@ -58,7 +58,7 @@ export const fakeProductKeys: ProductKeyType[] = [
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[1]!.product,
+    product: fakeProducts[1]!.name,
     key: uuidv4(),
     variant: variants[3],
     expiry: new Date(2024, 10 - 1, 8 + 30).toISOString(),
@@ -68,7 +68,7 @@ export const fakeProductKeys: ProductKeyType[] = [
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.product,
+    product: fakeProducts[0]!.name,
     key: uuidv4(),
     variant: variants[0],
     expiry: new Date(2024, 10 - 1, 7 + 1).toISOString(),
@@ -78,7 +78,7 @@ export const fakeProductKeys: ProductKeyType[] = [
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[1]!.product,
+    product: fakeProducts[1]!.name,
     key: uuidv4(),
     variant: variants[4],
     expiry: null,
@@ -88,7 +88,7 @@ export const fakeProductKeys: ProductKeyType[] = [
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.product,
+    product: fakeProducts[0]!.name,
     key: uuidv4(),
     variant: variants[2],
     expiry: new Date(2024, 10 - 1, 5 + 7).toISOString(),
@@ -98,7 +98,7 @@ export const fakeProductKeys: ProductKeyType[] = [
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[1]!.product,
+    product: fakeProducts[1]!.name,
     key: uuidv4(),
     variant: variants[1],
     expiry: new Date(2024, 10 - 1, 4 + 3).toISOString(),
@@ -108,7 +108,7 @@ export const fakeProductKeys: ProductKeyType[] = [
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.product,
+    product: fakeProducts[0]!.name,
     key: uuidv4(),
     variant: variants[3],
     expiry: undefined,

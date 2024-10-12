@@ -4,7 +4,7 @@ export type ProductType = {
   uuid: string;
   createdAt: string;
   updatedAt: string;
-  product: string;
+  name: string;
   value: string;
   pricing: PricingType[];
   stock: number;

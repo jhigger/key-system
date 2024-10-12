@@ -118,16 +118,16 @@ export const getColumns = ({
     filterFn: filterFn,
   },
   {
-    accessorKey: "product",
+    accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Product" />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => {
-      const product: string = row.getValue("product");
+      const name: string = row.getValue("name");
       return (
         <ProductCell
-          value={product}
-          onEdit={(value) => onEdit({ ...row.original, product: value })}
+          value={name}
+          onEdit={(value) => onEdit({ ...row.original, name: value })}
         />
       );
     },
