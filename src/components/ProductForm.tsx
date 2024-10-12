@@ -83,7 +83,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 pb-8"
+          className="space-y-4 p-4 pb-0"
           noValidate
         >
           <FormField

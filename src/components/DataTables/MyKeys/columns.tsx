@@ -37,7 +37,7 @@ export const getColumns = ({
 
       const { formattedDate, formattedTime } = formatISOStringToDate(expiry);
       return (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 font-mono">
           <span>{formattedDate}</span>
           <span>{formattedTime}</span>
         </div>
