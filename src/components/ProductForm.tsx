@@ -12,20 +12,22 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { variants } from "~/types/pricing";
+import { type PricingType, variants } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { Input } from "./ui/input";
 
+const pricingSchema = z
+  .string()
+  .refine(
+    (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
+    "Pricing must be a number greater than zero",
+  );
+
 const formSchema = z.object({
   product: z.string().min(1, "Product name is required"),
-  pricing: z
-    .array(
-      z.object({
-        name: z.enum(variants),
-        value: z.coerce.string().min(1, "Pricing must be greater than zero"),
-      }),
-    )
-    .optional(),
+  pricing: z.object(
+    Object.fromEntries(variants.map((variant) => [variant, pricingSchema])),
+  ),
   stock: z.number().min(0, "Stock must be a non-negative number"),
 });
 
@@ -38,25 +40,26 @@ const ProductForm = ({ handleSubmit }: ProductFormProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       product: "",
+      pricing: Object.fromEntries(variants.map((variant) => [variant, ""])),
       stock: 0,
-      pricing: [
-        { name: "1 Day", value: "1" },
-        { name: "3 Days", value: "1" },
-        { name: "7 Days", value: "1" },
-        { name: "30 Days", value: "1" },
-        { name: "Lifetime", value: "1" },
-      ],
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const formattedPricing = Object.entries(values.pricing).map(
+      ([name, value]) => ({
+        name: name as PricingType["name"],
+        value,
+      }),
+    );
+
     handleSubmit({
       ...values,
       uuid: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       value: values.product.toLowerCase().replace(" ", "-"),
-      pricing: values.pricing ?? [],
+      pricing: formattedPricing,
     });
     toast.success("Product has been added successfully.");
   }
@@ -66,6 +69,7 @@ const ProductForm = ({ handleSubmit }: ProductFormProps) => {
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 p-4 pb-0"
+        noValidate
       >
         <FormField
           control={form.control}
@@ -86,32 +90,17 @@ const ProductForm = ({ handleSubmit }: ProductFormProps) => {
             <FormField
               key={variant}
               control={form.control}
-              name="pricing"
+              name={`pricing.${variant}`}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{variant}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      min={1}
-                      value={
-                        field.value?.find((item) => item.name === variant)
-                          ?.value ?? ""
-                      }
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const currentPricing = field.value ?? [];
-                        const updatedPricing = currentPricing.filter(
-                          (item) => item.name !== variant,
-                        );
-                        if (value) {
-                          updatedPricing.push({
-                            name: variant,
-                            value,
-                          });
-                        }
-                        field.onChange(updatedPricing);
-                      }}
+                      min={0}
+                      step="0.01"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -119,6 +108,11 @@ const ProductForm = ({ handleSubmit }: ProductFormProps) => {
               )}
             />
           ))}
+          {form.formState.errors.pricing?.root && (
+            <p className="text-sm font-medium text-destructive">
+              {form.formState.errors.pricing.root.message}
+            </p>
+          )}
         </div>
         <FormField
           control={form.control}
