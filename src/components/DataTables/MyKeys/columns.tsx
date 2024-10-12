@@ -98,10 +98,6 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
-    cell: ({ row }) => {
-      const { product } = row.original;
-      return <span className="font-medium">{product}</span>;
-    },
     filterFn: (row, id, value: string) => {
       return value.includes(row.getValue(id));
     },

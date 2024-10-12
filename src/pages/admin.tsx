@@ -1,11 +1,11 @@
-import { PackageSearch, UserSearch } from "lucide-react";
+import { KeyRound, PackageSearch, UserSearch } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import ProductKeys from "~/components/DataTables/ProductKeys";
 import Products from "~/components/DataTables/Products";
 import Users from "~/components/DataTables/Users";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
 import TabsLayout, { type TabType } from "~/components/layouts/TabsLayout";
-import { TITLE } from "~/constants";
 import { useUserStore } from "~/state/user.store";
 
 const PATH = "/admin";
@@ -16,6 +16,12 @@ export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
     value: "products",
     content: <Products />,
     icon: <PackageSearch size={16} />,
+  },
+  {
+    label: "Product Keys",
+    value: "product-keys",
+    content: <ProductKeys />,
+    icon: <KeyRound size={16} />,
   },
   {
     label: "Users",
@@ -37,7 +43,7 @@ const Admin = () => {
   return (
     <>
       <Head>
-        <title>Admin - {TITLE}</title>
+        <title>Admin - CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
       <DefaultLayout>

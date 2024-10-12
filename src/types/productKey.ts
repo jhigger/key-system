@@ -4,9 +4,8 @@ export type ProductKeyType = {
   uuid: string;
   product: string;
   key: string;
-  invoiceLink: string;
   variant: PricingType["name"];
-  expiry: string | null;
+  expiry?: string | null;
   hardwareId: string | null;
   owner: string | null;
   createdAt: string;

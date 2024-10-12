@@ -6,7 +6,7 @@ const Login = () => {
   return (
     <>
       <Head>
-        <title>Login - Reseller Panel</title>
+        <title>Login - CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
       <DefaultLayout>

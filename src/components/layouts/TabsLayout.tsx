@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { useEffect, useState } from "react";
-import PleaseLoginToView from "../PleaseLoginToView";
-import { useUserStore } from "~/state/user.store";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { useUserStore } from "~/state/user.store";
+import PleaseLoginToView from "../PleaseLoginToView";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export type TabType = {
   label: string;
@@ -43,9 +43,9 @@ const TabsLayout = ({ path, tabs }: TabLayoutProps) => {
       className="w-full max-w-screen-lg grow"
       value={activeTab}
     >
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="flex w-full">
         {tabs.map(({ label, value }) => (
-          <TabsTrigger key={value} value={value} asChild>
+          <TabsTrigger key={value} value={value} asChild className="flex-1">
             <Link href={`${path}#${value}`}>{label}</Link>
           </TabsTrigger>
         ))}

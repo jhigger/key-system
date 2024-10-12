@@ -3,7 +3,6 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { TITLE } from "~/constants";
 import { ACCOUNT_TABS } from "~/pages/account";
 import { ADMIN_TABS } from "~/pages/admin";
 import { useUserStore } from "~/state/user.store";
@@ -166,7 +165,7 @@ const Header = () => {
           <div className="size-10 rounded-full bg-accent p-2">
             <img src="/icon.png" alt="icon" className="invert dark:invert-0" />
           </div>
-          <h1 className="ml-3 text-xl">{TITLE}</h1>
+          <h1 className="ml-3 text-xl">CTX</h1>
         </Link>
         <DevRoleSwitch />
         <nav className="flex flex-wrap items-center justify-center gap-2 md:ml-auto">

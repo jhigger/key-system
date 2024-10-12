@@ -2,12 +2,12 @@ import { fakeOrders } from "~/lib/fakeData";
 import { type ProductKeyType } from "~/types/productKey";
 
 export const orders: Partial<ProductKeyType>[] = fakeOrders.map(
-  ({ createdAt, product, invoiceLink, variant }) => {
+  ({ createdAt, productKey, invoiceLink }) => {
     return {
       createdAt,
-      product,
+      product: productKey.product,
       invoiceLink,
-      variant,
+      variant: productKey.variant,
     };
   },
 );

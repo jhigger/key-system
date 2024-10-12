@@ -5,7 +5,6 @@ import MyKeys from "~/components/DataTables/MyKeys";
 import OrderHistory from "~/components/DataTables/OrderHistory";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
 import TabsLayout, { type TabType } from "~/components/layouts/TabsLayout";
-import { TITLE } from "~/constants";
 import { useUserStore } from "~/state/user.store";
 
 const PATH = "/account";
@@ -37,7 +36,7 @@ const Account = () => {
   return (
     <>
       <Head>
-        <title>Account - {TITLE}</title>
+        <title>Account - CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
       <DefaultLayout>

@@ -1,6 +1,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Menu, Trash } from "lucide-react";
 import DebouncedInput from "~/components/DebouncedInput";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -8,66 +9,77 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { filterFn, formatISOStringToDate, formatPrice } from "~/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { fakeProducts } from "~/lib/fakeData";
+import { filterFn, formatISOStringToDate } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
-import { type ProductType } from "~/types/product";
+import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 
-interface PricingCellProps {
-  pricing: PricingType;
+const ProductCell: React.FC<{
+  value: string;
   onEdit: (value: string) => void;
-}
-
-const PricingCell: React.FC<PricingCellProps> = ({ pricing, onEdit }) => {
-  const { editMode } = useUIStore();
-  const price = formatPrice(Number(pricing.value));
-
-  if (editMode) {
-    return (
-      <DebouncedInput
-        type="number"
-        min="0"
-        step="0.01"
-        value={pricing.value}
-        onChange={(value) => {
-          const numValue = Math.max(0, Number(value));
-          onEdit(numValue.toString());
-        }}
-        className="w-20"
-      />
-    );
-  }
-
-  return price;
-};
-
-const StockCell: React.FC<{
-  value: number;
-  onEdit: (value: number) => void;
 }> = ({ value, onEdit }) => {
   const { editMode } = useUIStore();
 
   if (editMode) {
     return (
-      <DebouncedInput
-        type="number"
-        min="0"
-        step="1"
-        value={value}
-        onChange={(value) => {
-          const newValue = Math.max(0, Math.floor(Number(value)));
-          onEdit(newValue);
-        }}
-        className="w-20"
-      />
+      <Select defaultValue={value} onValueChange={onEdit}>
+        <SelectTrigger className="w-[180px] capitalize">
+          <SelectValue placeholder="Select a variant" />
+        </SelectTrigger>
+        <SelectContent>
+          {fakeProducts.map((product) => (
+            <SelectItem
+              key={product.uuid}
+              value={product.product}
+              className="capitalize"
+            >
+              {product.product}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     );
   }
 
   return value;
 };
 
-const ProductCell: React.FC<{
+const VariantCell: React.FC<{
+  value: PricingType["name"];
+  onEdit: (value: PricingType["name"]) => void;
+}> = ({ value, onEdit }) => {
+  const { editMode } = useUIStore();
+
+  if (editMode) {
+    return (
+      <Select defaultValue={value} onValueChange={onEdit}>
+        <SelectTrigger className="w-[180px] capitalize">
+          <SelectValue placeholder="Select a variant" />
+        </SelectTrigger>
+        <SelectContent>
+          {variants.map((option) => (
+            <SelectItem key={option} value={option} className="capitalize">
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  return <Badge className="capitalize">{value}</Badge>;
+};
+
+const KeyCell: React.FC<{
   value: string;
   onEdit: (value: string) => void;
 }> = ({ value, onEdit }) => {
@@ -88,14 +100,14 @@ const ProductCell: React.FC<{
 };
 
 type TableProps = {
-  onEdit: (product: Partial<ProductType>) => void;
+  onEdit: (productKey: Partial<ProductKeyType>) => void;
   onDelete: (uuid: string) => void;
 };
 
 export const getColumns = ({
   onEdit,
   onDelete,
-}: TableProps): ColumnDef<Partial<ProductType>>[] => [
+}: TableProps): ColumnDef<Partial<ProductKeyType>>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -135,45 +147,32 @@ export const getColumns = ({
       return value.includes(row.getValue(id));
     },
   },
-  ...variants.map<ColumnDef<Partial<ProductType>>>((name) => {
-    return {
-      accessorKey: name,
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={name} />
-      ),
-      cell: ({ row }) => {
-        const pricing = row.original.pricing;
-        if (!pricing) return null;
-
-        const variantPricing = pricing.find((p) => p.name.startsWith(name));
-        if (!variantPricing) return null;
-
-        return (
-          <PricingCell
-            pricing={variantPricing}
-            onEdit={(value) => {
-              const updatedPricing = pricing.map((p) =>
-                p.name.startsWith(name) ? { ...p, value } : p,
-              );
-              onEdit({ ...row.original, pricing: updatedPricing });
-            }}
-          />
-        );
-      },
-      enableSorting: false,
-    };
-  }),
   {
-    accessorKey: "stock",
+    accessorKey: "variant",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Stock" />
+      <DataTableColumnHeader column={column} title="Variant" />
     ),
     cell: ({ row }) => {
-      const stock: number = row.getValue("stock");
+      const variant: PricingType["name"] = row.getValue("variant");
       return (
-        <StockCell
-          value={stock}
-          onEdit={(value) => onEdit({ ...row.original, stock: value })}
+        <VariantCell
+          value={variant}
+          onEdit={(value) => onEdit({ ...row.original, variant: value })}
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "key",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Key" />
+    ),
+    cell: ({ row }) => {
+      const key: string = row.getValue("key");
+      return (
+        <KeyCell
+          value={key}
+          onEdit={(value) => onEdit({ ...row.original, key: value })}
         />
       );
     },

@@ -2,7 +2,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import DefaultLayout from "~/components/layouts/DefaultLayout";
 import ProductList from "~/components/ProductList";
-import { TITLE } from "~/constants";
 import { useUserStore } from "~/state/user.store";
 
 export default function Home() {
@@ -17,7 +16,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>{TITLE}</title>
+        <title>CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
       <DefaultLayout>

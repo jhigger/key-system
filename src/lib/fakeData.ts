@@ -1,10 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
+import { type OrderType } from "~/types/order";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { type UserType } from "~/types/user";
 
-const fakeOwner = uuidv4();
+const fakeOwnerId = uuidv4();
 
 export const DEFAULT_PRICING: PricingType[] = [
   { name: "1 Day", value: "1.5" },
@@ -14,7 +15,7 @@ export const DEFAULT_PRICING: PricingType[] = [
   { name: "Lifetime", value: "150" },
 ];
 
-export const fakeProducts: [ProductType, ...ProductType[]] = [
+export const fakeProducts: ProductType[] = [
   {
     uuid: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
@@ -44,94 +45,114 @@ export const fakeProducts: [ProductType, ...ProductType[]] = [
   },
 ];
 
-export const fakeOrders: ProductKeyType[] = [
+export const fakeProductKeys: ProductKeyType[] = [
   {
     uuid: uuidv4(),
-    product: fakeProducts[0].product,
+    product: fakeProducts[0]!.product,
     key: uuidv4(),
-    invoiceLink: uuidv4(),
-    variant: variants[2],
-    expiry: new Date(2024, 10 - 1, 9 + 7).toISOString(),
-    createdAt: new Date(2024, 10 - 1, 9).toISOString(),
-    hardwareId: null,
-    owner: fakeOwner,
-  },
-  {
-    uuid: uuidv4(),
-    product: fakeProducts[0].product,
-    key: uuidv4(),
-    invoiceLink: uuidv4(),
     variant: variants[1],
-    expiry: new Date(2024, 10 - 1, 8 + 3).toISOString(),
+    expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     hardwareId: uuidv4(),
-    owner: fakeOwner,
+    owner: null,
   },
   {
     uuid: uuidv4(),
     product: fakeProducts[1]!.product,
     key: uuidv4(),
-    invoiceLink: uuidv4(),
+    variant: variants[3],
+    expiry: new Date(2024, 10 - 1, 8 + 30).toISOString(),
+    createdAt: new Date(2024, 10 - 1, 8).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwnerId,
+  },
+  {
+    uuid: uuidv4(),
+    product: fakeProducts[0]!.product,
+    key: uuidv4(),
     variant: variants[0],
     expiry: new Date(2024, 10 - 1, 7 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
     hardwareId: uuidv4(),
-    owner: fakeOwner,
+    owner: fakeOwnerId,
   },
   {
     uuid: uuidv4(),
     product: fakeProducts[1]!.product,
     key: uuidv4(),
-    invoiceLink: uuidv4(),
-    variant: variants[0],
-    expiry: new Date(2024, 10 - 1, 6 + 1).toISOString(),
-    createdAt: new Date(2024, 10 - 1, 6).toISOString(),
-    hardwareId: uuidv4(),
-    owner: fakeOwner,
-  },
-  {
-    uuid: uuidv4(),
-    product: fakeProducts[0]?.product,
-    key: uuidv4(),
-    invoiceLink: uuidv4(),
     variant: variants[4],
     expiry: null,
+    createdAt: new Date(2024, 10 - 1, 6).toISOString(),
+    hardwareId: uuidv4(),
+    owner: fakeOwnerId,
+  },
+  {
+    uuid: uuidv4(),
+    product: fakeProducts[0]!.product,
+    key: uuidv4(),
+    variant: variants[2],
+    expiry: new Date(2024, 10 - 1, 5 + 7).toISOString(),
     createdAt: new Date(2024, 10 - 1, 5).toISOString(),
-    hardwareId: null,
-    owner: fakeOwner,
+    hardwareId: uuidv4(),
+    owner: fakeOwnerId,
   },
   {
     uuid: uuidv4(),
     product: fakeProducts[1]!.product,
     key: uuidv4(),
-    invoiceLink: uuidv4(),
-    variant: variants[3],
-    expiry: new Date(2024, 10 - 1, 4 + 30).toISOString(),
+    variant: variants[1],
+    expiry: new Date(2024, 10 - 1, 4 + 3).toISOString(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     hardwareId: uuidv4(),
-    owner: fakeOwner,
+    owner: fakeOwnerId,
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0].product,
+    product: fakeProducts[0]!.product,
     key: uuidv4(),
-    invoiceLink: uuidv4(),
     variant: variants[3],
-    expiry: new Date(2024, 10 - 1, 3 + 30).toISOString(),
+    expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),
     hardwareId: uuidv4(),
-    owner: fakeOwner,
+    owner: null,
+  },
+];
+
+export const fakeOrders: OrderType[] = [
+  {
+    uuid: uuidv4(),
+    purchasedBy: fakeOwnerId,
+    productKey: fakeProductKeys[1]!,
+    invoiceLink: uuidv4(),
+    createdAt: new Date(2024, 10 - 1, 8).toISOString(),
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0].product,
-    key: uuidv4(),
+    purchasedBy: fakeOwnerId,
+    productKey: fakeProductKeys[2]!,
     invoiceLink: uuidv4(),
-    variant: variants[0],
-    expiry: new Date(2024, 10 - 1, 11 + 1).toISOString(),
-    createdAt: new Date(2024, 10 - 1, 11).toISOString(),
-    hardwareId: uuidv4(),
-    owner: fakeOwner,
+    createdAt: new Date(2024, 10 - 1, 7).toISOString(),
+  },
+  {
+    uuid: uuidv4(),
+    purchasedBy: fakeOwnerId,
+    productKey: fakeProductKeys[3]!,
+    invoiceLink: uuidv4(),
+    createdAt: new Date(2024, 10 - 1, 7).toISOString(),
+  },
+  {
+    uuid: uuidv4(),
+    purchasedBy: fakeOwnerId,
+    productKey: fakeProductKeys[4]!,
+    invoiceLink: uuidv4(),
+    createdAt: new Date(2024, 10 - 1, 7).toISOString(),
+  },
+  {
+    uuid: uuidv4(),
+    purchasedBy: fakeOwnerId,
+    productKey: fakeProductKeys[5]!,
+    invoiceLink: uuidv4(),
+    createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
 ];
 
@@ -140,7 +161,7 @@ export const fakeUsers: UserType[] = [
     uuid: uuidv4(),
     role: "admin",
     email: "email_one@example.com",
-    keys: null,
+    orders: null,
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
   },
@@ -148,29 +169,15 @@ export const fakeUsers: UserType[] = [
     uuid: uuidv4(),
     role: "reseller",
     email: "email_two@example.com",
-    keys: null,
+    orders: null,
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
   },
   {
-    uuid: fakeOwner,
+    uuid: fakeOwnerId,
     role: "user",
     email: "email_three@example.com",
-    keys: [
-      {
-        uuid: uuidv4(),
-        product: fakeProducts[0]?.product,
-        key: uuidv4(),
-        invoiceLink: uuidv4(),
-        variant: variants[1],
-        expiry: new Date(
-          new Date().setDate(new Date().getDate()),
-        ).toISOString(),
-        createdAt: new Date(2024, 10 - 1, 7 + 1).toISOString(),
-        hardwareId: uuidv4(),
-        owner: fakeOwner,
-      },
-    ],
+    orders: fakeOrders,
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
@@ -178,7 +185,7 @@ export const fakeUsers: UserType[] = [
     uuid: uuidv4(),
     role: "user",
     email: "email_four@example.com",
-    keys: [],
+    orders: [],
     createdAt: new Date(2024, 10 - 1, 6).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 6).toISOString(),
   },
@@ -186,7 +193,7 @@ export const fakeUsers: UserType[] = [
     uuid: uuidv4(),
     role: "user",
     email: "email_five@example.com",
-    keys: [],
+    orders: [],
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
   },
@@ -194,7 +201,7 @@ export const fakeUsers: UserType[] = [
     uuid: uuidv4(),
     role: "user",
     email: "email_six@example.com",
-    keys: [],
+    orders: [],
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
   },
@@ -202,7 +209,7 @@ export const fakeUsers: UserType[] = [
     uuid: uuidv4(),
     role: "user",
     email: "email_seven@example.com",
-    keys: [],
+    orders: [],
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 3).toISOString(),
   },

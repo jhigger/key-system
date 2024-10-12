@@ -1,4 +1,4 @@
-import { type ProductKeyType } from "./productKey";
+import { type OrderType } from "./order";
 
 export const roles = ["admin", "user", "reseller"] as const;
 
@@ -8,7 +8,7 @@ export type UserType = {
   uuid: string;
   role: RoleType;
   email: string;
-  keys: ProductKeyType[] | null;
+  orders: OrderType[] | null;
   createdAt: string;
   updatedAt: string;
 };
