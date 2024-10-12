@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
-import { type PurchasedKeyType } from "~/types/purchasedKey";
+import { type ProductKeyType } from "~/types/productKey";
 import { type UserType } from "~/types/user";
 
 const fakeOwner = uuidv4();
@@ -44,7 +44,7 @@ export const fakeProducts: [ProductType, ...ProductType[]] = [
   },
 ];
 
-export const fakeOrders: PurchasedKeyType[] = [
+export const fakeOrders: ProductKeyType[] = [
   {
     uuid: uuidv4(),
     product: fakeProducts[0].product,

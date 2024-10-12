@@ -1,7 +1,7 @@
 import { fakeOrders } from "~/lib/fakeData";
-import { type PurchasedKeyType } from "~/types/purchasedKey";
+import { type ProductKeyType } from "~/types/productKey";
 
-export const keys: Partial<PurchasedKeyType>[] = fakeOrders.map(
+export const keys: Partial<ProductKeyType>[] = fakeOrders.map(
   ({ product, key, expiry, hardwareId }) => {
     return {
       product,

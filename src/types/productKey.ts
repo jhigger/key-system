@@ -1,6 +1,6 @@
 import { type PricingType } from "./pricing";
 
-export type PurchasedKeyType = {
+export type ProductKeyType = {
   uuid: string;
   product: string;
   key: string;

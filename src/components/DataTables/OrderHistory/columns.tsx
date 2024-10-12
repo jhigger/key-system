@@ -1,9 +1,9 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { filterFn, formatISOStringToDate } from "~/lib/utils";
-import { type PurchasedKeyType } from "~/types/purchasedKey";
+import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 
-export const columns: ColumnDef<Partial<PurchasedKeyType>>[] = [
+export const columns: ColumnDef<Partial<ProductKeyType>>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (

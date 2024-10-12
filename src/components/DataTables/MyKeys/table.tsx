@@ -1,11 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
-import { type PurchasedKeyType } from "~/types/purchasedKey";
+import { type ProductKeyType } from "~/types/productKey";
 import { DataTable } from "../../ui/data-table";
 import { getColumns } from "./columns";
 import { keys } from "./keys";
 
 const MyKeysTable = () => {
-  const [data, setData] = useState<Partial<PurchasedKeyType>[]>(keys);
+  const [data, setData] = useState<Partial<ProductKeyType>[]>(keys);
 
   const handleDelete = useCallback((hardwareId?: string | null) => {
     setData((prevData) =>

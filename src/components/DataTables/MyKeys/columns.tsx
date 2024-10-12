@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { filterFn, formatISOStringToDate } from "~/lib/utils";
-import { type PurchasedKeyType } from "~/types/purchasedKey";
+import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 import { Badge } from "../../ui/badge";
 
@@ -18,7 +18,7 @@ type TableProps = {
 
 export const getColumns = ({
   onDelete,
-}: TableProps): ColumnDef<Partial<PurchasedKeyType>>[] => [
+}: TableProps): ColumnDef<Partial<ProductKeyType>>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (

@@ -1,4 +1,4 @@
-import { type PurchasedKeyType } from "./purchasedKey";
+import { type ProductKeyType } from "./productKey";
 
 export const roles = ["admin", "user", "reseller"] as const;
 
@@ -8,7 +8,7 @@ export type UserType = {
   uuid: string;
   role: RoleType;
   email: string;
-  keys: PurchasedKeyType[] | null;
+  keys: ProductKeyType[] | null;
   createdAt: string;
   updatedAt: string;
 };
