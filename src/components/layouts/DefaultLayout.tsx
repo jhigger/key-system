@@ -1,11 +1,11 @@
 import Footer from "../Footer";
 import Header from "../Header";
 
-type DefaultLayoutProps = {
+type RootLayoutProps = {
   children: React.ReactNode;
 };
 
-const DefaultLayout = ({ children }: DefaultLayoutProps) => {
+const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <div className="flex h-full min-h-screen flex-col items-center bg-background text-foreground [&>*]:w-full">
       <Header />
@@ -17,4 +17,4 @@ const DefaultLayout = ({ children }: DefaultLayoutProps) => {
   );
 };
 
-export default DefaultLayout;
+export default RootLayout;

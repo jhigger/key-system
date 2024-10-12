@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import ProductKeys from "~/components/DataTables/ProductKeys";
 import Products from "~/components/DataTables/Products";
 import Users from "~/components/DataTables/Users";
-import DefaultLayout from "~/components/layouts/DefaultLayout";
+import RootLayout from "~/components/layouts/DefaultLayout";
 import TabsLayout, { type TabType } from "~/components/layouts/TabsLayout";
 import { useUserStore } from "~/state/user.store";
 
@@ -46,9 +46,9 @@ const Admin = () => {
         <title>Admin - CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
-      <DefaultLayout>
+      <RootLayout>
         {user?.role === "admin" && <TabsLayout path={PATH} tabs={ADMIN_TABS} />}
-      </DefaultLayout>
+      </RootLayout>
     </>
   );
 };

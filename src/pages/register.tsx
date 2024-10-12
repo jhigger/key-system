@@ -1,5 +1,5 @@
 import Head from "next/head";
-import DefaultLayout from "~/components/layouts/DefaultLayout";
+import RootLayout from "~/components/layouts/DefaultLayout";
 import { RegisterForm } from "~/components/RegisterForm";
 
 const Register = () => {
@@ -9,9 +9,9 @@ const Register = () => {
         <title>Register - CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
-      <DefaultLayout>
+      <RootLayout>
         <RegisterForm />
-      </DefaultLayout>
+      </RootLayout>
     </>
   );
 };

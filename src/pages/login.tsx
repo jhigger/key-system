@@ -1,5 +1,5 @@
 import Head from "next/head";
-import DefaultLayout from "~/components/layouts/DefaultLayout";
+import RootLayout from "~/components/layouts/DefaultLayout";
 import { LoginForm } from "~/components/LoginForm";
 
 const Login = () => {
@@ -9,9 +9,9 @@ const Login = () => {
         <title>Login - CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
-      <DefaultLayout>
+      <RootLayout>
         <LoginForm />
-      </DefaultLayout>
+      </RootLayout>
     </>
   );
 };

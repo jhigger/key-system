@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import MyKeys from "~/components/DataTables/MyKeys";
 import OrderHistory from "~/components/DataTables/OrderHistory";
-import DefaultLayout from "~/components/layouts/DefaultLayout";
+import RootLayout from "~/components/layouts/DefaultLayout";
 import TabsLayout, { type TabType } from "~/components/layouts/TabsLayout";
 import { useUserStore } from "~/state/user.store";
 
@@ -39,11 +39,11 @@ const Account = () => {
         <title>Account - CTX</title>
         <link rel="icon" href="/icon.png" />
       </Head>
-      <DefaultLayout>
+      <RootLayout>
         {user?.role !== "admin" && (
           <TabsLayout path={PATH} tabs={ACCOUNT_TABS} />
         )}
-      </DefaultLayout>
+      </RootLayout>
     </>
   );
 };
