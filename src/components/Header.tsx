@@ -85,7 +85,7 @@ const NavigationItems = () => {
     <>
       {user.role !== "admin" && (
         <Button
-          variant={pathname === "/" ? "outline" : "ghost"}
+          variant={pathname === "/" ? "secondary" : "ghost"}
           className="gap-2"
           asChild
         >
@@ -97,7 +97,9 @@ const NavigationItems = () => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant={pathname === "/account" ? "outline" : "ghost"}
+            variant={
+              ["/account", "/admin"].includes(pathname) ? "secondary" : "ghost"
+            }
             className="gap-2"
           >
             Account <CircleUser size={16} />
