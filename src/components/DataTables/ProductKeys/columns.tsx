@@ -1,5 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { Menu, Trash } from "lucide-react";
+import { Copy, Menu, Trash } from "lucide-react";
+import { toast } from "sonner";
 import DebouncedInput from "~/components/DebouncedInput";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -17,7 +18,12 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { fakeProducts } from "~/lib/fakeData";
-import { censorUUID, filterFn, formatISOStringToDate } from "~/lib/utils";
+import {
+  censorUUID,
+  copyToClipboard,
+  filterFn,
+  formatISOStringToDate,
+} from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductKeyType } from "~/types/productKey";
@@ -96,7 +102,22 @@ const KeyCell: React.FC<{
     );
   }
 
-  return censorUUID(value);
+  return (
+    <Button
+      variant={"ghost"}
+      size={"sm"}
+      className="-ml-3 min-w-full max-w-40 gap-2"
+      onClick={() =>
+        copyToClipboard(value)
+          .then(() => toast.success("Key copied to clipboard"))
+          .catch(() => toast.error("Failed to copy key"))
+      }
+      title={"Click to copy full key"}
+    >
+      <span className="truncate">{censorUUID(value)}</span>
+      {value && <Copy size={16} className="shrink-0 text-gray-500" />}
+    </Button>
+  );
 };
 
 type TableProps = {

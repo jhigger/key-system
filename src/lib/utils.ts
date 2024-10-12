@@ -57,3 +57,7 @@ export const censorUUID = (uuid: string) => {
   }
   return uuid.slice(0, -12) + "*".repeat(12);
 };
+
+export const copyToClipboard = (key: string) => {
+  return navigator.clipboard.writeText(key);
+};

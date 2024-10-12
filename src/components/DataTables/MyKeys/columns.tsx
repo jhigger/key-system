@@ -8,7 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { censorUUID, filterFn, formatISOStringToDate } from "~/lib/utils";
+import {
+  censorUUID,
+  copyToClipboard,
+  filterFn,
+  formatISOStringToDate,
+} from "~/lib/utils";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 import { Badge } from "../../ui/badge";
@@ -110,26 +115,24 @@ export const getColumns = ({
     ),
     cell: ({ row }) => {
       const { key } = row.original;
-      const censoredKey = key ? censorUUID(key) : "None";
 
-      const copyToClipboard = () => {
-        if (key) {
-          navigator.clipboard
-            .writeText(key)
-            .then(() => toast.success("Key copied to clipboard"))
-            .catch(() => toast.error("Failed to copy key"));
-        }
-      };
+      if (!key) return null;
 
       return (
-        <div
-          className="flex cursor-pointer items-center gap-2 rounded p-1 hover:bg-gray-100"
-          onClick={copyToClipboard}
-          title={key ? "Click to copy full key" : "No key available"}
+        <Button
+          variant={"ghost"}
+          size={"sm"}
+          className="-ml-3 min-w-full max-w-40 gap-2"
+          onClick={() =>
+            copyToClipboard(key)
+              .then(() => toast.success("Key copied to clipboard"))
+              .catch(() => toast.error("Failed to copy key"))
+          }
+          title={"Click to copy full key"}
         >
-          <span>{key ? censoredKey : "None"}</span>
-          {key && <Copy size={16} className="text-gray-500" />}
-        </div>
+          <span className="truncate">{censorUUID(key)}</span>
+          {key && <Copy size={16} className="shrink-0 text-gray-500" />}
+        </Button>
       );
     },
   },
@@ -140,8 +143,25 @@ export const getColumns = ({
     ),
     cell: ({ row }) => {
       const { hardwareId } = row.original;
-      const censoredHardwareId = hardwareId ? censorUUID(hardwareId) : "None";
-      return hardwareId ? censoredHardwareId : "None";
+
+      if (!hardwareId) return "None";
+
+      return (
+        <Button
+          variant={"ghost"}
+          size={"sm"}
+          className="-ml-3 min-w-full max-w-40 gap-2"
+          onClick={() =>
+            copyToClipboard(hardwareId)
+              .then(() => toast.success("Hardware ID copied to clipboard"))
+              .catch(() => toast.error("Failed to copy Hardware ID"))
+          }
+          title={"Click to copy full Hardware ID"}
+        >
+          <span className="truncate">{censorUUID(hardwareId)}</span>
+          <Copy size={16} className="shrink-0 text-gray-500" />
+        </Button>
+      );
     },
   },
   {
