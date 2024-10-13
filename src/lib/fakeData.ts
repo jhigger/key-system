@@ -167,6 +167,7 @@ export const fakeUsers: UserType[] = [
   {
     uuid: uuidv4(),
     role: "admin",
+    username: "admin",
     email: "email_one@example.com",
     orders: null,
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
@@ -175,6 +176,7 @@ export const fakeUsers: UserType[] = [
   {
     uuid: uuidv4(),
     role: "reseller",
+    username: "reseller1",
     email: "email_two@example.com",
     orders: null,
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
@@ -183,6 +185,7 @@ export const fakeUsers: UserType[] = [
   {
     uuid: fakeOwnerId,
     role: "user",
+    username: "user1",
     email: "email_three@example.com",
     orders: fakeOrders,
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
@@ -191,6 +194,7 @@ export const fakeUsers: UserType[] = [
   {
     uuid: uuidv4(),
     role: "user",
+    username: "user2",
     email: "email_four@example.com",
     orders: [],
     createdAt: new Date(2024, 10 - 1, 6).toISOString(),
@@ -199,6 +203,7 @@ export const fakeUsers: UserType[] = [
   {
     uuid: uuidv4(),
     role: "user",
+    username: "user3",
     email: "email_five@example.com",
     orders: [],
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
@@ -207,6 +212,7 @@ export const fakeUsers: UserType[] = [
   {
     uuid: uuidv4(),
     role: "user",
+    username: "user4",
     email: "email_six@example.com",
     orders: [],
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
@@ -215,6 +221,7 @@ export const fakeUsers: UserType[] = [
   {
     uuid: uuidv4(),
     role: "user",
+    username: "user5",
     email: "email_seven@example.com",
     orders: [],
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),

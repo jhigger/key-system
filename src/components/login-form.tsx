@@ -24,6 +24,7 @@ import {
 } from "./ui/form";
 
 const formSchema = z.object({
+  username: z.string().min(1, "Username is required"),
   email: z.string().email(),
   password: z.string(),
 });
@@ -32,6 +33,7 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      username: "",
       email: "",
       password: "",
     },
@@ -44,6 +46,7 @@ export function LoginForm() {
     setUser({
       uuid: fakeOwnerId,
       role: "user",
+      username: "dev",
       email: values.email,
       orders: [],
       createdAt: new Date().toISOString(),
@@ -67,6 +70,19 @@ export function LoginForm() {
             className="grid gap-4"
             noValidate
           >
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="extinct" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"

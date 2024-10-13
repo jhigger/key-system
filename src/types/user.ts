@@ -7,6 +7,7 @@ export type RoleType = (typeof roles)[number];
 export type UserType = {
   uuid: string;
   role: RoleType;
+  username: string;
   email: string;
   orders: OrderType[] | null;
   createdAt: string;
