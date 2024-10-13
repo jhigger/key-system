@@ -71,6 +71,12 @@ export const getColumns = (): ColumnDef<UserType>[] => [
     filterFn: dateFilterFn,
   },
   {
+    accessorKey: "username",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Username" />
+    ),
+  },
+  {
     accessorKey: "email",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email" />
