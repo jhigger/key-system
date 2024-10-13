@@ -13,9 +13,10 @@ const ProductKeysTable = () => {
   const columns = useMemo(
     () =>
       getColumns({
+        onEdit: editProductKey,
         onDelete: deleteProductKey,
       }),
-    [, deleteProductKey],
+    [editProductKey, deleteProductKey],
   );
 
   return (
@@ -23,7 +24,6 @@ const ProductKeysTable = () => {
       columns={columns}
       data={productKeys ?? []}
       handleAdd={(newRow) => addProductKey(newRow as ProductKeyType)}
-      handleEdit={editProductKey}
     />
   );
 };

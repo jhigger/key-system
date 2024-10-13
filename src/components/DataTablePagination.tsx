@@ -22,21 +22,21 @@ interface DataTablePaginationProps<TData> {
 const DataTablePagination = <TData,>({
   table,
 }: DataTablePaginationProps<TData>) => {
-  const { pagination } = useUIStore();
+  const { pageSize, setPageSize } = useUIStore();
 
   return (
-    <div className="flex w-full items-center justify-between">
+    <div className="flex w-full items-center justify-between px-2">
       <div className="flex w-full items-center space-x-6 lg:space-x-8">
         <div className="flex w-full items-center space-x-2">
           <p className="text-sm font-medium">Rows</p>
           <Select
-            value={`${table.getState().pagination.pageSize}`}
+            value={`${pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value));
+              setPageSize(Number(value));
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={pagination.pageSize} />
+              <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               {[5, 10, 20, 30, 40, 50].map((pageSize) => (

@@ -13,7 +13,8 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -33,7 +34,6 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   handleAdd?: (newRow: ProductType | ProductKeyType) => void;
-  handleEdit?: (updatedRow: TData) => void;
 }
 
 declare module "@tanstack/react-table" {
@@ -43,10 +43,6 @@ declare module "@tanstack/react-table" {
   }
   interface FilterMeta {
     itemRank: RankingInfo;
-  }
-  interface TableMeta<TData> {
-    updateData: (updatedRow: TData) => void;
-    handleEdit: (updatedRow: TData) => void;
   }
 }
 
@@ -83,7 +79,6 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   handleAdd,
-  handleEdit,
 }: DataTableProps<TData, TValue>) {
   const expiryColumn = columns.find(
     (column) => isAccessorColumn(column) && column.accessorKey === "expiry",
@@ -97,7 +92,18 @@ export function DataTable<TData, TValue>({
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
-  const { pagination, setPagination } = useUIStore();
+  const [pageIndex, setPageIndex] = useState(0);
+  const { pageSize, setPageSize } = useUIStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [router.asPath]);
+
+  const pagination = {
+    pageIndex,
+    pageSize,
+  };
 
   const table = useReactTable<TData>({
     data,
@@ -114,30 +120,22 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
-    onPaginationChange: setPagination,
+    onPaginationChange: (updater) => {
+      if (typeof updater === "function") {
+        const newPagination = updater(pagination);
+        setPageIndex(newPagination.pageIndex);
+        setPageSize(newPagination.pageSize);
+      } else {
+        setPageIndex(updater.pageIndex);
+        setPageSize(updater.pageSize);
+      }
+    },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    meta: {
-      handleEdit: (updatedRow: TData) => {
-        if (handleEdit) {
-          handleEdit(updatedRow);
-          // This line should now work without type errors
-          table.options.meta?.updateData(updatedRow);
-        }
-      },
-      updateData: (updatedRow: TData) => {
-        table.options.data = table.options.data.map((row) =>
-          row === updatedRow ? updatedRow : row,
-        );
-        table.resetRowSelection();
-        table.resetExpanded();
-      },
-    },
-    // Add this option to maintain row selection and pagination on data updates
     autoResetPageIndex: false,
   });
 

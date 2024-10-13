@@ -1,4 +1,4 @@
-import { type ColumnDef, type TableMeta } from "@tanstack/react-table";
+import { type ColumnDef } from "@tanstack/react-table";
 import { Copy, Menu, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -29,10 +29,6 @@ import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
-
-type ExtendedTableMeta = TableMeta<ProductKeyType> & {
-  handleEdit: (updatedRow: ProductKeyType) => void;
-};
 
 const ProductCell: React.FC<{
   value: string;
@@ -141,10 +137,12 @@ const KeyCell: React.FC<{
 };
 
 type TableProps = {
+  onEdit: (productKey: ProductKeyType) => void;
   onDelete: (uuid: string) => void;
 };
 
 export const getColumns = ({
+  onEdit,
   onDelete,
 }: TableProps): ColumnDef<ProductKeyType>[] => [
   {
@@ -173,15 +171,12 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
-    cell: ({ row, table }) => {
+    cell: ({ row }) => {
       const product: string = row.getValue("product");
       return (
         <ProductCell
           value={product}
-          onEdit={(value) => {
-            const updatedRow = { ...row.original, product: value };
-            (table.options.meta as ExtendedTableMeta)?.handleEdit(updatedRow);
-          }}
+          onEdit={(value) => onEdit({ ...row.original, product: value })}
         />
       );
     },
@@ -194,15 +189,12 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Variant" />
     ),
-    cell: ({ row, table }) => {
+    cell: ({ row }) => {
       const variant: PricingType["name"] = row.getValue("variant");
       return (
         <VariantCell
           value={variant}
-          onEdit={(value) => {
-            const updatedRow = { ...row.original, variant: value };
-            (table.options.meta as ExtendedTableMeta)?.handleEdit(updatedRow);
-          }}
+          onEdit={(value) => onEdit({ ...row.original, variant: value })}
         />
       );
     },
@@ -212,15 +204,12 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Key" />
     ),
-    cell: ({ row, table }) => {
+    cell: ({ row }) => {
       const key: string = row.getValue("key");
       return (
         <KeyCell
           value={key}
-          onEdit={(value) => {
-            const updatedRow = { ...row.original, key: value };
-            (table.options.meta as ExtendedTableMeta)?.handleEdit(updatedRow);
-          }}
+          onEdit={(value) => onEdit({ ...row.original, key: value })}
         />
       );
     },
