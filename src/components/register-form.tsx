@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import Loader from "./loader";
 import {
   Form,
   FormControl,
@@ -126,6 +127,7 @@ export function RegisterForm() {
               className="col-span-full"
               disabled={form.formState.isSubmitting}
             >
+              {form.formState.isSubmitting && <Loader />}
               Create an account
             </Button>
           </form>

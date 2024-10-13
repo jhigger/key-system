@@ -30,7 +30,7 @@ import { Switch } from "./ui/switch";
 
 type DataTableToolBarProps<TData> = {
   table: TableType<TData>;
-  handleAdd?: (newRow: ProductType | ProductKeyType) => void;
+  handleAdd?: (newRow: ProductType | ProductKeyType) => Promise<void>;
 };
 
 const DataTableToolBar = <TData,>({
@@ -111,18 +111,20 @@ const DataTableToolBar = <TData,>({
                     {isProductsPage && (
                       <ProductForm
                         ref={productFormRef}
-                        handleSubmit={(values) => {
-                          setShowForm(false);
-                          handleAdd?.(values);
+                        handleSubmit={async (values) => {
+                          await handleAdd?.(values).finally(() => {
+                            setShowForm(false);
+                          });
                         }}
                       />
                     )}
                     {isProductKeysPage && (
                       <ProductKeyForm
                         ref={productKeyFormRef}
-                        handleSubmit={(values) => {
-                          setShowForm(false);
-                          handleAdd?.(values);
+                        handleSubmit={async (values) => {
+                          await handleAdd?.(values).finally(() => {
+                            setShowForm(false);
+                          });
                         }}
                       />
                     )}

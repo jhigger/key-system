@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dices } from "lucide-react";
+import { Dices, Loader } from "lucide-react";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
@@ -164,7 +164,12 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting && <Loader />}
             Submit
           </Button>
         </form>

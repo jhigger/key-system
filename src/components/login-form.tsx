@@ -14,6 +14,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { fakeOwnerId } from "~/lib/fakeData";
 import { useUserStore } from "~/state/user.store";
+import Loader from "./loader";
 import {
   Form,
   FormControl,
@@ -105,6 +106,7 @@ export function LoginForm() {
               className="w-full"
               disabled={form.formState.isSubmitting}
             >
+              {form.formState.isSubmitting && <Loader />}
               Login
             </Button>
           </form>

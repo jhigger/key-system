@@ -16,7 +16,7 @@ const ProductsTable = () => {
     <DataTable
       columns={columns}
       data={products ?? []}
-      handleAdd={(newRow) => addProduct(newRow as ProductType)}
+      handleAdd={async (newRow) => addProduct(newRow as ProductType)}
     />
   );
 };

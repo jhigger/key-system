@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/form";
 import { type PricingType, variants } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
+import Loader from "./loader";
 import { Input } from "./ui/input";
 
 const pricingSchema = z
@@ -144,7 +145,12 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting && <Loader />}
             Submit
           </Button>
         </form>
