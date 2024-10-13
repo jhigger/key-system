@@ -1,5 +1,6 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, type TableMeta } from "@tanstack/react-table";
 import { Copy, Menu, Trash } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import DebouncedInput from "~/components/DebouncedInput";
 import { Badge } from "~/components/ui/badge";
@@ -21,7 +22,7 @@ import { fakeProducts } from "~/lib/fakeData";
 import {
   censorUUID,
   copyToClipboard,
-  filterFn,
+  dateFilterFn,
   formatISOStringToDate,
 } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
@@ -29,17 +30,28 @@ import { variants, type PricingType } from "~/types/pricing";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 
+type ExtendedTableMeta = TableMeta<ProductKeyType> & {
+  handleEdit: (updatedRow: ProductKeyType) => void;
+};
+
 const ProductCell: React.FC<{
   value: string;
   onEdit: (value: string) => void;
 }> = ({ value, onEdit }) => {
   const { editMode } = useUIStore();
+  const [currentProduct, setCurrentProduct] = useState<string>(value);
 
   if (editMode) {
     return (
-      <Select defaultValue={value} onValueChange={onEdit}>
+      <Select
+        value={currentProduct}
+        onValueChange={(newProduct) => {
+          setCurrentProduct(newProduct);
+          onEdit(newProduct);
+        }}
+      >
         <SelectTrigger className="w-[180px] capitalize">
-          <SelectValue placeholder="Select a variant" />
+          <SelectValue placeholder="Select a product" />
         </SelectTrigger>
         <SelectContent>
           {fakeProducts.map((product) => (
@@ -56,7 +68,7 @@ const ProductCell: React.FC<{
     );
   }
 
-  return value;
+  return currentProduct;
 };
 
 const VariantCell: React.FC<{
@@ -64,10 +76,18 @@ const VariantCell: React.FC<{
   onEdit: (value: PricingType["name"]) => void;
 }> = ({ value, onEdit }) => {
   const { editMode } = useUIStore();
+  const [currentVariant, setCurrentVariant] =
+    useState<PricingType["name"]>(value);
 
   if (editMode) {
     return (
-      <Select defaultValue={value} onValueChange={onEdit}>
+      <Select
+        value={currentVariant}
+        onValueChange={(newVariant: PricingType["name"]) => {
+          setCurrentVariant(newVariant);
+          onEdit(newVariant);
+        }}
+      >
         <SelectTrigger className="w-[180px] capitalize">
           <SelectValue placeholder="Select a variant" />
         </SelectTrigger>
@@ -82,7 +102,7 @@ const VariantCell: React.FC<{
     );
   }
 
-  return <Badge className="capitalize">{value}</Badge>;
+  return <Badge className="capitalize">{currentVariant}</Badge>;
 };
 
 const KeyCell: React.FC<{
@@ -121,14 +141,12 @@ const KeyCell: React.FC<{
 };
 
 type TableProps = {
-  onEdit: (productKey: Partial<ProductKeyType>) => void;
   onDelete: (uuid: string) => void;
 };
 
 export const getColumns = ({
-  onEdit,
   onDelete,
-}: TableProps): ColumnDef<Partial<ProductKeyType>>[] => [
+}: TableProps): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -148,19 +166,22 @@ export const getColumns = ({
         </div>
       );
     },
-    filterFn: filterFn,
+    filterFn: dateFilterFn,
   },
   {
     accessorKey: "product",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const product: string = row.getValue("product");
       return (
         <ProductCell
           value={product}
-          onEdit={(value) => onEdit({ ...row.original, product: value })}
+          onEdit={(value) => {
+            const updatedRow = { ...row.original, product: value };
+            (table.options.meta as ExtendedTableMeta)?.handleEdit(updatedRow);
+          }}
         />
       );
     },
@@ -173,12 +194,15 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Variant" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const variant: PricingType["name"] = row.getValue("variant");
       return (
         <VariantCell
           value={variant}
-          onEdit={(value) => onEdit({ ...row.original, variant: value })}
+          onEdit={(value) => {
+            const updatedRow = { ...row.original, variant: value };
+            (table.options.meta as ExtendedTableMeta)?.handleEdit(updatedRow);
+          }}
         />
       );
     },
@@ -188,12 +212,15 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Key" />
     ),
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const key: string = row.getValue("key");
       return (
         <KeyCell
           value={key}
-          onEdit={(value) => onEdit({ ...row.original, key: value })}
+          onEdit={(value) => {
+            const updatedRow = { ...row.original, key: value };
+            (table.options.meta as ExtendedTableMeta)?.handleEdit(updatedRow);
+          }}
         />
       );
     },

@@ -11,7 +11,7 @@ import {
 import {
   censorUUID,
   copyToClipboard,
-  filterFn,
+  dateFilterFn,
   formatISOStringToDate,
 } from "~/lib/utils";
 import { type ProductKeyType } from "~/types/productKey";
@@ -19,12 +19,12 @@ import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 import { Badge } from "../../ui/badge";
 
 type TableProps = {
-  onDelete: (hardwareId?: string | null) => void;
+  resetHardwareId: (hardwareId: string) => void;
 };
 
 export const getColumns = ({
-  onDelete,
-}: TableProps): ColumnDef<Partial<ProductKeyType>>[] => [
+  resetHardwareId,
+}: TableProps): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (
@@ -62,7 +62,7 @@ export const getColumns = ({
       // Compare dates
       return dateA.getTime() - dateB.getTime(); // Ascending order
     },
-    filterFn: filterFn,
+    filterFn: dateFilterFn,
   },
 
   {
@@ -171,6 +171,8 @@ export const getColumns = ({
       const { hardwareId, expiry } = row.original;
       const isExpired = expiry ? new Date(expiry) < new Date() : false;
 
+      if (!hardwareId) return null;
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -186,7 +188,7 @@ export const getColumns = ({
               <Button
                 variant={"destructive"}
                 size={"sm"}
-                onClick={() => onDelete(hardwareId)}
+                onClick={() => resetHardwareId(hardwareId)}
                 disabled={!hardwareId || isExpired}
               >
                 Reset HWID <Trash size={16} />

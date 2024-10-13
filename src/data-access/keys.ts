@@ -1,0 +1,30 @@
+import { fakeProductKeys } from "~/lib/fakeData";
+import { type ProductKeyType } from "~/types/productKey";
+
+export const getKeys = (userUUID?: string): ProductKeyType[] => {
+  return userUUID
+    ? fakeProductKeys.filter(({ owner }) => owner === userUUID)
+    : [];
+};
+
+export const addKey = (key: ProductKeyType) => {
+  fakeProductKeys.push(key);
+};
+
+export const resetHardwareId = (hardwareId: string): ProductKeyType => {
+  const index = fakeProductKeys.findIndex(
+    (key) => key.hardwareId === hardwareId,
+  );
+  if (index !== -1) {
+    const existingKey = fakeProductKeys[index];
+    if (existingKey) {
+      const updatedKey: ProductKeyType = {
+        ...existingKey,
+        hardwareId: null,
+      };
+      fakeProductKeys[index] = updatedKey;
+      return updatedKey;
+    }
+  }
+  throw new Error(`Key with hardwareId ${hardwareId} not found`);
+};

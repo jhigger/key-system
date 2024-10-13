@@ -1,4 +1,5 @@
 import { type ColumnDef } from "@tanstack/react-table";
+import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import {
   Select,
@@ -7,20 +8,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { filterFn, formatISOStringToDate } from "~/lib/utils";
+import { dateFilterFn, formatISOStringToDate } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { roles, type RoleType, type UserType } from "~/types/user";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 
 const RoleCell: React.FC<{
   value: RoleType;
-  onEdit: (value: RoleType) => void;
-}> = ({ value, onEdit }) => {
+  changeRole: (role: RoleType) => void;
+}> = ({ value, changeRole }) => {
   const { editMode } = useUIStore();
+  const [currentRole, setCurrentRole] = useState<RoleType>(value);
 
   if (editMode) {
     return (
-      <Select defaultValue={value} onValueChange={onEdit}>
+      <Select
+        value={currentRole}
+        onValueChange={(newRole) => {
+          setCurrentRole(newRole as RoleType);
+          changeRole(newRole as RoleType);
+        }}
+      >
         <SelectTrigger className="w-[180px] capitalize">
           <SelectValue placeholder="Select a role" />
         </SelectTrigger>
@@ -35,16 +43,14 @@ const RoleCell: React.FC<{
     );
   }
 
-  return <Badge className="capitalize">{value}</Badge>;
+  return <Badge className="capitalize">{currentRole}</Badge>;
 };
 
 type TableProps = {
-  onEdit: (product: Partial<UserType>) => void;
+  editUser: (user: UserType) => void;
 };
 
-export const getColumns = ({
-  onEdit,
-}: TableProps): ColumnDef<Partial<UserType>>[] => [
+export const getColumns = ({ editUser }: TableProps): ColumnDef<UserType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -63,7 +69,7 @@ export const getColumns = ({
         </div>
       );
     },
-    filterFn: filterFn,
+    filterFn: dateFilterFn,
   },
   {
     accessorKey: "email",
@@ -81,7 +87,7 @@ export const getColumns = ({
       return (
         <RoleCell
           value={role}
-          onEdit={(value) => onEdit({ ...row.original, role: value })}
+          changeRole={(newRole) => editUser({ ...row.original, role: newRole })}
         />
       );
     },

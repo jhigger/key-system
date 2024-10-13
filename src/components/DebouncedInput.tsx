@@ -1,4 +1,9 @@
-import { useEffect, useState, type InputHTMLAttributes } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type InputHTMLAttributes,
+} from "react";
 import { Input } from "./ui/input";
 
 export type DebouncedInputProps<T extends string | number> = {
@@ -19,15 +24,24 @@ function DebouncedInput<T extends string | number>({
     setValue(initialValue);
   }, [initialValue]);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (value !== initialValue) {
+  const debouncedOnChange = useCallback(
+    (value: T) => {
+      const handler = setTimeout(() => {
         onChange(value);
-      }
-    }, debounce);
+      }, debounce);
 
-    return () => clearTimeout(timeout);
-  }, [value, onChange, debounce, initialValue]);
+      return () => {
+        clearTimeout(handler);
+      };
+    },
+    [onChange, debounce],
+  );
+
+  useEffect(() => {
+    if (value !== initialValue) {
+      return debouncedOnChange(value);
+    }
+  }, [value, initialValue, debouncedOnChange]);
 
   return (
     <Input

@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import * as z from "zod";
 import { Button } from "~/components/ui/button";
@@ -76,7 +75,6 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
         name: values.product,
       };
       handleSubmit(product);
-      toast.success("Product has been added successfully.");
     };
 
     return (

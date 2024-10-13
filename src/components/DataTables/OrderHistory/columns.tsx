@@ -1,9 +1,9 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { filterFn, formatISOStringToDate } from "~/lib/utils";
-import { type ProductKeyType } from "~/types/productKey";
+import { dateFilterFn, formatISOStringToDate } from "~/lib/utils";
+import { type OrderTypeForTable } from "~/types/order";
 import { DataTableColumnHeader } from "../../DataTableColumnHeader";
 
-export const columns: ColumnDef<Partial<ProductKeyType>>[] = [
+export const columns: ColumnDef<OrderTypeForTable>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -23,7 +23,7 @@ export const columns: ColumnDef<Partial<ProductKeyType>>[] = [
         </div>
       );
     },
-    filterFn: filterFn,
+    filterFn: dateFilterFn,
   },
   {
     accessorKey: "product",

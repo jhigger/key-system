@@ -5,7 +5,7 @@ import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { type UserType } from "~/types/user";
 
-const fakeOwnerId = uuidv4();
+export const fakeOwnerId = "67dd6c56-29a6-46c7-a038-33f7e37fc72a";
 
 export const DEFAULT_PRICING: PricingType[] = [
   { name: "1 Day", value: "1.5" },
@@ -54,7 +54,7 @@ export const fakeProductKeys: ProductKeyType[] = [
     expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
-    hardwareId: uuidv4(),
+    hardwareId: null,
     owner: null,
   },
   {
@@ -65,7 +65,7 @@ export const fakeProductKeys: ProductKeyType[] = [
     expiry: new Date(2024, 10 - 1, 8 + 30).toISOString(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
-    hardwareId: uuidv4(),
+    hardwareId: "b81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
   },
   {
@@ -76,7 +76,7 @@ export const fakeProductKeys: ProductKeyType[] = [
     expiry: new Date(2024, 10 - 1, 7 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 7).toISOString(),
-    hardwareId: uuidv4(),
+    hardwareId: "c81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
   },
   {
@@ -87,7 +87,7 @@ export const fakeProductKeys: ProductKeyType[] = [
     expiry: null,
     createdAt: new Date(2024, 10 - 1, 6).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 6).toISOString(),
-    hardwareId: uuidv4(),
+    hardwareId: "d81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
   },
   {
@@ -98,7 +98,7 @@ export const fakeProductKeys: ProductKeyType[] = [
     expiry: new Date(2024, 10 - 1, 5 + 7).toISOString(),
     createdAt: new Date(2024, 10 - 1, 5).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 5).toISOString(),
-    hardwareId: uuidv4(),
+    hardwareId: "e81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
   },
   {
@@ -109,7 +109,7 @@ export const fakeProductKeys: ProductKeyType[] = [
     expiry: new Date(2024, 10 - 1, 4 + 3).toISOString(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
-    hardwareId: uuidv4(),
+    hardwareId: "f81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
   },
   {
@@ -120,7 +120,7 @@ export const fakeProductKeys: ProductKeyType[] = [
     expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 3).toISOString(),
-    hardwareId: uuidv4(),
+    hardwareId: null,
     owner: null,
   },
 ];

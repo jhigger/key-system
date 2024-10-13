@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { filterFn, formatISOStringToDate, formatPrice } from "~/lib/utils";
+import { dateFilterFn, formatISOStringToDate, formatPrice } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
@@ -88,14 +88,14 @@ const ProductCell: React.FC<{
 };
 
 type TableProps = {
-  onEdit: (product: Partial<ProductType>) => void;
+  onEdit: (product: ProductType) => void;
   onDelete: (uuid: string) => void;
 };
 
 export const getColumns = ({
   onEdit,
   onDelete,
-}: TableProps): ColumnDef<Partial<ProductType>>[] => [
+}: TableProps): ColumnDef<ProductType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -115,7 +115,7 @@ export const getColumns = ({
         </div>
       );
     },
-    filterFn: filterFn,
+    filterFn: dateFilterFn,
   },
   {
     accessorKey: "name",
@@ -135,7 +135,7 @@ export const getColumns = ({
       return value.includes(row.getValue(id));
     },
   },
-  ...variants.map<ColumnDef<Partial<ProductType>>>((name) => {
+  ...variants.map<ColumnDef<ProductType>>((name) => {
     return {
       accessorKey: name,
       header: ({ column }) => (

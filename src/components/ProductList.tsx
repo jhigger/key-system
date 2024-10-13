@@ -83,17 +83,16 @@ const ProductList = () => {
 
     // Combine similar price levels
     const cart = filteredData.map((product) => {
-      const priceGroups = product.keys.reduce(
-        (acc, key) => {
-          const price = key.price;
-          if (!acc[price]) {
-            acc[price] = { quantity: 0 };
-          }
-          acc[price].quantity += key.quantity; // Sum quantities for the same price
-          return acc;
-        },
-        {} as Record<string, { quantity: number }>,
-      );
+      const priceGroups = product.keys.reduce<
+        Record<string, { quantity: number }>
+      >((acc, key) => {
+        const price = key.price;
+        if (!acc[price]) {
+          acc[price] = { quantity: 0 };
+        }
+        acc[price].quantity += key.quantity; // Sum quantities for the same price
+        return acc;
+      }, {});
 
       return {
         name: product.productName,

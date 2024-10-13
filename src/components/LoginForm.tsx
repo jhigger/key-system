@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { fakeOwnerId } from "~/lib/fakeData";
 import { useUserStore } from "~/state/user.store";
 import {
   Form,
@@ -41,7 +42,7 @@ export function LoginForm() {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.table(values);
     setUser({
-      uuid: "1",
+      uuid: fakeOwnerId,
       role: "user",
       email: values.email,
       orders: [],

@@ -1,26 +1,25 @@
-import { useCallback, useMemo, useState } from "react";
-import { type ProductKeyType } from "~/types/productKey";
+import { useMemo } from "react";
+import useMyKeys from "~/hooks/useMyKeys";
+import { useUserStore } from "~/state/user.store";
 import { DataTable } from "../../ui/data-table";
 import { getColumns } from "./columns";
-import { keys } from "./keys";
 
 const MyKeysTable = () => {
-  const [data, setData] = useState<Partial<ProductKeyType>[]>(keys);
-
-  const handleDelete = useCallback((hardwareId?: string | null) => {
-    setData((prevData) =>
-      prevData.map((item) =>
-        item.hardwareId === hardwareId ? { ...item, hardwareId: null } : item,
-      ),
-    );
-  }, []);
+  const { user } = useUserStore();
+  const {
+    query: { data: keys },
+    mutation: { mutate },
+  } = useMyKeys(user?.uuid);
 
   const columns = useMemo(
-    () => getColumns({ onDelete: handleDelete }),
-    [handleDelete],
+    () =>
+      getColumns({
+        resetHardwareId: mutate,
+      }),
+    [mutate],
   );
 
-  return <DataTable columns={columns} data={data} />;
+  return <DataTable columns={columns} data={keys ?? []} />;
 };
 
 export default MyKeysTable;

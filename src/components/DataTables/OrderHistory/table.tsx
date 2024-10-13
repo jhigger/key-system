@@ -1,8 +1,12 @@
+import { type OrderTypeForTable } from "~/types/order";
 import { DataTable } from "../../ui/data-table";
 import { columns } from "./columns";
-import { orders } from "./orders";
 
-const OrderHistoryTable = () => {
+type OrderHistoryTableProps = {
+  orders: OrderTypeForTable[];
+};
+
+const OrderHistoryTable = ({ orders }: OrderHistoryTableProps) => {
   return <DataTable columns={columns} data={orders} />;
 };
 

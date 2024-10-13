@@ -35,7 +35,7 @@ export const formatISOStringToDate = (
   return { formattedDate, formattedTime };
 };
 
-export const filterFn = <T extends Record<string, unknown>>(
+export const dateFilterFn = <T extends Record<string, unknown>>(
   row: Row<T>,
   columnId: string,
   filterValue: [Date, Date],

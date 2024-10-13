@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { type UserType } from "~/types/user";
+import { useUIStore } from "./ui.store";
 
 type UserStore = {
   user: UserType | null;
@@ -17,7 +18,10 @@ export const useUserStore = create<UserStore>()(
       isLoading: true,
       setUser: (user) => set({ user }),
       setIsLoading: (isLoading) => set({ isLoading }),
-      logout: () => set({ user: null }),
+      logout: () => {
+        set({ user: null });
+        useUIStore.getState().resetPagination();
+      },
     }),
     {
       name: "user-storage", // name of the item in the storage (must be unique)

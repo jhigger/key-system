@@ -1,38 +1,31 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
+import useProducts from "~/hooks/useProducts";
 import { type ProductType } from "~/types/product";
 import { DataTable } from "../../ui/data-table";
 import { getColumns } from "./columns";
-import { products } from "./products";
 
 const ProductsTable = () => {
-  const [data, setData] = useState<Partial<ProductType>[]>(products);
-
-  const handleAdd = useCallback((newRow: Partial<ProductType>) => {
-    setData((prevData) => [...prevData, newRow]);
-  }, []);
-
-  const handleEdit = useCallback((product: Partial<ProductType>) => {
-    setData((prevData) =>
-      prevData.map((item) =>
-        item.uuid === product.uuid ? { ...item, ...product } : item,
-      ),
-    );
-  }, []);
-
-  const handleDelete = useCallback((uuid: string) => {
-    setData((prevData) => prevData.filter((item) => item.uuid !== uuid));
-  }, []);
+  const {
+    query: { data: products },
+    mutation: { addProduct, editProduct, deleteProduct },
+  } = useProducts();
 
   const columns = useMemo(
     () =>
       getColumns({
-        onEdit: handleEdit,
-        onDelete: handleDelete,
+        onEdit: editProduct,
+        onDelete: deleteProduct,
       }),
-    [handleEdit, handleDelete],
+    [editProduct, deleteProduct],
   );
 
-  return <DataTable columns={columns} data={data} handleAdd={handleAdd} />;
+  return (
+    <DataTable
+      columns={columns}
+      data={products ?? []}
+      handleAdd={(newRow) => addProduct(newRow as ProductType)}
+    />
+  );
 };
 
 export default ProductsTable;
