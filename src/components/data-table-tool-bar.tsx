@@ -2,10 +2,11 @@ import { type Table as TableType } from "@tanstack/react-table";
 import { Ban, Eye, FilePenLine, PackagePlus, Search } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
+import useProducts from "~/hooks/useProducts";
 import { fakeProducts } from "~/lib/fakeData";
+import { formatDuration } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { useUserStore } from "~/state/user.store";
-import { variants } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { roles } from "~/types/user";
@@ -37,19 +38,6 @@ const DataTableToolBar = <TData,>({
   table,
   handleAdd,
 }: DataTableToolBarProps<TData>) => {
-  const productColumn = table
-    .getAllColumns()
-    .find((column) => column.id === "product");
-  const statusColumn = table
-    .getAllColumns()
-    .find((column) => column.id === "status");
-  const variantColumn = table
-    .getAllColumns()
-    .find((column) => column.id === "variant");
-  const roleColumn = table
-    .getAllColumns()
-    .find((column) => column.id === "role");
-
   const { user } = useUserStore();
   const { editMode, toggleEditMode } = useUIStore();
   const { asPath } = useRouter();
@@ -59,6 +47,9 @@ const DataTableToolBar = <TData,>({
   const isProductKeysPage = asPath === "/admin#product-keys";
   const productFormRef = useRef<ProductFormRef>(null);
   const productKeyFormRef = useRef<ProductKeyFormRef>(null);
+  const {
+    query: { data: products },
+  } = useProducts();
 
   useEffect(() => {
     if (showForm) {
@@ -71,6 +62,21 @@ const DataTableToolBar = <TData,>({
       }, 100);
     }
   }, [showForm, isProductsPage, isProductKeysPage]);
+
+  const productColumn = table
+    .getAllColumns()
+    .find(
+      (column) => column.id === "product" && asPath !== "/admin#product-keys",
+    );
+  const variantColumn = table
+    .getAllColumns()
+    .find((column) => column.id === "variant");
+  const statusColumn = table
+    .getAllColumns()
+    .find((column) => column.id === "status");
+  const roleColumn = table
+    .getAllColumns()
+    .find((column) => column.id === "role");
 
   return (
     <div className="flex flex-col gap-2">
@@ -171,6 +177,28 @@ const DataTableToolBar = <TData,>({
             }))}
           />
         )}
+        {variantColumn && (
+          <DataTableFacetedFilter
+            column={variantColumn}
+            title="Variant"
+            options={
+              products?.reduce(
+                (acc, product) => {
+                  product.pricing?.forEach((pricing) => {
+                    if (!acc.some((item) => item.value === pricing.duration)) {
+                      acc.push({
+                        label: formatDuration(pricing.duration),
+                        value: pricing.duration,
+                      });
+                    }
+                  });
+                  return acc;
+                },
+                [] as { label: string; value: number }[],
+              ) ?? []
+            }
+          />
+        )}
         {statusColumn && (
           <DataTableFacetedFilter
             column={statusColumn}
@@ -179,16 +207,6 @@ const DataTableToolBar = <TData,>({
               { label: "Active", value: "active" },
               { label: "Expired", value: "expired" },
             ]}
-          />
-        )}
-        {variantColumn && (
-          <DataTableFacetedFilter
-            column={variantColumn}
-            title="Variant"
-            options={variants.map((variant) => ({
-              label: variant,
-              value: variant,
-            }))}
           />
         )}
         {roleColumn && (

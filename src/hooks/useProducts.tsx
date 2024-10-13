@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   addProduct,
+  deletePricing,
   deleteProduct,
   editProduct,
   getProducts,
@@ -122,6 +123,58 @@ const useProducts = () => {
     },
   });
 
+  const deletePricingMutation = useMutation({
+    mutationFn: async ({
+      productUuid,
+      pricingUuid,
+    }: {
+      productUuid: string;
+      pricingUuid: string;
+    }) => {
+      return deletePricing(productUuid, pricingUuid);
+    },
+    onMutate: async ({ pricingUuid }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["products"] });
+
+      // Snapshot the previous value
+      const previousProducts = queryClient.getQueryData<ProductType[]>([
+        "products",
+      ]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData<ProductType[]>(["products"], (old) =>
+        old
+          ? old.map((product) =>
+              product.pricing.find((p) => p.uuid === pricingUuid)
+                ? {
+                    ...product,
+                    pricing: product.pricing.filter(
+                      (p) => p.uuid !== pricingUuid,
+                    ),
+                  }
+                : product,
+            )
+          : [],
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousProducts };
+    },
+    onError: (err, data, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      queryClient.setQueryData(["products"], context?.previousProducts);
+      toast.error("Failed to delete pricing");
+    },
+    onSettled: () => {
+      // Always refetch after error or success:
+      void queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+    onSuccess: () => {
+      toast.success("Pricing deleted successfully");
+    },
+  });
+
   return {
     query,
     mutation: {
@@ -139,6 +192,7 @@ const useProducts = () => {
         }
       },
       deleteProduct: deleteProductMutation.mutate,
+      deletePricing: deletePricingMutation.mutate,
     },
   };
 };

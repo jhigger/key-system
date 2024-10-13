@@ -10,8 +10,8 @@ import {
 } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { DEFAULT_PRICING, fakeProducts } from "~/lib/fakeData";
-import { formatPrice } from "~/lib/utils";
+import { fakeProducts } from "~/lib/fakeData";
+import { formatDuration, formatPrice } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
 import { type ProductType } from "~/types/product";
 import PleaseLoginToView from "./please-login-to-view";
@@ -35,7 +35,7 @@ const productSchema = z.object({
           quantity: z
             .number({ invalid_type_error: "Quantity must be a number" })
             .min(1, { message: "Quantity must be at least 1" }),
-          price: z.string().min(1, { message: "Price is required" }),
+          price: z.number().min(1, { message: "Price is required" }),
         }),
       ),
     }),
@@ -113,9 +113,7 @@ const ProductList = () => {
   const addNewProduct = () => {
     const newProduct: ProductType = {
       name: "New Product",
-      value: "new-product",
-      pricing: DEFAULT_PRICING,
-      stock: 999,
+      pricing: [{ uuid: uuidv4(), duration: 0, value: 1, stock: 999 }],
       uuid: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -238,7 +236,13 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
         <div>
           🔑 Product: <b>{product.name}</b>
         </div>
-        <div>{product.stock} Keys Left</div>
+        <div>
+          {product.pricing.reduce((acc, curr) => acc + curr.stock, 0)} Key
+          {product.pricing.reduce((acc, curr) => acc + curr.stock, 0) > 1
+            ? "s"
+            : ""}{" "}
+          Left
+        </div>
       </CardHeader>
       <CardContent className="space-y-6 divide-y divide-dashed md:space-y-0 md:divide-y-0">
         {fields.map((field, index) => (
@@ -249,16 +253,16 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
               product={product}
               subtotal={calculateSubtotal(
                 formValues[index]?.quantity ?? 1,
-                formValues[index]?.price ?? "0",
+                formValues[index]?.price.toString() ?? "0",
               )}
               productIndex={productIndex}
             />
             {/* Remove KeyRow Button */}
             <Button
               type="button"
-              className="col-span-1 shrink-0 text-destructive hover:underline"
+              className="col-span-1 shrink-0 hover:bg-destructive/80"
               onClick={() => remove(index)}
-              variant={"outline"}
+              variant={"ghost"}
               size={"icon"}
             >
               <Trash2 className="size-4" />
@@ -274,10 +278,14 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
           onClick={() =>
             append({
               quantity: 1,
-              price: product.pricing?.[0]?.value ?? "0",
+              price: product.pricing?.[0]?.value ?? 0,
             })
           }
-          disabled={product.stock === 0 || totalQuantityAdded >= product.stock}
+          disabled={
+            product.pricing.reduce((acc, curr) => acc + curr.stock, 0) === 0 ||
+            totalQuantityAdded >=
+              product.pricing.reduce((acc, curr) => acc + curr.stock, 0)
+          }
         >
           ➕ Add Key
         </Button>
@@ -309,7 +317,8 @@ const KeyRow = ({ product, subtotal, index, productIndex }: KeyRowProps) => {
 
   // Maximum allowable quantity for this row
   const maxQuantityForRow =
-    product.stock - (totalQuantityAdded - (formValues[index]?.quantity ?? 0));
+    product.pricing.reduce((acc, curr) => acc + curr.stock, 0) -
+    (totalQuantityAdded - (formValues[index]?.quantity ?? 0));
 
   const handleQuantityChange = (
     field: {
@@ -323,7 +332,11 @@ const KeyRow = ({ product, subtotal, index, productIndex }: KeyRowProps) => {
       return field.onChange(numericValue);
     }
     // Prevent increasing the quantity if total already meets/exceeds stock
-    if (totalQuantityAdded >= product.stock && numericValue > field.value) {
+    if (
+      totalQuantityAdded >=
+        product.pricing.reduce((acc, curr) => acc + curr.stock, 0) &&
+      numericValue > field.value
+    ) {
       return; // Do not increase the quantity
     }
     // Ensure quantity does not exceed available stock
@@ -348,7 +361,7 @@ const KeyRow = ({ product, subtotal, index, productIndex }: KeyRowProps) => {
               placeholder="Quantity"
               type="number"
               min={1}
-              max={product.stock}
+              max={product.pricing.reduce((acc, curr) => acc + curr.stock, 0)}
               onChange={(e) => {
                 const value = e.target.value;
                 // Convert the value to a number
@@ -371,14 +384,20 @@ const KeyRow = ({ product, subtotal, index, productIndex }: KeyRowProps) => {
         control={control}
         render={({ field }) => (
           <div className="flex flex-col">
-            <Select value={field.value} onValueChange={field.onChange}>
+            <Select
+              value={field.value.toString()}
+              onValueChange={(value) => field.onChange(Number(value))}
+            >
               <SelectTrigger className="col-span-1">
                 <SelectValue placeholder="Select Price" />
               </SelectTrigger>
               <SelectContent>
                 {product.pricing.map((price) => (
-                  <SelectItem key={price.name} value={price.value}>
-                    {`${price.name} - ${price.value}`}
+                  <SelectItem
+                    key={price.duration}
+                    value={price.value.toString()}
+                  >
+                    {`${formatDuration(price.duration)} - $${price.value}`}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -1,7 +1,18 @@
 import { type ColumnDef, type Row } from "@tanstack/react-table";
-import { Menu, Trash } from "lucide-react";
+import { Menu, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import DebouncedInput from "~/components/debounced-input";
+import ProductForm, { type ProductFormRef } from "~/components/product-form";
 import { Button } from "~/components/ui/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "~/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,80 +20,133 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import useProducts from "~/hooks/useProducts";
-import { dateFilterFn, formatISOStringToDate, formatPrice } from "~/lib/utils";
+import {
+  dateFilterFn,
+  formatDuration,
+  formatISOStringToDate,
+  formatPrice,
+} from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
-import { variants, type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
-const PricingCell: React.FC<{
-  name: PricingType["name"];
+const DurationCell: React.FC<{
+  pricing: ProductType["pricing"];
   row: Row<ProductType>;
-}> = ({ name, row }) => {
+}> = ({ pricing, row }) => {
   const { editMode } = useUIStore();
   const {
     mutation: { editProduct },
   } = useProducts();
 
-  const pricing = row.original.pricing;
-  if (!pricing) return null;
+  return (
+    <>
+      {pricing.map((p) => (
+        <div
+          key={p.uuid}
+          className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
+        >
+          {editMode ? (
+            <DebouncedInput
+              type="number"
+              min="0"
+              step="1"
+              value={p.duration}
+              onChange={(value) => {
+                editProduct({
+                  ...row.original,
+                  pricing: pricing.map((item) =>
+                    item.uuid === p.uuid
+                      ? {
+                          ...item,
+                          duration: Number(value),
+                        }
+                      : item,
+                  ),
+                });
+              }}
+              className="w-20"
+            />
+          ) : (
+            formatDuration(p.duration)
+          )}
+        </div>
+      ))}
+    </>
+  );
+};
 
-  const variantPricing = pricing.find((p) => p.name.startsWith(name));
-  if (!variantPricing) return null;
+const PricingCell: React.FC<{
+  pricing: ProductType["pricing"];
+  row: Row<ProductType>;
+}> = ({ pricing, row }) => {
+  const { editMode } = useUIStore();
+  const {
+    mutation: { editProduct },
+  } = useProducts();
 
-  const price = formatPrice(Number(variantPricing?.value));
-
-  if (editMode) {
-    return (
-      <DebouncedInput
-        type="number"
-        min="0"
-        step="0.01"
-        value={variantPricing?.value}
-        onChange={(value) => {
-          const numValue = Math.max(0, Number(value));
-          editProduct({
-            ...row.original,
-            pricing: pricing.map((p) =>
-              p.name.startsWith(name)
-                ? { ...p, value: numValue.toString() }
-                : p,
-            ),
-          });
-        }}
-        className="w-20"
-      />
-    );
-  }
-
-  return price;
+  return (
+    <>
+      {pricing.map((p) => (
+        <div
+          key={p.uuid}
+          className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
+        >
+          {editMode ? (
+            <DebouncedInput
+              type="number"
+              min="0"
+              step="0.01"
+              value={p.value}
+              onChange={(value) => {
+                const numValue = Math.max(0, Number(value));
+                editProduct({
+                  ...row.original,
+                  pricing: pricing.map((item) =>
+                    item.uuid === p.uuid ? { ...item, value: numValue } : item,
+                  ),
+                });
+              }}
+              className="w-20"
+            />
+          ) : (
+            formatPrice(Number(p.value))
+          )}
+        </div>
+      ))}
+    </>
+  );
 };
 
 const StockCell: React.FC<{
-  row: Row<ProductType>;
-}> = ({ row }) => {
+  pricing: ProductType["pricing"];
+}> = ({ pricing }) => {
   const { editMode } = useUIStore();
-  const {
-    mutation: { editProduct },
-  } = useProducts();
 
-  if (editMode) {
-    return (
-      <DebouncedInput
-        type="number"
-        min="0"
-        step="1"
-        value={row.original.stock}
-        onChange={(value) => {
-          const newValue = Math.max(0, Math.floor(Number(value)));
-          editProduct({ ...row.original, stock: newValue });
-        }}
-        className="w-20"
-      />
-    );
-  }
-
-  return row.original.stock;
+  return (
+    <>
+      {pricing.map((p) => (
+        <div
+          key={p.uuid}
+          className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
+        >
+          {editMode ? (
+            <DebouncedInput
+              type="number"
+              min="0"
+              step="1"
+              value={p.stock ?? 0}
+              onChange={() => undefined}
+              className="w-20"
+              disabled
+            />
+          ) : (
+            (p.stock ?? 0)
+          )}
+        </div>
+      ))}
+    </>
+  );
 };
 
 const ProductCell: React.FC<{
@@ -112,32 +176,107 @@ const ActionsCell: React.FC<{
 }> = ({ row }) => {
   const { uuid } = row.original;
   const {
-    mutation: { deleteProduct },
+    mutation: { deleteProduct, deletePricing, editProduct },
   } = useProducts();
+  const { editMode } = useUIStore();
+  const [showForm, setShowForm] = useState(false);
+  const productKeyFormRef = useRef<ProductFormRef>(null);
 
-  if (!uuid) return null;
+  useEffect(() => {
+    if (showForm) {
+      setTimeout(() => {
+        productKeyFormRef.current?.focus();
+      }, 100);
+    }
+  }, [showForm]);
+
+  if (editMode) {
+    return (
+      <div className="-ml-4 flex flex-col whitespace-nowrap">
+        {row.original.pricing.map((pricing) => (
+          <div
+            key={pricing.uuid}
+            className="border-b py-2 pl-4 transition-colors last:border-b-0"
+          >
+            <Button
+              variant="destructive"
+              onClick={() =>
+                deletePricing({
+                  productUuid: row.original.uuid,
+                  pricingUuid: pricing.uuid,
+                })
+              }
+              className="gap-2"
+            >
+              Delete <Trash2 size={16} />
+            </Button>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"} size={"icon"} className="gap-2">
+        <Button variant="ghost" size="icon" className="gap-2">
           <Menu size={16} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent className="flex flex-col gap-1">
+        <DropdownMenuItem
+          onClick={() => setShowForm(true)}
+          className="flex w-full justify-between gap-4 leading-normal"
+          asChild
+        >
+          <Button variant={"ghost"} className="justify-between gap-2 px-2">
+            Edit Pricing <Pencil size={16} />
+          </Button>
+        </DropdownMenuItem>
         <DropdownMenuItem
           className="flex w-full justify-between gap-4 leading-normal"
           asChild
         >
           <Button
-            variant={"destructive"}
-            size={"sm"}
+            variant="destructive"
+            size="sm"
             onClick={() => deleteProduct(uuid)}
           >
-            Delete <Trash size={16} />
+            Delete <Trash2 size={16} />
           </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <Drawer open={showForm} onOpenChange={setShowForm}>
+        <DrawerContent>
+          <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
+            <div className="mx-auto w-full max-w-screen-sm">
+              <DrawerHeader>
+                <DrawerTitle>Add a new pricing</DrawerTitle>
+                <DrawerDescription>
+                  Click submit when you&apos;re done or cancel to discard
+                  changes.
+                </DrawerDescription>
+              </DrawerHeader>
+              <ProductForm
+                ref={productKeyFormRef}
+                handleSubmit={(values) => {
+                  editProduct({
+                    ...row.original,
+                    pricing: values.pricing,
+                  });
+                  setShowForm(false);
+                }}
+                initialValues={row.original}
+              />
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </DropdownMenu>
   );
 };
@@ -174,26 +313,23 @@ export const getColumns = (): ColumnDef<ProductType>[] => [
       return value.includes(row.getValue(id));
     },
   },
-  ...variants.map<ColumnDef<ProductType>>((name) => {
-    return {
-      accessorKey: name,
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={name} />
-      ),
-      cell: ({ row }) => <PricingCell name={name} row={row} />,
-      enableSorting: false,
-    };
-  }),
   {
-    accessorKey: "stock",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Stock" />
+    header: "Duration",
+    cell: ({ row }) => (
+      <DurationCell pricing={row.original.pricing} row={row} />
     ),
-    cell: ({ row }) => <StockCell row={row} />,
   },
   {
+    header: "Pricing",
+    cell: ({ row }) => <PricingCell pricing={row.original.pricing} row={row} />,
+  },
+  {
+    header: "Stock",
+    cell: ({ row }) => <StockCell pricing={row.original.pricing} />,
+  },
+  {
+    id: "actions",
     header: "Actions",
-    enableSorting: false,
     cell: ({ row }) => <ActionsCell row={row} />,
   },
 ];

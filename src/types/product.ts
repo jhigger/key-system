@@ -5,7 +5,5 @@ export type ProductType = {
   createdAt: string;
   updatedAt: string;
   name: string;
-  value: string;
   pricing: PricingType[];
-  stock: number;
 };

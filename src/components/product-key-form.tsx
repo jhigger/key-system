@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { fakeProducts } from "~/lib/fakeData";
-import { variants } from "~/types/pricing";
+import { formatDuration } from "~/lib/utils";
 import { type ProductKeyType } from "~/types/productKey";
 import { Input } from "./ui/input";
 import {
@@ -27,9 +27,7 @@ import {
 
 const formSchema = z.object({
   product: z.string().min(1, "Product is required"),
-  variant: z.enum(variants, {
-    errorMap: () => ({ message: "Variant is required" }),
-  }),
+  duration: z.number().min(0, "Duration is required"),
   key: z.string().min(1, "Key is required"),
 });
 
@@ -55,17 +53,19 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
       resolver: zodResolver(formSchema),
       defaultValues: {
         product: "",
-        variant: "" as ProductKeyType["variant"],
+        duration: 0,
         key: "",
       },
     });
-
     const onSubmit = (values: z.infer<typeof formSchema>) => {
       const productKey: ProductKeyType = {
         ...values,
         uuid: uuidv4(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        product:
+          fakeProducts.find((p) => p.name === values.product) ??
+          fakeProducts[0]!,
         hardwareId: null,
         owner: null,
       };
@@ -112,24 +112,28 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
           />
           <FormField
             control={form.control}
-            name="variant"
+            name="duration"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Variant</FormLabel>
+                <FormLabel>Duration</FormLabel>
                 <FormControl>
                   <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    onValueChange={(value) => field.onChange(Number(value))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a variant" />
+                      <SelectValue placeholder="Select a duration" />
                     </SelectTrigger>
                     <SelectContent>
-                      {variants.map((variant) => (
-                        <SelectItem key={variant} value={variant}>
-                          {variant}
-                        </SelectItem>
-                      ))}
+                      {fakeProducts
+                        .find((p) => p.name === form.getValues("product"))
+                        ?.pricing?.map((pricing) => (
+                          <SelectItem
+                            key={pricing.duration}
+                            value={pricing.duration.toString()}
+                          >
+                            {formatDuration(pricing.duration)}
+                          </SelectItem>
+                        )) ?? []}
                     </SelectContent>
                   </Select>
                 </FormControl>

@@ -24,10 +24,10 @@ import {
   censorUUID,
   copyToClipboard,
   dateFilterFn,
+  formatDuration,
   formatISOStringToDate,
 } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
-import { variants, type PricingType } from "~/types/pricing";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
@@ -36,7 +36,7 @@ const ProductCell: React.FC<{
 }> = ({ row }) => {
   const { editMode } = useUIStore();
   const [currentProduct, setCurrentProduct] = useState<string>(
-    row.original.product,
+    row.original.product.name,
   );
   const {
     mutation: { editProductKey },
@@ -48,7 +48,10 @@ const ProductCell: React.FC<{
         value={currentProduct}
         onValueChange={(newProduct) => {
           setCurrentProduct(newProduct);
-          editProductKey({ ...row.original, product: newProduct });
+          editProductKey({
+            ...row.original,
+            product: fakeProducts.find((p) => p.name === newProduct)!,
+          });
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
@@ -76,9 +79,6 @@ const VariantCell: React.FC<{
   row: Row<ProductKeyType>;
 }> = ({ row }) => {
   const { editMode } = useUIStore();
-  const [currentVariant, setCurrentVariant] = useState<PricingType["name"]>(
-    row.original.variant,
-  );
   const {
     mutation: { editProductKey },
   } = useProductKeys();
@@ -86,27 +86,39 @@ const VariantCell: React.FC<{
   if (editMode) {
     return (
       <Select
-        value={currentVariant}
-        onValueChange={(newVariant: PricingType["name"]) => {
-          setCurrentVariant(newVariant);
-          editProductKey({ ...row.original, variant: newVariant });
+        value={formatDuration(row.original.duration)}
+        onValueChange={(newVariant: string) => {
+          editProductKey({
+            ...row.original,
+            duration: parseInt(newVariant),
+          });
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
           <SelectValue placeholder="Select a variant" />
         </SelectTrigger>
         <SelectContent>
-          {variants.map((option) => (
-            <SelectItem key={option} value={option} className="capitalize">
-              {option}
-            </SelectItem>
-          ))}
+          {fakeProducts
+            .find((p) => p.name === row.original.product.name)
+            ?.pricing.map((product) => (
+              <SelectItem
+                key={formatDuration(product.duration)}
+                value={formatDuration(product.duration)}
+                className="capitalize"
+              >
+                {formatDuration(product.duration)}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     );
   }
 
-  return <Badge className="capitalize">{currentVariant}</Badge>;
+  return (
+    <Badge className="capitalize">
+      {formatDuration(row.original.duration)}
+    </Badge>
+  );
 };
 
 const KeyCell: React.FC<{

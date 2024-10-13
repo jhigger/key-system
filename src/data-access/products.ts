@@ -26,3 +26,33 @@ export const deleteProduct = (uuid: string): ProductType[] => {
   }
   return fakeProducts;
 };
+
+export const deletePricing = (
+  productUuid: string,
+  pricingUuid: string,
+): ProductType => {
+  const productIndex = fakeProducts.findIndex(
+    (product) => product.uuid === productUuid,
+  );
+  if (productIndex === -1) {
+    throw new Error(`Product ${productUuid} not found`);
+  }
+
+  const product = fakeProducts[productIndex];
+  if (!product) {
+    throw new Error(`Product ${productUuid} not found`);
+  }
+
+  const updatedPricing = product.pricing.filter(
+    (pricing) => pricing.uuid !== pricingUuid,
+  );
+
+  if (updatedPricing.length === product.pricing.length) {
+    throw new Error(`Pricing ${pricingUuid} not found`);
+  }
+
+  const updatedProduct = { ...product, pricing: updatedPricing };
+  fakeProducts[productIndex] = updatedProduct;
+
+  return updatedProduct;
+};

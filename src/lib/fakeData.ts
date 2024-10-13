@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { type OrderType } from "~/types/order";
-import { variants, type PricingType } from "~/types/pricing";
+import { type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { type UserType } from "~/types/user";
@@ -8,11 +8,11 @@ import { type UserType } from "~/types/user";
 export const fakeOwnerId = "67dd6c56-29a6-46c7-a038-33f7e37fc72a";
 
 export const DEFAULT_PRICING: PricingType[] = [
-  { name: "1 Day", value: "1.5" },
-  { name: "3 Days", value: "3" },
-  { name: "7 Days", value: "5" },
-  { name: "30 Days", value: "13" },
-  { name: "Lifetime", value: "150" },
+  { uuid: uuidv4(), duration: 1, value: 1.5, stock: 999 },
+  { uuid: uuidv4(), duration: 3, value: 3, stock: 99 },
+  { uuid: uuidv4(), duration: 7, value: 5, stock: 9 },
+  { uuid: uuidv4(), duration: 30, value: 13, stock: 0 },
+  { uuid: uuidv4(), duration: 0, value: 150, stock: 1 },
 ];
 
 export const fakeProducts: ProductType[] = [
@@ -21,107 +21,101 @@ export const fakeProducts: ProductType[] = [
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
     name: "Distortion",
-    value: "distortion",
     pricing: DEFAULT_PRICING,
-    stock: 999,
   },
   {
     uuid: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
     name: "Densho",
-    value: "densho",
     pricing: DEFAULT_PRICING,
-    stock: 99,
   },
   {
     uuid: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
     name: "Unlock All",
-    value: "unlock-all",
     pricing: DEFAULT_PRICING,
-    stock: 0,
   },
 ];
 
 export const fakeProductKeys: ProductKeyType[] = [
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.name,
+    product: fakeProducts[0]!,
     key: uuidv4(),
-    variant: variants[1],
     expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
     hardwareId: null,
     owner: null,
+    duration: 1,
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[1]!.name,
+    product: fakeProducts[1]!,
     key: uuidv4(),
-    variant: variants[3],
     expiry: new Date(2024, 10 - 1, 8 + 30).toISOString(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
     hardwareId: "b81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
+    duration: 30,
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.name,
+    product: fakeProducts[0]!,
     key: uuidv4(),
-    variant: variants[0],
     expiry: new Date(2024, 10 - 1, 7 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 7).toISOString(),
     hardwareId: "c81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
+    duration: 1,
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[1]!.name,
+    product: fakeProducts[1]!,
     key: uuidv4(),
-    variant: variants[4],
     expiry: null,
     createdAt: new Date(2024, 10 - 1, 6).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 6).toISOString(),
     hardwareId: "d81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
+    duration: 0,
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.name,
+    product: fakeProducts[0]!,
     key: uuidv4(),
-    variant: variants[2],
     expiry: new Date(2024, 10 - 1, 5 + 7).toISOString(),
     createdAt: new Date(2024, 10 - 1, 5).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 5).toISOString(),
     hardwareId: "e81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
+    duration: 7,
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[1]!.name,
+    product: fakeProducts[1]!,
     key: uuidv4(),
-    variant: variants[1],
     expiry: new Date(2024, 10 - 1, 4 + 3).toISOString(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
     hardwareId: "f81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
+    duration: 3,
   },
   {
     uuid: uuidv4(),
-    product: fakeProducts[0]!.name,
+    product: fakeProducts[0]!,
     key: uuidv4(),
-    variant: variants[3],
     expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 3).toISOString(),
     hardwareId: null,
     owner: null,
+    duration: 0,
   },
 ];
 

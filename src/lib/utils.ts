@@ -61,3 +61,9 @@ export const censorUUID = (uuid: string) => {
 export const copyToClipboard = (key: string) => {
   return navigator.clipboard.writeText(key);
 };
+
+export const formatDuration = (duration: number) => {
+  return duration === 0 || !duration
+    ? "Lifetime"
+    : `${duration} Day${duration > 1 ? "s" : ""}`;
+};
