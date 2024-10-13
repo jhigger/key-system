@@ -25,7 +25,6 @@ import {
 } from "./ui/form";
 
 const formSchema = z.object({
-  username: z.string().min(1, "Username is required"),
   email: z.string().email(),
   password: z.string(),
 });
@@ -34,7 +33,6 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
       email: "",
       password: "",
     },
