@@ -230,6 +230,10 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
       <DataTableColumnHeader column={column} title="Variant" />
     ),
     cell: ({ row }) => <VariantCell row={row} />,
+    filterFn: (row, id, value: number[]) => {
+      console.log(row.getValue(id));
+      return value.includes(row.original.duration);
+    },
   },
   {
     accessorKey: "key",

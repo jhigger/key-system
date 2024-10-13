@@ -16,3 +16,7 @@ export type ProductKeyType = {
 export type ProductKeyTypeWithStatus = ProductKeyType & {
   status: "active" | "expired";
 };
+
+export type ProductKeyTypeWithVariant = ProductKeyType & {
+  variant: number;
+};
