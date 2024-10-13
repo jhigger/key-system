@@ -1,10 +1,10 @@
 import { History, KeyRound } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import MyKeys from "~/components/DataTables/MyKeys";
-import OrderHistory from "~/components/DataTables/OrderHistory";
-import RootLayout from "~/components/layouts/DefaultLayout";
-import TabsLayout, { type TabType } from "~/components/layouts/TabsLayout";
+import MyKeys from "~/components/data-tables/my-key";
+import OrderHistory from "~/components/data-tables/order-history";
+import RootLayout from "~/components/layouts/root-layout";
+import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
 import { useUserStore } from "~/state/user.store";
 
 const PATH = "/account";

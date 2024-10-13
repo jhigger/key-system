@@ -11,7 +11,7 @@ import {
 import { dateFilterFn, formatISOStringToDate } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { roles, type RoleType, type UserType } from "~/types/user";
-import { DataTableColumnHeader } from "../../DataTableColumnHeader";
+import { DataTableColumnHeader } from "../../data-table-column-header";
 
 const RoleCell: React.FC<{
   value: RoleType;

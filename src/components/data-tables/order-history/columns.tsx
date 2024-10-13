@@ -1,7 +1,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { dateFilterFn, formatISOStringToDate } from "~/lib/utils";
 import { type OrderTypeForTable } from "~/types/order";
-import { DataTableColumnHeader } from "../../DataTableColumnHeader";
+import { DataTableColumnHeader } from "../../data-table-column-header";
 
 export const columns: ColumnDef<OrderTypeForTable>[] = [
   {

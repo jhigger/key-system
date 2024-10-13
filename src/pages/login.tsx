@@ -1,6 +1,6 @@
 import Head from "next/head";
-import RootLayout from "~/components/layouts/DefaultLayout";
-import { LoginForm } from "~/components/LoginForm";
+import RootLayout from "~/components/layouts/root-layout";
+import { LoginForm } from "~/components/login-form";
 
 const Login = () => {
   return (

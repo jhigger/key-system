@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import RootLayout from "~/components/layouts/DefaultLayout";
-import ProductList from "~/components/ProductList";
+import RootLayout from "~/components/layouts/root-layout";
+import ProductList from "~/components/product-list";
 import { useUserStore } from "~/state/user.store";
 
 export default function Home() {

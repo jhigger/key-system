@@ -27,8 +27,8 @@ import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
-import DataTablePagination from "../DataTablePagination";
-import DataTableToolBar from "../DataTableToolBar";
+import DataTablePagination from "../data-table-pagination";
+import DataTableToolBar from "../data-table-tool-bar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

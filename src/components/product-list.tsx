@@ -14,7 +14,7 @@ import { DEFAULT_PRICING, fakeProducts } from "~/lib/fakeData";
 import { formatPrice } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
 import { type ProductType } from "~/types/product";
-import PleaseLoginToView from "./PleaseLoginToView";
+import PleaseLoginToView from "./please-login-to-view";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";

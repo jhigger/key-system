@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { type UserType } from "~/types/user";
-import { useUIStore } from "./ui.store";
 
 type UserStore = {
   user: UserType | null;
@@ -20,7 +19,6 @@ export const useUserStore = create<UserStore>()(
       setIsLoading: (isLoading) => set({ isLoading }),
       logout: () => {
         set({ user: null });
-        useUIStore.getState().resetPagination();
       },
     }),
     {

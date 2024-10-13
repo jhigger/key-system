@@ -2,7 +2,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { Copy, Menu, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import DebouncedInput from "~/components/DebouncedInput";
+import DebouncedInput from "~/components/debounced-input";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -28,7 +28,7 @@ import {
 import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductKeyType } from "~/types/productKey";
-import { DataTableColumnHeader } from "../../DataTableColumnHeader";
+import { DataTableColumnHeader } from "../../data-table-column-header";
 
 const ProductCell: React.FC<{
   value: string;

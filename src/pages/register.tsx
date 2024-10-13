@@ -1,6 +1,6 @@
 import Head from "next/head";
-import RootLayout from "~/components/layouts/DefaultLayout";
-import { RegisterForm } from "~/components/RegisterForm";
+import RootLayout from "~/components/layouts/root-layout";
+import { RegisterForm } from "~/components/register-form";
 
 const Register = () => {
   return (

@@ -15,7 +15,7 @@ import {
   formatISOStringToDate,
 } from "~/lib/utils";
 import { type ProductKeyType } from "~/types/productKey";
-import { DataTableColumnHeader } from "../../DataTableColumnHeader";
+import { DataTableColumnHeader } from "../../data-table-column-header";
 import { Badge } from "../../ui/badge";
 
 type TableProps = {

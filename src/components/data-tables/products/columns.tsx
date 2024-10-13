@@ -1,6 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Menu, Trash } from "lucide-react";
-import DebouncedInput from "~/components/DebouncedInput";
+import DebouncedInput from "~/components/debounced-input";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import { dateFilterFn, formatISOStringToDate, formatPrice } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { variants, type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
-import { DataTableColumnHeader } from "../../DataTableColumnHeader";
+import { DataTableColumnHeader } from "../../data-table-column-header";
 
 interface PricingCellProps {
   pricing: PricingType;

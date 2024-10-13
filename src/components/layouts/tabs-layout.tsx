@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useUserStore } from "~/state/user.store";
-import PleaseLoginToView from "../PleaseLoginToView";
+import PleaseLoginToView from "../please-login-to-view";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export type TabType = {

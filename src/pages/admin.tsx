@@ -1,11 +1,11 @@
 import { KeyRound, PackageSearch, UserSearch } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import ProductKeys from "~/components/DataTables/ProductKeys";
-import Products from "~/components/DataTables/Products";
-import Users from "~/components/DataTables/Users";
-import RootLayout from "~/components/layouts/DefaultLayout";
-import TabsLayout, { type TabType } from "~/components/layouts/TabsLayout";
+import ProductKeys from "~/components/data-tables/product-keys";
+import Products from "~/components/data-tables/products";
+import Users from "~/components/data-tables/users";
+import RootLayout from "~/components/layouts/root-layout";
+import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
 import { useUserStore } from "~/state/user.store";
 
 const PATH = "/admin";

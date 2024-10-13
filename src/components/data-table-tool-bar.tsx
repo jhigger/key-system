@@ -9,10 +9,10 @@ import { variants } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { roles } from "~/types/user";
-import DatePicker from "./DatePicker";
-import DebouncedInput from "./DebouncedInput";
-import ProductForm, { type ProductFormRef } from "./ProductForm";
-import ProductKeyForm, { type ProductKeyFormRef } from "./ProductKeyForm";
+import DatePicker from "./date-picker";
+import DebouncedInput from "./debounced-input";
+import ProductForm, { type ProductFormRef } from "./product-form";
+import ProductKeyForm, { type ProductKeyFormRef } from "./product-key-form";
 import { Button } from "./ui/button";
 import { DataTableFacetedFilter } from "./ui/data-table-faceted-filter";
 import {

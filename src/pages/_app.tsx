@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GeistSans } from "geist/font/sans";
 import { type AppType } from "next/app";
-import { ThemeProvider } from "~/components/ThemeProvider";
+import { ThemeProvider } from "~/components/theme-provider";
 import { Toaster } from "~/components/ui/sonner";
 import "~/styles/globals.css";
 
