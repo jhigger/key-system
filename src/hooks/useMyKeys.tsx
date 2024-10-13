@@ -18,8 +18,8 @@ const useMyKeys = (userUUID?: string) => {
     onError: () => {
       toast.error("Failed to reset hardware ID");
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ["keys"] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["keys"] });
     },
     onSuccess: () => {
       toast.success("HWID reset successfully");

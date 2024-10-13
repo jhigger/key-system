@@ -42,9 +42,9 @@ const useProductKeys = () => {
       queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
       toast.error("Failed to add product key");
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Always refetch after error or success
-      void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
+      await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Product key added successfully");

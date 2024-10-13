@@ -35,9 +35,9 @@ const useUsers = () => {
       queryClient.setQueryData(["users"], context?.previousUsers);
       toast.error("Failed to change user role");
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Always refetch after error or success
-      void queryClient.invalidateQueries({ queryKey: ["users"] });
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onSuccess: () => {
       toast.success("User role updated successfully");
