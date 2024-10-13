@@ -1,9 +1,9 @@
-import { type OrderTypeForTable } from "~/types/order";
+import { type OrderTypeWithVariant } from "~/types/order";
 import { DataTable } from "../../ui/data-table";
 import { columns } from "./columns";
 
 type OrderHistoryTableProps = {
-  orders: OrderTypeForTable[];
+  orders: OrderTypeWithVariant[];
 };
 
 const OrderHistoryTable = ({ orders }: OrderHistoryTableProps) => {

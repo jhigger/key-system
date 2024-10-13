@@ -8,6 +8,6 @@ export type OrderType = {
   createdAt: string;
 };
 
-export type OrderTypeForTable = Omit<OrderType, "productKey"> & {
+export type OrderTypeWithVariant = Omit<OrderType, "productKey"> & {
   variant: ProductKeyType["variant"];
 };

@@ -174,8 +174,8 @@ const DataTableToolBar = <TData,>({
             column={statusColumn}
             title="Status"
             options={[
-              { label: "Active", value: "Active" },
-              { label: "Expired", value: "Expired" },
+              { label: "Active", value: "active" },
+              { label: "Expired", value: "expired" },
             ]}
           />
         )}

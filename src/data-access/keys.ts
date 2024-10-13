@@ -1,9 +1,21 @@
 import { fakeProductKeys } from "~/lib/fakeData";
-import { type ProductKeyType } from "~/types/productKey";
+import {
+  type ProductKeyType,
+  type ProductKeyTypeWithStatus,
+} from "~/types/productKey";
 
-export const getKeys = (userUUID?: string): ProductKeyType[] => {
+export const getKeys = (userUUID?: string): ProductKeyTypeWithStatus[] => {
   return userUUID
-    ? fakeProductKeys.filter(({ owner }) => owner === userUUID)
+    ? fakeProductKeys
+        .filter(({ owner }) => owner === userUUID)
+        .map((key) => ({
+          ...key,
+          status: key.expiry
+            ? new Date(key.expiry) < new Date()
+              ? "expired"
+              : "active"
+            : "active",
+        }))
     : [];
 };
 

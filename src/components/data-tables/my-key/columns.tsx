@@ -16,12 +16,12 @@ import {
   formatISOStringToDate,
 } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
-import { type ProductKeyType } from "~/types/productKey";
+import { type ProductKeyTypeWithStatus } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 import { Badge } from "../../ui/badge";
 
 const ActionsCell: React.FC<{
-  row: Row<ProductKeyType>;
+  row: Row<ProductKeyTypeWithStatus>;
 }> = ({ row }) => {
   const { user } = useUserStore();
   const {
@@ -58,7 +58,7 @@ const ActionsCell: React.FC<{
   );
 };
 
-export const getColumns = (): ColumnDef<ProductKeyType>[] => [
+export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (
@@ -105,14 +105,9 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const { expiry } = row.original;
+      const { status } = row.original;
 
-      const isExpired =
-        expiry !== null &&
-        expiry !== undefined &&
-        new Date() >= new Date(expiry);
-
-      return isExpired ? (
+      return status === "expired" ? (
         <Badge variant="destructive" className="w-full justify-center px-1">
           Expired
         </Badge>
@@ -123,12 +118,7 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
       );
     },
     filterFn: (row, _, filterValue: string[]) => {
-      const { expiry } = row.original;
-
-      if (!expiry) return false;
-
-      const isExpired = new Date() >= new Date(expiry);
-      const status = isExpired ? "Expired" : "Active";
+      const { status } = row.original;
       return filterValue.includes(status);
     },
     enableSorting: false,

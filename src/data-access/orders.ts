@@ -1,7 +1,7 @@
 import { fakeOrders } from "~/lib/fakeData";
-import { type OrderTypeForTable } from "~/types/order";
+import { type OrderTypeWithVariant } from "~/types/order";
 
-export const getOrders = (userUUID?: string): OrderTypeForTable[] => {
+export const getOrders = (userUUID?: string): OrderTypeWithVariant[] => {
   return userUUID
     ? fakeOrders
         .filter(({ purchasedBy }) => purchasedBy === userUUID)
