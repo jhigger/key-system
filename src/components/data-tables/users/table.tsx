@@ -6,16 +6,9 @@ import { getColumns } from "./columns";
 const UsersTable = () => {
   const {
     query: { data: users },
-    mutation: { changeRole },
   } = useUsers();
 
-  const columns = useMemo(
-    () =>
-      getColumns({
-        editUser: changeRole,
-      }),
-    [changeRole],
-  );
+  const columns = useMemo(() => getColumns(), []);
 
   return <DataTable columns={columns} data={users ?? []} />;
 };

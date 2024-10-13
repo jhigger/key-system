@@ -1,4 +1,4 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, type Row } from "@tanstack/react-table";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -8,17 +8,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import useUsers from "~/hooks/useUsers";
 import { dateFilterFn, formatISOStringToDate } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { roles, type RoleType, type UserType } from "~/types/user";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
 const RoleCell: React.FC<{
-  value: RoleType;
-  changeRole: (role: RoleType) => void;
-}> = ({ value, changeRole }) => {
+  row: Row<UserType>;
+}> = ({ row }) => {
   const { editMode } = useUIStore();
-  const [currentRole, setCurrentRole] = useState<RoleType>(value);
+  const [currentRole, setCurrentRole] = useState<RoleType>(row.original.role);
+  const {
+    mutation: { changeRole },
+  } = useUsers();
 
   if (editMode) {
     return (
@@ -26,7 +29,7 @@ const RoleCell: React.FC<{
         value={currentRole}
         onValueChange={(newRole) => {
           setCurrentRole(newRole as RoleType);
-          changeRole(newRole as RoleType);
+          changeRole({ ...row.original, role: newRole as RoleType });
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
@@ -46,11 +49,7 @@ const RoleCell: React.FC<{
   return <Badge className="capitalize">{currentRole}</Badge>;
 };
 
-type TableProps = {
-  editUser: (user: UserType) => void;
-};
-
-export const getColumns = ({ editUser }: TableProps): ColumnDef<UserType>[] => [
+export const getColumns = (): ColumnDef<UserType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -82,15 +81,7 @@ export const getColumns = ({ editUser }: TableProps): ColumnDef<UserType>[] => [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Role" />
     ),
-    cell: ({ row }) => {
-      const role: RoleType = row.getValue("role");
-      return (
-        <RoleCell
-          value={role}
-          changeRole={(newRole) => editUser({ ...row.original, role: newRole })}
-        />
-      );
-    },
+    cell: ({ row }) => <RoleCell row={row} />,
     filterFn: (row, id, value: string) => {
       return value.includes(row.getValue(id));
     },

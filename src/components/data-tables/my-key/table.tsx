@@ -8,16 +8,9 @@ const MyKeysTable = () => {
   const { user } = useUserStore();
   const {
     query: { data: keys },
-    mutation: { mutate },
   } = useMyKeys(user?.uuid);
 
-  const columns = useMemo(
-    () =>
-      getColumns({
-        resetHardwareId: mutate,
-      }),
-    [mutate],
-  );
+  const columns = useMemo(() => getColumns(), []);
 
   return <DataTable columns={columns} data={keys ?? []} />;
 };

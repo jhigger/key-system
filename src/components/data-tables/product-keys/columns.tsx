@@ -1,4 +1,4 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, type Row } from "@tanstack/react-table";
 import { Copy, Menu, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import useProductKeys from "~/hooks/useProductKeys";
 import { fakeProducts } from "~/lib/fakeData";
 import {
   censorUUID,
@@ -31,11 +32,15 @@ import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
 const ProductCell: React.FC<{
-  value: string;
-  onEdit: (value: string) => void;
-}> = ({ value, onEdit }) => {
+  row: Row<ProductKeyType>;
+}> = ({ row }) => {
   const { editMode } = useUIStore();
-  const [currentProduct, setCurrentProduct] = useState<string>(value);
+  const [currentProduct, setCurrentProduct] = useState<string>(
+    row.original.product,
+  );
+  const {
+    mutation: { editProductKey },
+  } = useProductKeys();
 
   if (editMode) {
     return (
@@ -43,7 +48,7 @@ const ProductCell: React.FC<{
         value={currentProduct}
         onValueChange={(newProduct) => {
           setCurrentProduct(newProduct);
-          onEdit(newProduct);
+          editProductKey({ ...row.original, product: newProduct });
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
@@ -68,12 +73,15 @@ const ProductCell: React.FC<{
 };
 
 const VariantCell: React.FC<{
-  value: PricingType["name"];
-  onEdit: (value: PricingType["name"]) => void;
-}> = ({ value, onEdit }) => {
+  row: Row<ProductKeyType>;
+}> = ({ row }) => {
   const { editMode } = useUIStore();
-  const [currentVariant, setCurrentVariant] =
-    useState<PricingType["name"]>(value);
+  const [currentVariant, setCurrentVariant] = useState<PricingType["name"]>(
+    row.original.variant,
+  );
+  const {
+    mutation: { editProductKey },
+  } = useProductKeys();
 
   if (editMode) {
     return (
@@ -81,7 +89,7 @@ const VariantCell: React.FC<{
         value={currentVariant}
         onValueChange={(newVariant: PricingType["name"]) => {
           setCurrentVariant(newVariant);
-          onEdit(newVariant);
+          editProductKey({ ...row.original, variant: newVariant });
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
@@ -102,17 +110,19 @@ const VariantCell: React.FC<{
 };
 
 const KeyCell: React.FC<{
-  value: string;
-  onEdit: (value: string) => void;
-}> = ({ value, onEdit }) => {
+  row: Row<ProductKeyType>;
+}> = ({ row }) => {
   const { editMode } = useUIStore();
+  const {
+    mutation: { editProductKey },
+  } = useProductKeys();
 
   if (editMode) {
     return (
       <DebouncedInput
         type="text"
-        value={value}
-        onChange={(value) => onEdit(value)}
+        value={row.original.key}
+        onChange={(value) => editProductKey({ ...row.original, key: value })}
         className="w-full max-w-[200px]"
       />
     );
@@ -124,27 +134,53 @@ const KeyCell: React.FC<{
       size={"sm"}
       className="-ml-3 min-w-full max-w-40 gap-2"
       onClick={() =>
-        copyToClipboard(value)
+        copyToClipboard(row.original.key)
           .then(() => toast.success("Key copied to clipboard"))
           .catch(() => toast.error("Failed to copy key"))
       }
       title={"Click to copy full key"}
     >
-      <span className="truncate">{censorUUID(value)}</span>
-      {value && <Copy size={16} className="shrink-0 text-gray-500" />}
+      <span className="truncate">{censorUUID(row.original.key)}</span>
+      {row.original.key && (
+        <Copy size={16} className="shrink-0 text-gray-500" />
+      )}
     </Button>
   );
 };
 
-type TableProps = {
-  onEdit: (productKey: ProductKeyType) => void;
-  onDelete: (uuid: string) => void;
+const ActionsCell: React.FC<{
+  row: Row<ProductKeyType>;
+}> = ({ row }) => {
+  const {
+    mutation: { deleteProductKey },
+  } = useProductKeys();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant={"ghost"} size={"icon"} className="gap-2">
+          <Menu size={16} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem
+          className="flex w-full justify-between gap-4 leading-normal"
+          asChild
+        >
+          <Button
+            variant={"destructive"}
+            size={"sm"}
+            onClick={() => deleteProductKey(row.original.uuid)}
+          >
+            Delete <Trash size={16} />
+          </Button>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 };
 
-export const getColumns = ({
-  onEdit,
-  onDelete,
-}: TableProps): ColumnDef<ProductKeyType>[] => [
+export const getColumns = (): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -171,15 +207,7 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
-    cell: ({ row }) => {
-      const product: string = row.getValue("product");
-      return (
-        <ProductCell
-          value={product}
-          onEdit={(value) => onEdit({ ...row.original, product: value })}
-        />
-      );
-    },
+    cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string) => {
       return value.includes(row.getValue(id));
     },
@@ -189,62 +217,18 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Variant" />
     ),
-    cell: ({ row }) => {
-      const variant: PricingType["name"] = row.getValue("variant");
-      return (
-        <VariantCell
-          value={variant}
-          onEdit={(value) => onEdit({ ...row.original, variant: value })}
-        />
-      );
-    },
+    cell: ({ row }) => <VariantCell row={row} />,
   },
   {
     accessorKey: "key",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Key" />
     ),
-    cell: ({ row }) => {
-      const key: string = row.getValue("key");
-      return (
-        <KeyCell
-          value={key}
-          onEdit={(value) => onEdit({ ...row.original, key: value })}
-        />
-      );
-    },
+    cell: ({ row }) => <KeyCell row={row} />,
   },
   {
     header: "Actions",
     enableSorting: false,
-    cell: ({ row }) => {
-      const { uuid } = row.original;
-
-      if (!uuid) return null;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"} size={"icon"} className="gap-2">
-              <Menu size={16} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              className="flex w-full justify-between gap-4 leading-normal"
-              asChild
-            >
-              <Button
-                variant={"destructive"}
-                size={"sm"}
-                onClick={() => onDelete(uuid)}
-              >
-                Delete <Trash size={16} />
-              </Button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <ActionsCell row={row} />,
   },
 ];

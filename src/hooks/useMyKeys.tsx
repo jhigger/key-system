@@ -11,21 +11,27 @@ const useMyKeys = (userUUID?: string) => {
     enabled: !!userUUID,
   });
 
-  const mutation = useMutation({
+  const resetHardwareIdMutation = useMutation({
     mutationFn: async (hardwareId: string) => {
       return resetHardwareId(hardwareId);
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["keys"] }).then(() => {
-        toast.success("HWID reset successfully");
-      });
-    },
     onError: () => {
-      toast.error("Error resetting HWID");
+      toast.error("Failed to reset hardware ID");
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ["keys"] });
+    },
+    onSuccess: () => {
+      toast.success("HWID reset successfully");
     },
   });
 
-  return { query, mutation };
+  return {
+    query,
+    mutation: {
+      resetHardwareId: resetHardwareIdMutation.mutate,
+    },
+  };
 };
 
 export default useMyKeys;

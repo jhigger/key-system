@@ -1,4 +1,4 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, type Row } from "@tanstack/react-table";
 import { Copy, Menu, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -8,23 +8,57 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import useMyKeys from "~/hooks/useMyKeys";
 import {
   censorUUID,
   copyToClipboard,
   dateFilterFn,
   formatISOStringToDate,
 } from "~/lib/utils";
+import { useUserStore } from "~/state/user.store";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 import { Badge } from "../../ui/badge";
 
-type TableProps = {
-  resetHardwareId: (hardwareId: string) => void;
+const ActionsCell: React.FC<{
+  row: Row<ProductKeyType>;
+}> = ({ row }) => {
+  const { user } = useUserStore();
+  const {
+    mutation: { resetHardwareId },
+  } = useMyKeys(user?.uuid);
+  const { hardwareId, expiry } = row.original;
+  const isExpired = expiry ? new Date(expiry) < new Date() : false;
+
+  if (!hardwareId) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant={"ghost"} size={"icon"} className="gap-2">
+          <Menu size={16} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem
+          className="flex w-full justify-between gap-4 leading-normal"
+          asChild
+        >
+          <Button
+            variant={"destructive"}
+            size={"sm"}
+            onClick={() => resetHardwareId(hardwareId)}
+            disabled={!hardwareId || isExpired}
+          >
+            Reset HWID <Trash size={16} />
+          </Button>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 };
 
-export const getColumns = ({
-  resetHardwareId,
-}: TableProps): ColumnDef<ProductKeyType>[] => [
+export const getColumns = (): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (
@@ -167,36 +201,6 @@ export const getColumns = ({
   {
     header: "Actions",
     enableSorting: false,
-    cell: ({ row }) => {
-      const { hardwareId, expiry } = row.original;
-      const isExpired = expiry ? new Date(expiry) < new Date() : false;
-
-      if (!hardwareId) return null;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant={"ghost"} size={"icon"} className="gap-2">
-              <Menu size={16} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              className="flex w-full justify-between gap-4 leading-normal"
-              asChild
-            >
-              <Button
-                variant={"destructive"}
-                size={"sm"}
-                onClick={() => resetHardwareId(hardwareId)}
-                disabled={!hardwareId || isExpired}
-              >
-                Reset HWID <Trash size={16} />
-              </Button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <ActionsCell row={row} />,
   },
 ];

@@ -7,17 +7,10 @@ import { getColumns } from "./columns";
 const ProductKeysTable = () => {
   const {
     query: { data: productKeys },
-    mutation: { addProductKey, editProductKey, deleteProductKey },
+    mutation: { addProductKey },
   } = useProductKeys();
 
-  const columns = useMemo(
-    () =>
-      getColumns({
-        onEdit: editProductKey,
-        onDelete: deleteProductKey,
-      }),
-    [editProductKey, deleteProductKey],
-  );
+  const columns = useMemo(() => getColumns(), []);
 
   return (
     <DataTable
