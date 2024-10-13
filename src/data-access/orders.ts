@@ -1,5 +1,4 @@
 import { fakeOrders } from "~/lib/fakeData";
-import { formatDuration } from "~/lib/utils";
 import { type OrderTypeWithVariant } from "~/types/order";
 
 export const getOrders = (userUUID?: string): OrderTypeWithVariant[] => {
@@ -10,9 +9,9 @@ export const getOrders = (userUUID?: string): OrderTypeWithVariant[] => {
           uuid,
           purchasedBy,
           createdAt,
-          product: productKey.product,
+          product: productKey.product.name,
           invoiceLink,
-          variant: formatDuration(productKey.duration),
+          variant: productKey.duration,
         }))
     : [];
 };

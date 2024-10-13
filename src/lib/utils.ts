@@ -2,6 +2,8 @@ import { type Row } from "@tanstack/react-table";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { validate as uuidValidate, version as uuidVersion } from "uuid";
+import { type OrderTypeWithVariant } from "~/types/order";
+import { type ProductKeyType } from "~/types/productKey";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -66,4 +68,32 @@ export const formatDuration = (duration: number) => {
   return duration === 0 || !duration
     ? "Lifetime"
     : `${duration} Day${duration > 1 ? "s" : ""}`;
+};
+
+type ItemWithVariant = OrderTypeWithVariant | ProductKeyType;
+
+export const sortByVariant = <T extends ItemWithVariant>(
+  rowA: Row<T>,
+  rowB: Row<T>
+): number => {
+  const getVariantValue = (row: Row<T>): number => {
+    if ('variant' in row.original) {
+      return row.original.variant;
+    } else if ('duration' in row.original) {
+      return row.original.duration;
+    }
+    return 0; // Default value if neither property exists
+  };
+
+  const variantA = getVariantValue(rowA);
+  const variantB = getVariantValue(rowB);
+
+  // Special cases
+  if (variantA === 0) return 1; // 0 (Lifetime) is always first
+  if (variantB === 0) return -1;
+  if (variantA === 30 && variantB !== 0) return 1; // 30 is second, unless compared to 0
+  if (variantB === 30 && variantA !== 0) return -1;
+
+  // For all other cases, sort in descending order
+  return variantA - variantB;
 };

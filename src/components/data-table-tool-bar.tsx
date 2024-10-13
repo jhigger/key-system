@@ -65,9 +65,7 @@ const DataTableToolBar = <TData,>({
 
   const productColumn = table
     .getAllColumns()
-    .find(
-      (column) => column.id === "product" && asPath !== "/admin#product-keys",
-    );
+    .find((column) => column.id === "product");
   const variantColumn = table
     .getAllColumns()
     .find((column) => column.id === "variant");

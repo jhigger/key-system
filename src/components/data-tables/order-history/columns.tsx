@@ -1,5 +1,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { dateFilterFn, formatISOStringToDate } from "~/lib/utils";
+import {
+  dateFilterFn,
+  formatDuration,
+  formatISOStringToDate,
+  sortByVariant,
+} from "~/lib/utils";
 import { type OrderTypeWithVariant } from "~/types/order";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
@@ -44,25 +49,13 @@ export const columns: ColumnDef<OrderTypeWithVariant>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Variant" />
     ),
+    cell: ({ row }) => {
+      const { variant } = row.original;
+      return formatDuration(variant);
+    },
     filterFn: (row, id, value: string) => {
       return value.includes(row.getValue(id));
     },
-    sortingFn: (rowA, rowB) => {
-      const variantA = rowA.original.variant?.split(" ")[0];
-      const variantB = rowB.original.variant?.split(" ")[0];
-
-      // Treat "Lifetime" as the highest priority
-      if (variantA === "Lifetime" && variantB !== "Lifetime") return 1;
-      if (variantB === "Lifetime" && variantA !== "Lifetime") return -1;
-
-      if (!variantA || !variantB) return 0;
-
-      // If both are not "Lifetime", sort by their numeric value
-      const valueA = parseFloat(variantA) || 0;
-      const valueB = parseFloat(variantB) || 0;
-
-      // Compare other variants based on their numeric value
-      return valueA - valueB;
-    },
+    sortingFn: sortByVariant,
   },
 ];

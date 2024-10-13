@@ -26,6 +26,7 @@ import {
   dateFilterFn,
   formatDuration,
   formatISOStringToDate,
+  sortByVariant,
 } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { type ProductKeyType } from "~/types/productKey";
@@ -220,8 +221,13 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
       <DataTableColumnHeader column={column} title="Product" />
     ),
     cell: ({ row }) => <ProductCell row={row} />,
-    filterFn: (row, id, value: string) => {
-      return value.includes(row.getValue(id));
+    filterFn: (row, id, value: string[]) => {
+      return value.includes(row.original.product.name);
+    },
+    sortingFn: (rowA, rowB) => {
+      return rowA.original.product.name.localeCompare(
+        rowB.original.product.name,
+      );
     },
   },
   {
@@ -234,6 +240,7 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
       console.log(row.getValue(id));
       return value.includes(row.original.duration);
     },
+    sortingFn: sortByVariant,
   },
   {
     accessorKey: "key",

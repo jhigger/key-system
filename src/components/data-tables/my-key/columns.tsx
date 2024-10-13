@@ -108,11 +108,11 @@ export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
       const { status } = row.original;
 
       return status === "expired" ? (
-        <Badge variant="destructive" className="w-full justify-center px-1">
+        <Badge variant="destructive" className="shrink-0 justify-center">
           Expired
         </Badge>
       ) : (
-        <Badge className="w-full justify-center bg-green-500/80 px-1 text-white hover:bg-green-500/60">
+        <Badge className="shrink-0 justify-center bg-green-500/80 text-white hover:bg-green-500/60">
           Active
         </Badge>
       );
@@ -121,15 +121,19 @@ export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
       const { status } = row.original;
       return filterValue.includes(status);
     },
-    enableSorting: false,
   },
   {
     accessorKey: "product",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
-    filterFn: (row, id, value: string) => {
-      return value.includes(row.getValue(id));
+    cell: ({ row }) => {
+      const { product } = row.original;
+      return product.name;
+    },
+    filterFn: (row, id, value: string[]) => {
+      const { product } = row.original;
+      return value.includes(product.name);
     },
   },
   {
@@ -186,6 +190,15 @@ export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
           <Copy size={16} className="shrink-0 text-gray-500" />
         </Button>
       );
+    },
+    sortingFn: (rowA, rowB) => {
+      const hardwareIdA = rowA.original.hardwareId;
+      const hardwareIdB = rowB.original.hardwareId;
+
+      if (!hardwareIdA) return 1;
+      if (!hardwareIdB) return -1;
+
+      return hardwareIdA.localeCompare(hardwareIdB);
     },
   },
   {

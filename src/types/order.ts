@@ -9,5 +9,5 @@ export type OrderType = {
 };
 
 export type OrderTypeWithVariant = Omit<OrderType, "productKey"> & {
-  variant: string;
+  variant: number;
 };
