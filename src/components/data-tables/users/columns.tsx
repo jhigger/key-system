@@ -92,4 +92,14 @@ export const getColumns = (): ColumnDef<UserType>[] => [
       return value.includes(row.getValue(id));
     },
   },
+  {
+    accessorKey: "orders",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Keys" />
+    ),
+    cell: ({ row }) => {
+      const { orders } = row.original;
+      return orders ? orders.length : 0;
+    },
+  },
 ];
