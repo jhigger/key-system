@@ -11,21 +11,43 @@ const useUsers = () => {
     queryFn: getUsers,
   });
 
-  const mutation = useMutation({
+  const changeRoleMutation = useMutation({
     mutationFn: async (user: UserType) => {
       return changeUserRole(user);
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["users"] }).then(() => {
-        toast.success("User role updated successfully");
-      });
+    onMutate: async (newUser) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["users"] });
+
+      // Snapshot the previous value
+      const previousUsers = queryClient.getQueryData<UserType[]>(["users"]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData<UserType[]>(["users"], (old) =>
+        old ? [...old, newUser] : [newUser],
+      );
+
+      // Return a context object with the snapshotted value
+      return { previousUsers };
     },
-    onError: () => {
-      toast.error("Error changing user role");
+    onError: (err, newUser, context) => {
+      // If the mutation fails, use the context to roll back
+      queryClient.setQueryData(["users"], context?.previousUsers);
+      toast.error("Failed to change user role");
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onSuccess: () => {
+      toast.success("User role updated successfully");
     },
   });
 
-  return { query, mutation };
+  return {
+    query,
+    mutation: { changeRole: changeRoleMutation.mutate },
+  };
 };
 
 export default useUsers;
