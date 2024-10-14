@@ -4,7 +4,7 @@ import {
   addProductKey,
   deleteProductKey,
   editProductKey,
-  getProductKeys,
+  getAvailableProductKeys,
 } from "~/data-access/productKeys";
 import { type ProductKeyType } from "~/types/productKey";
 
@@ -13,7 +13,7 @@ const useProductKeys = () => {
 
   const query = useQuery({
     queryKey: ["productKeys"],
-    queryFn: () => getProductKeys(),
+    queryFn: () => getAvailableProductKeys(),
   });
 
   const addProductKeyMutation = useMutation({

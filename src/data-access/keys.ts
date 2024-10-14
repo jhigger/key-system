@@ -15,20 +15,25 @@ export const addKey = (key: ProductKeyType) => {
   return productKeys;
 };
 
-export const resetHardwareId = (hardwareId: string): ProductKeyType => {
+export const resetHardwareId = async (
+  hardwareId: string,
+): Promise<ProductKeyType> => {
   const productKeys = getProductKeys();
 
-  const index = productKeys.findIndex((key) => key.hardwareId === hardwareId);
-  if (index !== -1) {
-    const existingKey = productKeys[index];
-    if (existingKey) {
-      const updatedKey: ProductKeyType = {
-        ...existingKey,
-        hardwareId: null,
-      };
-      productKeys[index] = updatedKey;
-      return updatedKey;
-    }
+  const key = productKeys.find((key) => key.hardwareId === hardwareId);
+  if (!key) {
+    throw new Error(`Key with hardwareId ${hardwareId} not found`);
   }
-  throw new Error(`Key with hardwareId ${hardwareId} not found`);
+
+  const updatedKey: ProductKeyType = {
+    ...key,
+    hardwareId: null,
+  };
+
+  const index = productKeys.findIndex((k) => k.uuid === key.uuid);
+  if (index !== -1) {
+    productKeys[index] = updatedKey;
+  }
+
+  return updatedKey;
 };

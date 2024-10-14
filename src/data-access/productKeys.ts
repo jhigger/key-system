@@ -2,13 +2,15 @@ import { updateProductStock } from "~/data-access/products";
 import { fakeProductKeys } from "~/lib/fakeData";
 import { type ProductKeyType } from "~/types/productKey";
 
-export const getProductKeys = (): ProductKeyType[] =>
+export const getProductKeys = (): ProductKeyType[] => fakeProductKeys;
+
+export const getAvailableProductKeys = (): ProductKeyType[] =>
   fakeProductKeys.filter((key) => key.owner === null);
 
 export const editProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const productKeys = getProductKeys();
+  const productKeys = getAvailableProductKeys();
 
   const index = productKeys.findIndex((key) => key.uuid === productKey.uuid);
   if (index === -1) {
@@ -46,7 +48,7 @@ export const editProductKey = async (
 export const addProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const productKeys = getProductKeys();
+  const productKeys = getAvailableProductKeys();
 
   productKeys.push(productKey);
   // Update stock when adding a new product key
@@ -57,7 +59,7 @@ export const addProductKey = async (
 export const deleteProductKey = async (
   uuid: string,
 ): Promise<ProductKeyType[]> => {
-  const productKeys = getProductKeys();
+  const productKeys = getAvailableProductKeys();
 
   const index = productKeys.findIndex((productKey) => productKey.uuid === uuid);
   if (index === -1) {
