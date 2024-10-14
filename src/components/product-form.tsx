@@ -31,13 +31,16 @@ const pricingSchema = z.object({
 
 const formSchema = z.object({
   name: z.string().min(1, "Product name is required"),
-  pricing: z.array(pricingSchema).refine(
-    (pricing) => {
-      const durations = pricing.map((p) => p.duration);
-      return new Set(durations).size === durations.length;
-    },
-    { message: "Durations must be unique across all pricing variants" },
-  ),
+  pricing: z
+    .array(pricingSchema)
+    .min(1, "At least one pricing variant is required")
+    .refine(
+      (pricing) => {
+        const durations = pricing.map((p) => p.duration);
+        return new Set(durations).size === durations.length;
+      },
+      { message: "Durations must be unique across all pricing variants" },
+    ),
 });
 
 export interface ProductFormRef {
@@ -130,7 +133,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
                     name={`pricing.${index}.duration`}
                     render={({ field }) => (
                       <FormItem className="col-span-5">
-                        <FormLabel>Duration</FormLabel>
+                        <FormLabel>Duration (days)</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -151,7 +154,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
                     name={`pricing.${index}.value`}
                     render={({ field }) => (
                       <FormItem className="col-span-5">
-                        <FormLabel>Price</FormLabel>
+                        <FormLabel>Price ($)</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -177,6 +180,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
                       form.getFieldState(`pricing.${index}`).error &&
                         "mb-[2px]",
                     )}
+                    disabled={fields.length === 1}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
