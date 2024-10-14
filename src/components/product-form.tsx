@@ -98,6 +98,8 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       handleSubmit(product);
     };
 
+    const isEditing = !!initialValues?.name;
+
     return (
       <Form {...form}>
         <form
@@ -112,11 +114,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
               <FormItem>
                 <FormLabel>Product Name</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    ref={firstInputRef}
-                    disabled={!!initialValues?.name}
-                  />
+                  <Input {...field} ref={firstInputRef} disabled={isEditing} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -124,14 +122,14 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
           />
           <div className="space-y-2">
             <FormLabel>Pricing Variants (zero duration for infinite)</FormLabel>
-            <div className="grid grid-cols-10 items-end gap-4">
+            <div className="grid grid-cols-11 items-end gap-4">
               {fields.map((field, index) => (
                 <React.Fragment key={field.id}>
                   <FormField
                     control={form.control}
                     name={`pricing.${index}.duration`}
                     render={({ field }) => (
-                      <FormItem className="col-span-3">
+                      <FormItem className="col-span-5">
                         <FormLabel>Duration</FormLabel>
                         <FormControl>
                           <Input
@@ -152,33 +150,13 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
                     control={form.control}
                     name={`pricing.${index}.value`}
                     render={({ field }) => (
-                      <FormItem className="col-span-3">
+                      <FormItem className="col-span-5">
                         <FormLabel>Price</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             min={0}
                             step="0.01"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`pricing.${index}.stock`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-3">
-                        <FormLabel>Stock</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={0}
                             {...field}
                             onChange={(e) =>
                               field.onChange(Number(e.target.value))
