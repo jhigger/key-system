@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Controller,
   FormProvider,
@@ -8,12 +8,13 @@ import {
   useForm,
   useFormContext,
 } from "react-hook-form";
-import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import useProducts from "~/hooks/useProducts";
 import { formatDuration, formatPrice } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
 import { type ProductType } from "~/types/product";
+import DottedLine from "./dotted-line";
+import Loader from "./loader";
 import PleaseLoginToView from "./please-login-to-view";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
@@ -36,6 +37,7 @@ const productSchema = z.object({
             .number({ invalid_type_error: "Quantity must be a number" })
             .min(1, { message: "Quantity must be at least 1" }),
           price: z.number().min(1, { message: "Price is required" }),
+          duration: z.number(),
         }),
       ),
     }),
@@ -48,12 +50,8 @@ const ProductList = () => {
   const { user } = useUserStore();
 
   const {
-    query: { data: products },
+    query: { data: products, isLoading },
   } = useProducts();
-
-  const [currentProducts, setCurrentProducts] = useState<ProductType[]>(
-    products ?? [],
-  );
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -63,11 +61,7 @@ const ProductList = () => {
     mode: "all",
   });
 
-  const {
-    fields: productFields,
-    append,
-    replace,
-  } = useFieldArray({
+  const { fields: productFields, replace } = useFieldArray({
     control: form.control,
     name: "products",
   });
@@ -115,24 +109,6 @@ const ProductList = () => {
     console.log("Submitted Data", cart);
   };
 
-  const addNewProduct = () => {
-    const newProduct: ProductType = {
-      name: "New Product",
-      pricing: [{ uuid: uuidv4(), duration: 0, value: 1, stock: 999 }],
-      uuid: uuidv4(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const newProductForm = {
-      productName: newProduct.name,
-      keys: [],
-    };
-
-    append(newProductForm); // Append the new product to the form
-    setCurrentProducts((currentProducts) => [...currentProducts, newProduct]);
-  };
-
   const calculateTotal = (products: ProductFormValues["products"]) => {
     return products.reduce((total, product) => {
       return (
@@ -149,25 +125,26 @@ const ProductList = () => {
     return <PleaseLoginToView />;
   }
 
+  if (isLoading) {
+    return <Loader />;
+  }
+
   return (
     <Card className="mx-auto w-full max-w-3xl">
       <CardHeader>
-        <div className="w-full rounded-md bg-green-400/80 p-4 text-sm text-green-50">
+        <div className="w-full rounded-md bg-green-500/80 p-4 text-sm text-green-50">
           <b>Note:</b> You can now proceed to checkout! Spend over $1200 to
           receive a $200 discount.
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Button type="button" variant={"outline"} onClick={addNewProduct}>
-          Test: Add New Product
-        </Button>
         <FormProvider {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col gap-4"
           >
             {productFields.map((productField, productIndex) => {
-              const product = currentProducts[productIndex];
+              const product = products?.[productIndex];
               if (!product) return null;
 
               return (
@@ -181,15 +158,7 @@ const ProductList = () => {
 
             <div className="flex w-full items-baseline justify-between">
               <span>Total</span>
-              <span
-                className="mx-2 flex-grow dark:invert"
-                style={{
-                  height: "1px", // Set height for the dashed line
-                  backgroundImage: `url("data:image/svg+xml,%3csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3ccircle cx=\'1\' cy=\'1\' r=\'1\' fill=\'currentColor\'/%3e%3c/svg%3e")`,
-                  backgroundSize: "8px 1px", // Adjust the spacing of the dashes
-                  backgroundRepeat: "repeat-x", // Repeat the background image horizontally
-                }}
-              />
+              <DottedLine />
               <span className="font-bold">
                 {formatPrice(calculateTotal(form.watch("products")))}
               </span>
@@ -230,10 +199,25 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
   const calculateSubtotal = (quantity: number, price: string) =>
     formatPrice(Number(price) * quantity);
 
-  // Calculate the current total quantity for this product
-  const totalQuantityAdded = formValues.reduce((total, item) => {
-    return total + (item.quantity || 0); // Sum up quantities
-  }, 0);
+  // Calculate remaining stock for each pricing option
+  const remainingStock = product.pricing.reduce(
+    (acc, price) => {
+      const totalQuantity = formValues.reduce((sum, key) => {
+        if (key.price === price.value && key.duration === price.duration) {
+          return sum + (key.quantity || 0);
+        }
+        return sum;
+      }, 0);
+      acc[`${price.value}-${price.duration}`] = price.stock - totalQuantity;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  // Find the first available pricing option
+  const firstAvailableOption = product.pricing.find(
+    (price) => remainingStock[`${price.value}-${price.duration}`] ?? 0 > 0,
+  );
 
   return (
     <Card className="mx-auto w-full">
@@ -241,38 +225,21 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
         <div>
           🔑 Product: <b>{product.name}</b>
         </div>
-        <div>
-          {product.pricing.reduce((acc, curr) => acc + curr.stock, 0)} Key
-          {product.pricing.reduce((acc, curr) => acc + curr.stock, 0) > 1
-            ? "s"
-            : ""}{" "}
-          Left
-        </div>
       </CardHeader>
-      <CardContent className="space-y-6 divide-y divide-dashed md:space-y-0 md:divide-y-0">
+      <CardContent className="space-y-6 divide-y divide-dashed pt-6 md:divide-solid">
         {fields.map((field, index) => (
-          <div key={field.id} className="flex gap-4 pt-6">
-            <KeyRow
-              key={field.id}
-              index={index}
-              product={product}
-              subtotal={calculateSubtotal(
-                formValues[index]?.quantity ?? 1,
-                formValues[index]?.price.toString() ?? "0",
-              )}
-              productIndex={productIndex}
-            />
-            {/* Remove KeyRow Button */}
-            <Button
-              type="button"
-              className="col-span-1 shrink-0 hover:bg-destructive/80"
-              onClick={() => remove(index)}
-              variant={"ghost"}
-              size={"icon"}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
+          <KeyRow
+            key={field.id}
+            index={index}
+            product={product}
+            subtotal={calculateSubtotal(
+              formValues[index]?.quantity ?? 1,
+              formValues[index]?.price.toString() ?? "0",
+            )}
+            productIndex={productIndex}
+            remainingStock={remainingStock}
+            onRemove={() => remove(index)}
+          />
         ))}
 
         <Button
@@ -280,17 +247,16 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
           size={"sm"}
           variant={"secondary"}
           type="button"
-          onClick={() =>
-            append({
-              quantity: 1,
-              price: product.pricing?.[0]?.value ?? 0,
-            })
-          }
-          disabled={
-            product.pricing.reduce((acc, curr) => acc + curr.stock, 0) === 0 ||
-            totalQuantityAdded >=
-              product.pricing.reduce((acc, curr) => acc + curr.stock, 0)
-          }
+          onClick={() => {
+            if (firstAvailableOption) {
+              append({
+                quantity: 1,
+                price: firstAvailableOption.value,
+                duration: firstAvailableOption.duration,
+              });
+            }
+          }}
+          disabled={!firstAvailableOption}
         >
           ➕ Add Key
         </Button>
@@ -304,122 +270,174 @@ type KeyRowProps = {
   subtotal: string;
   index: number;
   productIndex: number;
+  remainingStock: Record<string, number>;
+  onRemove: () => void;
 };
 
-const KeyRow = ({ product, subtotal, index, productIndex }: KeyRowProps) => {
+const KeyRow = ({
+  product,
+  subtotal,
+  index,
+  productIndex,
+  remainingStock,
+  onRemove,
+}: KeyRowProps) => {
   const {
     control,
     formState: { errors },
     watch,
+    setValue,
   } = useFormContext<ProductFormValues>();
 
-  const formValues = watch(`products.${productIndex}.keys`);
+  const currentPrice = watch(`products.${productIndex}.keys.${index}.price`);
+  const currentDuration = watch(
+    `products.${productIndex}.keys.${index}.duration`,
+  );
 
-  // Calculate the current total quantity for this product
-  const totalQuantityAdded = formValues.reduce((total, item) => {
-    return total + item.quantity; // Sum up quantities
-  }, 0);
-
-  // Maximum allowable quantity for this row
-  const maxQuantityForRow =
-    product.pricing.reduce((acc, curr) => acc + curr.stock, 0) -
-    (totalQuantityAdded - (formValues[index]?.quantity ?? 0));
+  // Find the current pricing option
+  const currentPricingOption = product.pricing.find(
+    (p) => p.value === currentPrice && p.duration === currentDuration,
+  );
 
   const handleQuantityChange = (
     field: {
       value: number;
       onChange: (value: number) => void;
     },
-    numericValue: number,
+    newValue: number,
   ) => {
-    // Allow decreasing the quantity
-    if (numericValue < field.value) {
-      return field.onChange(numericValue);
-    }
-    // Prevent increasing the quantity if total already meets/exceeds stock
-    if (
-      totalQuantityAdded >=
-        product.pricing.reduce((acc, curr) => acc + curr.stock, 0) &&
-      numericValue > field.value
-    ) {
-      return; // Do not increase the quantity
-    }
-    // Ensure quantity does not exceed available stock
-    if (numericValue > maxQuantityForRow) {
-      return field.onChange(maxQuantityForRow);
-    }
-    // Update the quantity if valid
-    field.onChange(numericValue);
+    const maxAllowedQuantity =
+      remainingStock[`${currentPrice}-${currentDuration}`] ?? 0 + field.value;
+    const validValue = Math.min(Math.max(1, newValue), maxAllowedQuantity);
+    field.onChange(validValue);
+  };
+
+  const handleRemove = () => {
+    onRemove();
   };
 
   return (
-    <div className="grid w-full gap-4 md:grid-cols-3">
-      {/* Quantity Input */}
-      <Controller
-        name={`products.${productIndex}.keys.${index}.quantity`}
-        control={control}
-        render={({ field }) => (
-          <div className="flex flex-col">
-            <Input
-              {...field}
-              className="col-span-1"
-              placeholder="Quantity"
-              type="number"
-              min={1}
-              max={product.pricing.reduce((acc, curr) => acc + curr.stock, 0)}
-              onChange={(e) => {
-                const value = e.target.value;
-                // Convert the value to a number
-                const numericValue = value === "" ? 1 : Number(value);
-                handleQuantityChange(field, numericValue);
-              }}
-            />
-            {errors.products?.[productIndex]?.keys?.[index]?.quantity && (
-              <span className="text-sm text-destructive">
-                {errors.products[productIndex].keys[index].quantity?.message}
-              </span>
-            )}
-          </div>
-        )}
-      />
+    <div className="flex flex-col gap-2 rounded-md border !border-b border-muted bg-transparent p-3">
+      <div className="flex h-9 items-center justify-center gap-2 text-sm text-muted-foreground shadow-sm">
+        <span>
+          {`${formatDuration(currentDuration)} - $${currentPrice}`} keys left:
+        </span>
+        <span className="text-foreground">
+          {Math.max(
+            0,
+            remainingStock[`${currentPrice}-${currentDuration}`] ?? 0,
+          )}
+        </span>
+      </div>
 
-      {/* Price Select */}
-      <Controller
-        name={`products.${productIndex}.keys.${index}.price`}
-        control={control}
-        render={({ field }) => (
-          <div className="flex flex-col">
-            <Select
-              value={field.value.toString()}
-              onValueChange={(value) => field.onChange(Number(value))}
-            >
-              <SelectTrigger className="col-span-1">
-                <SelectValue placeholder="Select Price" />
-              </SelectTrigger>
-              <SelectContent>
-                {product.pricing.map((price) => (
-                  <SelectItem
-                    key={price.duration}
-                    value={price.value.toString()}
-                  >
-                    {`${formatDuration(price.duration)} - $${price.value}`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.products?.[productIndex]?.keys?.[index]?.price && (
-              <span className="text-sm text-destructive">
-                {errors.products[productIndex].keys[index].price?.message}
-              </span>
-            )}
-          </div>
-        )}
-      />
+      <div className="grid w-full gap-4 md:grid-cols-11">
+        {/* Price Select */}
+        <Controller
+          name={`products.${productIndex}.keys.${index}.price`}
+          control={control}
+          render={({ field }) => (
+            <div className="col-span-full flex flex-col md:col-span-3">
+              <Select
+                value={field.value.toString()}
+                onValueChange={(value) => {
+                  const selectedPricing = product.pricing.find(
+                    (p) => p.value.toString() === value,
+                  );
+                  field.onChange(Number(value));
+                  if (selectedPricing) {
+                    setValue(
+                      `products.${productIndex}.keys.${index}.duration`,
+                      selectedPricing.duration,
+                    );
+                    // Reset quantity to 1 when changing price
+                    setValue(
+                      `products.${productIndex}.keys.${index}.quantity`,
+                      1,
+                    );
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Price">
+                    {currentPricingOption
+                      ? `${formatDuration(currentPricingOption.duration)} - $${
+                          currentPricingOption.value
+                        }`
+                      : "Select Price"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {product.pricing
+                    .filter(
+                      (price) =>
+                        remainingStock[`${price.value}-${price.duration}`] ??
+                        0 > 0,
+                    )
+                    .map((price) => (
+                      <SelectItem
+                        key={`${price.value}-${price.duration}`}
+                        value={price.value.toString()}
+                      >
+                        {`${formatDuration(price.duration)} - $${price.value}`}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {errors.products?.[productIndex]?.keys?.[index]?.price && (
+                <span className="text-sm text-destructive">
+                  {errors.products[productIndex].keys[index].price?.message}
+                </span>
+              )}
+            </div>
+          )}
+        />
 
-      {/* Subtotal Display */}
-      <div className="col-span-1 flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm">
-        <span>Subtotal: </span>
-        <span>{subtotal}</span>
+        {/* Quantity Input */}
+        <Controller
+          name={`products.${productIndex}.keys.${index}.quantity`}
+          control={control}
+          render={({ field }) => (
+            <div className="col-span-full flex flex-col md:col-span-3">
+              <Input
+                {...field}
+                placeholder="Quantity"
+                type="number"
+                min={1}
+                max={currentPricingOption?.stock ?? 0}
+                onChange={(e) => {
+                  const numericValue =
+                    e.target.value === "" ? 1 : Number(e.target.value);
+                  handleQuantityChange(field, numericValue);
+                }}
+              />
+              {errors.products?.[productIndex]?.keys?.[index]?.quantity && (
+                <span className="text-sm text-destructive">
+                  {errors.products[productIndex].keys[index].quantity?.message}
+                </span>
+              )}
+            </div>
+          )}
+        />
+
+        {/* Subtotal Display */}
+        <div className="col-span-full flex h-9 w-full items-end justify-between rounded-md bg-transparent px-3 py-1 text-sm shadow-sm md:col-span-4">
+          <div className="flex w-full items-baseline justify-between">
+            <span>Subtotal</span>
+            <DottedLine />
+            <span>{subtotal}</span>
+          </div>
+        </div>
+
+        {/* Remove KeyRow Button */}
+        <Button
+          type="button"
+          className="col-span-full shrink-0 hover:bg-destructive/80 md:col-span-1"
+          onClick={handleRemove}
+          variant={"ghost"}
+          size={"icon"}
+        >
+          <Trash2 className="size-4" />
+        </Button>
       </div>
     </div>
   );
