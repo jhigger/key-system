@@ -94,6 +94,5 @@ export const updateProductStock = async (
   };
 
   fakeProducts[productIndex] = updatedProduct;
-  console.log("Updated product:", updatedProduct);
   return updatedProduct;
 };

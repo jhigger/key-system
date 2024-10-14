@@ -5,10 +5,10 @@ import {
   formatISOStringToDate,
   sortByVariant,
 } from "~/lib/utils";
-import { type OrderTypeWithVariant } from "~/types/order";
+import { type OrderType } from "~/types/order";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
-export const columns: ColumnDef<OrderTypeWithVariant>[] = [
+export const columns: ColumnDef<OrderType>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -31,13 +31,23 @@ export const columns: ColumnDef<OrderTypeWithVariant>[] = [
     filterFn: dateFilterFn,
   },
   {
+    id: "dateGlobalFilter",
+    header: () => null,
+    cell: () => null,
+    accessorFn: (row) =>
+      formatISOStringToDate(row.createdAt).formattedDate +
+      " " +
+      formatISOStringToDate(row.createdAt).formattedTime,
+  },
+  {
     accessorKey: "product",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
-    filterFn: (row, id, value: string) => {
+    filterFn: (row, id, value: string[]) => {
       return value.includes(row.getValue(id));
     },
+    accessorFn: (row) => row.productKey.product.name,
   },
   {
     accessorKey: "invoiceLink",
@@ -45,17 +55,18 @@ export const columns: ColumnDef<OrderTypeWithVariant>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "variant",
+    id: "variant",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Variant" />
     ),
     cell: ({ row }) => {
-      const { variant } = row.original;
-      return formatDuration(variant);
+      const { productKey } = row.original;
+      return formatDuration(productKey.duration);
     },
-    filterFn: (row, id, value: string) => {
-      return value.includes(row.getValue(id));
+    filterFn: (row, id, value: number[]) => {
+      return value.includes(row.original.productKey.duration);
     },
     sortingFn: sortByVariant,
+    accessorFn: (row) => row.productKey.duration,
   },
 ];

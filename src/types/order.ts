@@ -7,7 +7,3 @@ export type OrderType = {
   invoiceLink: string;
   createdAt: string;
 };
-
-export type OrderTypeWithVariant = Omit<OrderType, "productKey"> & {
-  variant: number;
-};

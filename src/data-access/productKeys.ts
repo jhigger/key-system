@@ -1,17 +1,9 @@
 import { updateProductStock } from "~/data-access/products";
 import { fakeProductKeys } from "~/lib/fakeData";
-import {
-  type ProductKeyType,
-  type ProductKeyTypeWithVariant,
-} from "~/types/productKey";
+import { type ProductKeyType } from "~/types/productKey";
 
-export const getProductKeys = (): ProductKeyTypeWithVariant[] =>
-  fakeProductKeys
-    .filter((key) => key.owner === null)
-    .map((key) => ({
-      ...key,
-      variant: key.duration,
-    }));
+export const getProductKeys = (): ProductKeyType[] =>
+  fakeProductKeys.filter((key) => key.owner === null);
 
 export const editProductKey = async (
   productKey: ProductKeyType,

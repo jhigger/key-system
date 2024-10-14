@@ -304,6 +304,15 @@ export const getColumns = (): ColumnDef<ProductType>[] => [
     filterFn: dateFilterFn,
   },
   {
+    id: "dateGlobalFilter",
+    header: () => null,
+    cell: () => null,
+    accessorFn: (row) =>
+      formatISOStringToDate(row.createdAt).formattedDate +
+      " " +
+      formatISOStringToDate(row.createdAt).formattedTime,
+  },
+  {
     accessorKey: "name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />

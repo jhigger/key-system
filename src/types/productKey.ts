@@ -12,11 +12,3 @@ export type ProductKeyType = {
   createdAt: string;
   updatedAt: string;
 };
-
-export type ProductKeyTypeWithStatus = ProductKeyType & {
-  status: "active" | "expired";
-};
-
-export type ProductKeyTypeWithVariant = ProductKeyType & {
-  variant: number;
-};

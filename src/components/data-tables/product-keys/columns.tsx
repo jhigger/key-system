@@ -26,6 +26,7 @@ import {
   dateFilterFn,
   formatDuration,
   formatISOStringToDate,
+  formatPrice,
   sortByVariant,
 } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
@@ -216,6 +217,15 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
     filterFn: dateFilterFn,
   },
   {
+    id: "dateGlobalFilter",
+    header: () => null,
+    cell: () => null,
+    accessorFn: (row) =>
+      formatISOStringToDate(row.createdAt).formattedDate +
+      " " +
+      formatISOStringToDate(row.createdAt).formattedTime,
+  },
+  {
     accessorKey: "product",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
@@ -229,18 +239,41 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
         rowB.original.product.name,
       );
     },
+    accessorFn: (row) => row.product.name,
   },
   {
-    accessorKey: "variant",
+    accessorKey: "duration",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Variant" />
+      <DataTableColumnHeader column={column} title="Duration" />
     ),
     cell: ({ row }) => <VariantCell row={row} />,
     filterFn: (row, id, value: number[]) => {
-      console.log(row.getValue(id));
       return value.includes(row.original.duration);
     },
     sortingFn: sortByVariant,
+    accessorFn: (row) => row.duration,
+  },
+  {
+    id: "price",
+    accessorKey: "price",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Price" />
+    ),
+    cell: ({ row }) =>
+      formatPrice(
+        row.original.product.pricing.find(
+          (p) => p.duration === row.original.duration,
+        )?.value ?? 0,
+      ),
+    filterFn: (row, id, value: number[]) => {
+      return value.includes(
+        row.original.product.pricing.find(
+          (p) => p.duration === row.original.duration,
+        )?.value ?? 0,
+      );
+    },
+    accessorFn: (row) =>
+      row.product.pricing.find((p) => p.duration === row.duration)?.value ?? 0,
   },
   {
     accessorKey: "key",

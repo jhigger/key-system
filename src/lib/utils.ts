@@ -2,7 +2,7 @@ import { type Row } from "@tanstack/react-table";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { validate as uuidValidate, version as uuidVersion } from "uuid";
-import { type OrderTypeWithVariant } from "~/types/order";
+import { type OrderType } from "~/types/order";
 import { type ProductKeyType } from "~/types/productKey";
 
 export function cn(...inputs: ClassValue[]) {
@@ -17,8 +17,10 @@ export const formatPrice = (price: number) => {
 };
 
 export const formatISOStringToDate = (
-  date: string,
+  date?: string | null,
 ): { formattedDate: string; formattedTime: string } => {
+  if (!date) return { formattedDate: "", formattedTime: "" };
+
   const dateObj = new Date(date);
 
   const formattedDate = new Intl.DateTimeFormat("en-US", {
@@ -70,16 +72,14 @@ export const formatDuration = (duration: number) => {
     : `${duration} Day${duration > 1 ? "s" : ""}`;
 };
 
-type ItemWithVariant = OrderTypeWithVariant | ProductKeyType;
-
-export const sortByVariant = <T extends ItemWithVariant>(
+export const sortByVariant = <T extends OrderType | ProductKeyType>(
   rowA: Row<T>,
-  rowB: Row<T>
+  rowB: Row<T>,
 ): number => {
   const getVariantValue = (row: Row<T>): number => {
-    if ('variant' in row.original) {
-      return row.original.variant;
-    } else if ('duration' in row.original) {
+    if ("productKey" in row.original) {
+      return row.original.productKey.duration;
+    } else if ("duration" in row.original) {
       return row.original.duration;
     }
     return 0; // Default value if neither property exists
@@ -96,4 +96,12 @@ export const sortByVariant = <T extends ItemWithVariant>(
 
   // For all other cases, sort in descending order
   return variantA - variantB;
+};
+
+export const getStatus = (expiry?: string | null) => {
+  return expiry
+    ? new Date(expiry) < new Date()
+      ? "expired"
+      : "active"
+    : "active";
 };

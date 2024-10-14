@@ -14,14 +14,15 @@ import {
   copyToClipboard,
   dateFilterFn,
   formatISOStringToDate,
+  getStatus,
 } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
-import { type ProductKeyTypeWithStatus } from "~/types/productKey";
+import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 import { Badge } from "../../ui/badge";
 
 const ActionsCell: React.FC<{
-  row: Row<ProductKeyTypeWithStatus>;
+  row: Row<ProductKeyType>;
 }> = ({ row }) => {
   const { user } = useUserStore();
   const {
@@ -58,7 +59,7 @@ const ActionsCell: React.FC<{
   );
 };
 
-export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
+export const getColumns = (): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (
@@ -98,16 +99,28 @@ export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
     },
     filterFn: dateFilterFn,
   },
-
+  {
+    id: "dateGlobalFilter",
+    header: () => null,
+    cell: () => null,
+    accessorFn: (row) => {
+      if (!row.expiry) return "No Expiry";
+      return (
+        formatISOStringToDate(row.expiry).formattedDate +
+        " " +
+        formatISOStringToDate(row.expiry).formattedTime
+      );
+    },
+  },
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const { status } = row.original;
+      const { expiry } = row.original;
 
-      return status === "expired" ? (
+      return getStatus(expiry) === "expired" ? (
         <Badge variant="destructive" className="shrink-0 justify-center">
           Expired
         </Badge>
@@ -118,9 +131,10 @@ export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
       );
     },
     filterFn: (row, _, filterValue: string[]) => {
-      const { status } = row.original;
-      return filterValue.includes(status);
+      const { expiry } = row.original;
+      return filterValue.includes(getStatus(expiry));
     },
+    accessorFn: (row) => getStatus(row.expiry),
   },
   {
     accessorKey: "product",
@@ -135,6 +149,7 @@ export const getColumns = (): ColumnDef<ProductKeyTypeWithStatus>[] => [
       const { product } = row.original;
       return value.includes(product.name);
     },
+    accessorFn: (row) => row.product.name,
   },
   {
     accessorKey: "key",

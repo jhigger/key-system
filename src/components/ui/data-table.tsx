@@ -137,6 +137,7 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     autoResetPageIndex: false,
+    globalFilterFn: "fuzzy",
   });
 
   return (
