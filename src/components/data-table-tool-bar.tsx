@@ -3,7 +3,6 @@ import { Ban, Eye, FilePenLine, PackagePlus, Search } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import useProducts from "~/hooks/useProducts";
-import { fakeProducts } from "~/lib/fakeData";
 import { formatDuration } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { useUserStore } from "~/state/user.store";
@@ -171,11 +170,11 @@ const DataTableToolBar = <TData,>({
       </div>
       <div className="flex w-full flex-wrap items-center gap-2">
         <DatePicker table={table} />
-        {productColumn && (
+        {productColumn && products && (
           <DataTableFacetedFilter
             column={productColumn}
             title="Product"
-            options={fakeProducts.map((product) => ({
+            options={products.map((product) => ({
               label:
                 product.name.charAt(0).toUpperCase() + product.name.slice(1),
               value: product.name,

@@ -15,7 +15,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import useProducts from "~/hooks/useProducts";
-import { fakeProducts } from "~/lib/fakeData";
 import { formatDuration } from "~/lib/utils";
 import { type ProductKeyType } from "~/types/productKey";
 import Loader from "./loader";
@@ -151,8 +150,8 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
                       <SelectValue placeholder="Select a duration" />
                     </SelectTrigger>
                     <SelectContent>
-                      {fakeProducts
-                        .find((p) => p.name === form.getValues("product"))
+                      {products
+                        ?.find((p) => p.name === form.getValues("product"))
                         ?.pricing?.map((pricing) => (
                           <SelectItem
                             key={pricing.duration}

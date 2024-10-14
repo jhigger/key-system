@@ -10,7 +10,7 @@ import {
 } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { fakeProducts } from "~/lib/fakeData";
+import useProducts from "~/hooks/useProducts";
 import { formatDuration, formatPrice } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
 import { type ProductType } from "~/types/product";
@@ -47,8 +47,13 @@ type ProductFormValues = z.infer<typeof productSchema>;
 const ProductList = () => {
   const { user } = useUserStore();
 
-  const [currentProducts, setCurrentProducts] =
-    useState<ProductType[]>(fakeProducts);
+  const {
+    query: { data: products },
+  } = useProducts();
+
+  const [currentProducts, setCurrentProducts] = useState<ProductType[]>(
+    products ?? [],
+  );
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -68,13 +73,13 @@ const ProductList = () => {
   });
 
   useEffect(() => {
-    const formattedProducts = fakeProducts.map((product) => ({
+    const formattedProducts = products?.map((product) => ({
       keys: [],
       productName: product.name,
     }));
 
-    replace(formattedProducts); // Set the initial products once
-  }, [replace]);
+    replace(formattedProducts ?? []); // Set the initial products once
+  }, [replace, products]);
 
   const onSubmit = (data: ProductFormValues) => {
     const filteredData = data.products.filter(

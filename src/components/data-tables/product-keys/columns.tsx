@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import useProductKeys from "~/hooks/useProductKeys";
-import { fakeProducts } from "~/lib/fakeData";
+import useProducts from "~/hooks/useProducts";
 import {
   censorUUID,
   copyToClipboard,
@@ -43,16 +43,23 @@ const ProductCell: React.FC<{
   const {
     mutation: { editProductKey },
   } = useProductKeys();
+  const {
+    query: { data: products },
+  } = useProducts();
+
+  if (!products) return null;
 
   if (editMode) {
     return (
       <Select
         value={currentProduct}
         onValueChange={(newProduct) => {
+          const product = products?.find((p) => p.name === newProduct);
+          if (!product) return;
           setCurrentProduct(newProduct);
           editProductKey({
             ...row.original,
-            product: fakeProducts.find((p) => p.name === newProduct)!,
+            product,
           });
         }}
       >
@@ -60,7 +67,7 @@ const ProductCell: React.FC<{
           <SelectValue placeholder="Select a product" />
         </SelectTrigger>
         <SelectContent>
-          {fakeProducts.map((product) => (
+          {products.map((product) => (
             <SelectItem
               key={product.uuid}
               value={product.name}
@@ -84,6 +91,11 @@ const VariantCell: React.FC<{
   const {
     mutation: { editProductKey },
   } = useProductKeys();
+  const {
+    query: { data: products },
+  } = useProducts();
+
+  if (!products) return null;
 
   if (editMode) {
     return (
@@ -100,7 +112,7 @@ const VariantCell: React.FC<{
           <SelectValue placeholder="Select a variant" />
         </SelectTrigger>
         <SelectContent>
-          {fakeProducts
+          {products
             .find((p) => p.name === row.original.product.name)
             ?.pricing.map((product) => (
               <SelectItem
