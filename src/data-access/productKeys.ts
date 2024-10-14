@@ -48,7 +48,7 @@ export const editProductKey = async (
 export const addProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const productKeys = getAvailableProductKeys();
+  const productKeys = getProductKeys();
 
   productKeys.push(productKey);
   // Update stock when adding a new product key
@@ -59,7 +59,7 @@ export const addProductKey = async (
 export const deleteProductKey = async (
   uuid: string,
 ): Promise<ProductKeyType[]> => {
-  const productKeys = getAvailableProductKeys();
+  const productKeys = getProductKeys();
 
   const index = productKeys.findIndex((productKey) => productKey.uuid === uuid);
   if (index === -1) {

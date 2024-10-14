@@ -84,7 +84,7 @@ const ProductCell: React.FC<{
   return currentProduct;
 };
 
-const VariantCell: React.FC<{
+const DurationCell: React.FC<{
   row: Row<ProductKeyType>;
 }> = ({ row }) => {
   const { editMode } = useUIStore();
@@ -258,7 +258,7 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Duration" />
     ),
-    cell: ({ row }) => <VariantCell row={row} />,
+    cell: ({ row }) => <DurationCell row={row} />,
     filterFn: (row, id, value: number[]) => {
       return value.includes(row.original.duration);
     },
