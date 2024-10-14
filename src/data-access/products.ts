@@ -38,7 +38,7 @@ export const deleteProduct = (uuid: string): ProductType[] => {
 export const deletePricing = (
   productUuid: string,
   pricingUuid: string,
-): ProductType => {
+): ProductType | null => {
   const productIndex = fakeProducts.findIndex(
     (product) => product.uuid === productUuid,
   );
@@ -76,10 +76,15 @@ export const deletePricing = (
     fakeProductKeys.splice(keysToDeleteIndices[i]!, 1);
   }
 
-  const updatedProduct = { ...product, pricing: updatedPricing };
-  fakeProducts[productIndex] = updatedProduct;
-
-  return updatedProduct;
+  if (updatedPricing.length === 0) {
+    // If no pricing options left, delete the entire product
+    fakeProducts.splice(productIndex, 1);
+    return null;
+  } else {
+    const updatedProduct = { ...product, pricing: updatedPricing };
+    fakeProducts[productIndex] = updatedProduct;
+    return updatedProduct;
+  }
 };
 
 export const updateProductStock = async (
