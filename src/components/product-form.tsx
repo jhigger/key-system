@@ -70,6 +70,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
 
     const {
       query: { data: products },
+      mutation: { deletePricing },
     } = useProducts();
 
     const validateProductName = useCallback(
@@ -130,6 +131,19 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
     };
 
     const isEditing = !!initialValues?.name;
+
+    const removePricingVariant = async (index: number) => {
+      if (initialValues) {
+        const pricingToDelete = initialValues.pricing[index];
+        if (pricingToDelete) {
+          deletePricing({
+            productUuid: initialValues.uuid,
+            pricingUuid: pricingToDelete.uuid,
+          });
+        }
+      }
+      remove(index);
+    };
 
     return (
       <Form {...form}>
@@ -217,7 +231,10 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
                     type="button"
                     variant="ghost"
                     size="icon"
-                    onClick={() => remove(index)}
+                    onClick={async () => {
+                      await removePricingVariant(index);
+                      await form.trigger("pricing");
+                    }}
                     className={cn(
                       "col-span-1 flex-shrink-0 hover:bg-destructive/80",
                       form.getFieldState(`pricing.${index}`).error &&

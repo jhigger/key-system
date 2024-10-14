@@ -1,6 +1,6 @@
 import { fakeProducts } from "~/lib/fakeData";
 import { type ProductType } from "~/types/product";
-import { getAvailableProductKeys, getProductKeys } from "./productKeys";
+import { getProductKeys } from "./productKeys";
 
 export const getProducts = (): ProductType[] => fakeProducts;
 
@@ -50,7 +50,7 @@ export const deletePricing = async (
   pricingUuid: string,
 ): Promise<ProductType | null> => {
   const products = getProducts();
-  const productKeys = getAvailableProductKeys();
+  const productKeys = getProductKeys();
 
   const productIndex = products.findIndex(
     (product) => product.uuid === productUuid,
