@@ -1,4 +1,4 @@
-import { fakeProducts } from "~/lib/fakeData";
+import { fakeProductKeys, fakeProducts } from "~/lib/fakeData";
 import { type ProductType } from "~/types/product";
 
 export const getProducts = (): ProductType[] => fakeProducts;
@@ -22,7 +22,15 @@ export const addProduct = (product: ProductType) => {
 export const deleteProduct = (uuid: string): ProductType[] => {
   const index = fakeProducts.findIndex((product) => product.uuid === uuid);
   if (index !== -1) {
+    // Remove the product
     fakeProducts.splice(index, 1);
+
+    // Remove all associated product keys
+    const updatedProductKeys = fakeProductKeys.filter(
+      (key) => key.product.uuid !== uuid,
+    );
+    fakeProductKeys.length = 0;
+    fakeProductKeys.push(...updatedProductKeys);
   }
   return fakeProducts;
 };
@@ -43,12 +51,29 @@ export const deletePricing = (
     throw new Error(`Product ${productUuid} not found`);
   }
 
+  const pricingToDelete = product.pricing.find((p) => p.uuid === pricingUuid);
+  if (!pricingToDelete) {
+    throw new Error(`Pricing ${pricingUuid} not found`);
+  }
+
   const updatedPricing = product.pricing.filter(
     (pricing) => pricing.uuid !== pricingUuid,
   );
 
-  if (updatedPricing.length === product.pricing.length) {
-    throw new Error(`Pricing ${pricingUuid} not found`);
+  // Delete associated product keys
+  const keysToDeleteIndices = fakeProductKeys.reduce((acc, key, index) => {
+    if (
+      key.product.uuid === productUuid &&
+      key.duration === pricingToDelete.duration
+    ) {
+      acc.push(index);
+    }
+    return acc;
+  }, [] as number[]);
+
+  // Remove keys from highest index to lowest to avoid shifting issues
+  for (let i = keysToDeleteIndices.length - 1; i >= 0; i--) {
+    fakeProductKeys.splice(keysToDeleteIndices[i]!, 1);
   }
 
   const updatedProduct = { ...product, pricing: updatedPricing };

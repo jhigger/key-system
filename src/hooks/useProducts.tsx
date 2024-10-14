@@ -87,36 +87,29 @@ const useProducts = () => {
       toast.success("Product updated successfully");
     },
   });
-
   const deleteProductMutation = useMutation({
-    mutationFn: async (uuid: string) => {
-      return deleteProduct(uuid);
+    mutationFn: async (deletedUuid: string) => {
+      const result = deleteProduct(deletedUuid);
+      return result;
     },
     onMutate: async (deletedUuid) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: ["products"] });
-
-      // Snapshot the previous value
       const previousProducts = queryClient.getQueryData<ProductType[]>([
         "products",
       ]);
-
-      // Optimistically update to the new value
       queryClient.setQueryData<ProductType[]>(["products"], (old) =>
         old ? old.filter((product) => product.uuid !== deletedUuid) : [],
       );
-
-      // Return a context object with the snapshotted value
       return { previousProducts };
     },
     onError: (err, newTodo, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(["products"], context?.previousProducts);
       toast.error("Failed to delete product");
     },
     onSettled: () => {
-      // Always refetch after error or success:
+      // Invalidate both products and product keys queries
       void queryClient.invalidateQueries({ queryKey: ["products"] });
+      void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Product deleted successfully");
@@ -167,8 +160,9 @@ const useProducts = () => {
       toast.error("Failed to delete pricing");
     },
     onSettled: () => {
-      // Always refetch after error or success:
+      // Invalidate both products and product keys queries
       void queryClient.invalidateQueries({ queryKey: ["products"] });
+      void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Pricing deleted successfully");
@@ -179,18 +173,7 @@ const useProducts = () => {
     query,
     mutation: {
       addProduct: addProductMutation.mutate,
-      editProduct: (product: ProductType) => {
-        const currentProducts = queryClient.getQueryData<ProductType[]>([
-          "products",
-        ]);
-        const existingProduct = currentProducts?.find(
-          (p) => p.uuid === product.uuid,
-        );
-
-        if (JSON.stringify(existingProduct) !== JSON.stringify(product)) {
-          editMutation.mutate(product);
-        }
-      },
+      editProduct: editMutation.mutate,
       deleteProduct: deleteProductMutation.mutate,
       deletePricing: deletePricingMutation.mutate,
     },
