@@ -8,11 +8,11 @@ import { type UserType } from "~/types/user";
 export const fakeOwnerId = "67dd6c56-29a6-46c7-a038-33f7e37fc72a";
 
 export const DEFAULT_PRICING: PricingType[] = [
-  { uuid: uuidv4(), duration: 1, value: 1.5, stock: 999 },
-  { uuid: uuidv4(), duration: 3, value: 3, stock: 99 },
-  { uuid: uuidv4(), duration: 7, value: 5, stock: 9 },
+  { uuid: uuidv4(), duration: 1, value: 1.5, stock: 0 },
+  { uuid: uuidv4(), duration: 3, value: 3, stock: 0 },
+  { uuid: uuidv4(), duration: 7, value: 5, stock: 0 },
   { uuid: uuidv4(), duration: 30, value: 13, stock: 0 },
-  { uuid: uuidv4(), duration: 0, value: 150, stock: 1 },
+  { uuid: uuidv4(), duration: 0, value: 150, stock: 0 },
 ];
 
 export const fakeProducts: ProductType[] = [
@@ -21,7 +21,13 @@ export const fakeProducts: ProductType[] = [
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
     name: "Distortion",
-    pricing: DEFAULT_PRICING,
+    pricing: [
+      { uuid: uuidv4(), duration: 1, value: 1.5, stock: 1 },
+      { uuid: uuidv4(), duration: 3, value: 3, stock: 0 },
+      { uuid: uuidv4(), duration: 7, value: 5, stock: 0 },
+      { uuid: uuidv4(), duration: 30, value: 13, stock: 0 },
+      { uuid: uuidv4(), duration: 0, value: 150, stock: 1 },
+    ],
   },
   {
     uuid: uuidv4(),

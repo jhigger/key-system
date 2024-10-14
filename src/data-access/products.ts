@@ -56,3 +56,44 @@ export const deletePricing = (
 
   return updatedProduct;
 };
+
+export const updateProductStock = async (
+  productUuid: string,
+  duration: number,
+  change: number,
+): Promise<ProductType> => {
+  const productIndex = fakeProducts.findIndex((p) => p.uuid === productUuid);
+  if (productIndex === -1) {
+    throw new Error(`Product not found: ${productUuid}`);
+  }
+
+  const product = fakeProducts[productIndex];
+  if (!product) {
+    throw new Error(`Product not found: ${productUuid}`);
+  }
+  const pricingIndex = product.pricing.findIndex(
+    (p) => p.duration === duration,
+  );
+
+  if (pricingIndex === -1) {
+    throw new Error(
+      `Pricing not found for ${product.name}, duration: ${duration}`,
+    );
+  }
+
+  const updatedProduct = {
+    ...product,
+    pricing: product.pricing.map((p, index) => {
+      if (index === pricingIndex) {
+        const currentStock = isNaN(p.stock) ? 0 : p.stock;
+        const newStock = Math.max(0, currentStock + change);
+        return { ...p, stock: newStock };
+      }
+      return p;
+    }),
+  };
+
+  fakeProducts[productIndex] = updatedProduct;
+  console.log("Updated product:", updatedProduct);
+  return updatedProduct;
+};

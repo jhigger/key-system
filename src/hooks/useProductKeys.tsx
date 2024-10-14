@@ -17,33 +17,32 @@ const useProductKeys = () => {
   });
 
   const addProductKeyMutation = useMutation({
-    mutationFn: async (productKey: ProductKeyType) => {
-      return addProductKey(productKey);
-    },
+    mutationFn: addProductKey,
     onMutate: async (newProductKey) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
-
-      // Snapshot the previous value
       const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([
         "productKeys",
       ]);
-
-      // Optimistically update to the new value
       queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) =>
         old ? [...old, newProductKey] : [newProductKey],
       );
-
-      // Return a context object with the snapshotted value
       return { previousProductKeys };
     },
-    onError: (err, newProductKey, context) => {
-      // If the mutation fails, use the context to roll back
-      queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
+    onError: (err, newProductKey, context: unknown) => {
+      if (
+        context &&
+        typeof context === "object" &&
+        "previousProductKeys" in context
+      ) {
+        queryClient.setQueryData(
+          ["productKeys"],
+          (context as { previousProductKeys?: ProductKeyType[] })
+            .previousProductKeys,
+        );
+      }
       toast.error("Failed to add product key");
     },
     onSettled: async () => {
-      // Always refetch after error or success
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
@@ -52,19 +51,12 @@ const useProductKeys = () => {
   });
 
   const editProductKeyMutation = useMutation({
-    mutationFn: async (productKey: ProductKeyType) => {
-      return editProductKey(productKey);
-    },
+    mutationFn: editProductKey,
     onMutate: async (updatedProductKey) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
-
-      // Snapshot the previous value
       const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([
         "productKeys",
       ]);
-
-      // Optimistically update to the new value
       queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) => {
         if (!old) return [updatedProductKey];
         return old.map((key) =>
@@ -73,17 +65,23 @@ const useProductKeys = () => {
             : key,
         );
       });
-
-      // Return a context object with the snapshotted value
       return { previousProductKeys };
     },
-    onError: (err, newProductKey, context) => {
-      // If the mutation fails, use the context to roll back
-      queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
+    onError: (err, newProductKey, context: unknown) => {
+      if (
+        context &&
+        typeof context === "object" &&
+        "previousProductKeys" in context
+      ) {
+        queryClient.setQueryData(
+          ["productKeys"],
+          (context as { previousProductKeys?: ProductKeyType[] })
+            .previousProductKeys,
+        );
+      }
       toast.error("Failed to update product key");
     },
     onSettled: () => {
-      // Always refetch after error or success to ensure we have the latest data
       void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
@@ -92,33 +90,22 @@ const useProductKeys = () => {
   });
 
   const deleteProductKeyMutation = useMutation({
-    mutationFn: async (uuid: string) => {
-      return deleteProductKey(uuid);
-    },
+    mutationFn: deleteProductKey,
     onMutate: async (deletedUuid) => {
-      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
-
-      // Snapshot the previous value
       const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([
         "productKeys",
       ]);
-
-      // Optimistically update to the new value
       queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) =>
         old ? old.filter((key) => key.uuid !== deletedUuid) : [],
       );
-
-      // Return a context object with the snapshotted value
       return { previousProductKeys };
     },
     onError: (err, newTodo, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
       toast.error("Failed to delete product key");
     },
     onSettled: () => {
-      // Always refetch after error or success:
       void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
