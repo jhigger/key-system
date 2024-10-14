@@ -112,7 +112,11 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
               <FormItem>
                 <FormLabel>Product Name</FormLabel>
                 <FormControl>
-                  <Input {...field} ref={firstInputRef} />
+                  <Input
+                    {...field}
+                    ref={firstInputRef}
+                    disabled={!!initialValues?.name}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
