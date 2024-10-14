@@ -1,52 +1,64 @@
-import { fakeProductKeys, fakeProducts } from "~/lib/fakeData";
+import { fakeProducts } from "~/lib/fakeData";
 import { type ProductType } from "~/types/product";
+import { getProductKeys } from "./productKeys";
 
 export const getProducts = (): ProductType[] => fakeProducts;
 
 export const editProduct = (product: ProductType) => {
-  const index = fakeProducts.findIndex((p) => p.uuid === product.uuid);
+  const products = getProducts();
+
+  const index = products.findIndex((p) => p.uuid === product.uuid);
   if (index !== -1) {
     // Create a new object with the updated values
-    const updatedProduct = { ...fakeProducts[index], ...product };
+    const updatedProduct = { ...products[index], ...product };
     // Replace the old object with the new one
-    fakeProducts[index] = updatedProduct;
+    products[index] = updatedProduct;
     return updatedProduct;
   }
   throw new Error(`Product ${product.name} not found`);
 };
 
 export const addProduct = (product: ProductType) => {
-  fakeProducts.push(product);
+  const products = getProducts();
+
+  products.push(product);
+  return products;
 };
 
 export const deleteProduct = (uuid: string): ProductType[] => {
-  const index = fakeProducts.findIndex((product) => product.uuid === uuid);
+  const products = getProducts();
+  const productKeys = getProductKeys();
+
+  const index = products.findIndex((product) => product.uuid === uuid);
   if (index !== -1) {
     // Remove the product
-    fakeProducts.splice(index, 1);
+    products.splice(index, 1);
 
     // Remove all associated product keys
-    const updatedProductKeys = fakeProductKeys.filter(
+    const updatedProductKeys = productKeys.filter(
       (key) => key.product.uuid !== uuid,
     );
-    fakeProductKeys.length = 0;
-    fakeProductKeys.push(...updatedProductKeys);
+    productKeys.length = 0;
+    productKeys.push(...updatedProductKeys);
   }
-  return fakeProducts;
+  return products;
 };
 
 export const deletePricing = (
   productUuid: string,
   pricingUuid: string,
 ): ProductType | null => {
-  const productIndex = fakeProducts.findIndex(
+  const products = getProducts();
+  const productKeys = getProductKeys();
+
+  const productIndex = products.findIndex(
     (product) => product.uuid === productUuid,
   );
   if (productIndex === -1) {
     throw new Error(`Product ${productUuid} not found`);
   }
 
-  const product = fakeProducts[productIndex];
+  const product = products[productIndex];
   if (!product) {
     throw new Error(`Product ${productUuid} not found`);
   }
@@ -61,7 +73,7 @@ export const deletePricing = (
   );
 
   // Delete associated product keys
-  const keysToDeleteIndices = fakeProductKeys.reduce((acc, key, index) => {
+  const keysToDeleteIndices = productKeys.reduce((acc, key, index) => {
     if (
       key.product.uuid === productUuid &&
       key.duration === pricingToDelete.duration
@@ -73,16 +85,16 @@ export const deletePricing = (
 
   // Remove keys from highest index to lowest to avoid shifting issues
   for (let i = keysToDeleteIndices.length - 1; i >= 0; i--) {
-    fakeProductKeys.splice(keysToDeleteIndices[i]!, 1);
+    productKeys.splice(keysToDeleteIndices[i]!, 1);
   }
 
   if (updatedPricing.length === 0) {
     // If no pricing options left, delete the entire product
-    fakeProducts.splice(productIndex, 1);
+    products.splice(productIndex, 1);
     return null;
   } else {
     const updatedProduct = { ...product, pricing: updatedPricing };
-    fakeProducts[productIndex] = updatedProduct;
+    products[productIndex] = updatedProduct;
     return updatedProduct;
   }
 };
@@ -92,12 +104,14 @@ export const updateProductStock = async (
   duration: number,
   change: number,
 ): Promise<ProductType> => {
-  const productIndex = fakeProducts.findIndex((p) => p.uuid === productUuid);
+  const products = getProducts();
+
+  const productIndex = products.findIndex((p) => p.uuid === productUuid);
   if (productIndex === -1) {
     throw new Error(`Product not found: ${productUuid}`);
   }
 
-  const product = fakeProducts[productIndex];
+  const product = products[productIndex];
   if (!product) {
     throw new Error(`Product not found: ${productUuid}`);
   }
@@ -123,6 +137,6 @@ export const updateProductStock = async (
     }),
   };
 
-  fakeProducts[productIndex] = updatedProduct;
+  products[productIndex] = updatedProduct;
   return updatedProduct;
 };

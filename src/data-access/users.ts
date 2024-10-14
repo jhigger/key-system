@@ -4,15 +4,17 @@ import { type UserType } from "~/types/user";
 export const getUsers = (): UserType[] => fakeUsers;
 
 export const changeUserRole = (user: UserType): UserType => {
-  const index = fakeUsers.findIndex((u) => u.uuid === user.uuid);
+  const users = getUsers();
+
+  const index = users.findIndex((u) => u.uuid === user.uuid);
   if (index !== -1) {
-    const existingUser = fakeUsers[index];
+    const existingUser = users[index];
     if (existingUser) {
       const updatedUser: UserType = {
         ...existingUser,
         role: user.role,
       };
-      fakeUsers[index] = updatedUser;
+      users[index] = updatedUser;
       return updatedUser;
     }
   }

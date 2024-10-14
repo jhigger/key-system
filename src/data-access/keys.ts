@@ -1,5 +1,6 @@
 import { fakeProductKeys } from "~/lib/fakeData";
 import { type ProductKeyType } from "~/types/productKey";
+import { getProductKeys } from "./productKeys";
 
 export const getKeys = (userUUID?: string): ProductKeyType[] => {
   return userUUID
@@ -8,21 +9,24 @@ export const getKeys = (userUUID?: string): ProductKeyType[] => {
 };
 
 export const addKey = (key: ProductKeyType) => {
-  fakeProductKeys.push(key);
+  const productKeys = getProductKeys();
+
+  productKeys.push(key);
+  return productKeys;
 };
 
 export const resetHardwareId = (hardwareId: string): ProductKeyType => {
-  const index = fakeProductKeys.findIndex(
-    (key) => key.hardwareId === hardwareId,
-  );
+  const productKeys = getProductKeys();
+
+  const index = productKeys.findIndex((key) => key.hardwareId === hardwareId);
   if (index !== -1) {
-    const existingKey = fakeProductKeys[index];
+    const existingKey = productKeys[index];
     if (existingKey) {
       const updatedKey: ProductKeyType = {
         ...existingKey,
         hardwareId: null,
       };
-      fakeProductKeys[index] = updatedKey;
+      productKeys[index] = updatedKey;
       return updatedKey;
     }
   }

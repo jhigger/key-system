@@ -8,14 +8,14 @@ export const getProductKeys = (): ProductKeyType[] =>
 export const editProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const index = fakeProductKeys.findIndex(
-    (key) => key.uuid === productKey.uuid,
-  );
+  const productKeys = getProductKeys();
+
+  const index = productKeys.findIndex((key) => key.uuid === productKey.uuid);
   if (index === -1) {
     throw new Error(`Key ${productKey.key} not found`);
   }
 
-  const oldKey = fakeProductKeys[index];
+  const oldKey = productKeys[index];
   if (!oldKey) {
     throw new Error(`Key ${productKey.key} is undefined`);
   }
@@ -39,14 +39,16 @@ export const editProductKey = async (
   // Create a new object with the updated values
   const updatedKey = { ...oldKey, ...productKey, duration: newDuration };
   // Replace the old object with the new one
-  fakeProductKeys[index] = updatedKey;
+  productKeys[index] = updatedKey;
   return updatedKey;
 };
 
 export const addProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  fakeProductKeys.push(productKey);
+  const productKeys = getProductKeys();
+
+  productKeys.push(productKey);
   // Update stock when adding a new product key
   await updateProductStock(productKey.product.uuid, productKey.duration, 1);
   return productKey;
@@ -55,14 +57,14 @@ export const addProductKey = async (
 export const deleteProductKey = async (
   uuid: string,
 ): Promise<ProductKeyType[]> => {
-  const index = fakeProductKeys.findIndex(
-    (productKey) => productKey.uuid === uuid,
-  );
+  const productKeys = getProductKeys();
+
+  const index = productKeys.findIndex((productKey) => productKey.uuid === uuid);
   if (index === -1) {
     throw new Error(`Key with UUID ${uuid} not found`);
   }
 
-  const deletedKey = fakeProductKeys[index];
+  const deletedKey = productKeys[index];
   if (!deletedKey) {
     throw new Error(`Key with UUID ${uuid} is undefined`);
   }
@@ -70,7 +72,7 @@ export const deleteProductKey = async (
   // Update stock when deleting a product key
   await updateProductStock(deletedKey.product.uuid, deletedKey.duration, -1);
 
-  fakeProductKeys.splice(index, 1);
+  productKeys.splice(index, 1);
 
-  return fakeProductKeys;
+  return productKeys;
 };
