@@ -1,6 +1,6 @@
 import { fakeProducts } from "~/lib/fakeData";
 import { type ProductType } from "~/types/product";
-import { getAvailableProductKeys } from "./productKeys";
+import { getAvailableProductKeys, getProductKeys } from "./productKeys";
 
 export const getProducts = (): ProductType[] => fakeProducts;
 
@@ -27,7 +27,7 @@ export const addProduct = (product: ProductType) => {
 
 export const deleteProduct = (uuid: string): ProductType[] => {
   const products = getProducts();
-  const productKeys = getAvailableProductKeys();
+  const productKeys = getProductKeys();
 
   const index = products.findIndex((product) => product.uuid === uuid);
   if (index !== -1) {

@@ -10,7 +10,7 @@ export const getAvailableProductKeys = (): ProductKeyType[] =>
 export const editProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const productKeys = getAvailableProductKeys();
+  const productKeys = getProductKeys();
 
   const index = productKeys.findIndex((key) => key.uuid === productKey.uuid);
   if (index === -1) {
