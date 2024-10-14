@@ -74,7 +74,7 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
         uuid: uuidv4(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        product,
+        product: product.uuid,
         hardwareId: null,
         owner: null,
       };

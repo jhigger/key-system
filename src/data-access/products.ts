@@ -4,7 +4,7 @@ import { getAvailableProductKeys, getProductKeys } from "./productKeys";
 
 export const getProducts = (): ProductType[] => fakeProducts;
 
-export const editProduct = (product: ProductType) => {
+export const editProduct = async (product: ProductType) => {
   const products = getProducts();
 
   const index = products.findIndex((p) => p.uuid === product.uuid);
@@ -18,14 +18,15 @@ export const editProduct = (product: ProductType) => {
   throw new Error(`Product ${product.name} not found`);
 };
 
-export const addProduct = (product: ProductType) => {
+export const addProduct = async (
+  product: ProductType,
+): Promise<ProductType> => {
   const products = getProducts();
-
   products.push(product);
-  return products;
+  return product;
 };
 
-export const deleteProduct = (uuid: string): ProductType[] => {
+export const deleteProduct = async (uuid: string): Promise<ProductType[]> => {
   const products = getProducts();
   const productKeys = getProductKeys();
 
@@ -36,7 +37,7 @@ export const deleteProduct = (uuid: string): ProductType[] => {
 
     // Remove all associated product keys
     const updatedProductKeys = productKeys.filter(
-      (key) => key.product.uuid !== uuid,
+      (key) => key.product !== uuid,
     );
     productKeys.length = 0;
     productKeys.push(...updatedProductKeys);
@@ -44,10 +45,10 @@ export const deleteProduct = (uuid: string): ProductType[] => {
   return products;
 };
 
-export const deletePricing = (
+export const deletePricing = async (
   productUuid: string,
   pricingUuid: string,
-): ProductType | null => {
+): Promise<ProductType | null> => {
   const products = getProducts();
   const productKeys = getAvailableProductKeys();
 
@@ -75,7 +76,7 @@ export const deletePricing = (
   // Delete associated product keys
   const keysToDeleteIndices = productKeys.reduce((acc, key, index) => {
     if (
-      key.product.uuid === productUuid &&
+      key.product === productUuid &&
       key.duration === pricingToDelete.duration
     ) {
       acc.push(index);

@@ -60,29 +60,17 @@ const useProductKeys = () => {
       queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) => {
         if (!old) return [updatedProductKey];
         return old.map((key) =>
-          key.uuid === updatedProductKey.uuid
-            ? { ...key, ...updatedProductKey }
-            : key,
+          key.uuid === updatedProductKey.uuid ? updatedProductKey : key,
         );
       });
       return { previousProductKeys };
     },
-    onError: (err, newProductKey, context: unknown) => {
-      if (
-        context &&
-        typeof context === "object" &&
-        "previousProductKeys" in context
-      ) {
-        queryClient.setQueryData(
-          ["productKeys"],
-          (context as { previousProductKeys?: ProductKeyType[] })
-            .previousProductKeys,
-        );
-      }
+    onError: (err, newProductKey, context) => {
+      queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
       toast.error("Failed to update product key");
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Product key updated successfully");

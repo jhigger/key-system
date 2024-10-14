@@ -8,54 +8,30 @@ import {
   getProducts,
 } from "~/data-access/products";
 import { type ProductType } from "~/types/product";
-
 const useProducts = () => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: getProducts,
   });
 
   const addProductMutation = useMutation({
-    mutationFn: async (product: ProductType) => {
-      return addProduct(product);
-    },
-    onMutate: async (newProduct) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["products"] });
-
-      // Snapshot the previous value
-      const previousProducts = queryClient.getQueryData<ProductType[]>([
-        "products",
-      ]);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData<ProductType[]>(["products"], (old) =>
-        old ? [...old, newProduct] : [newProduct],
-      );
-
-      // Return a context object with the snapshotted value
-      return { previousProducts };
-    },
-    onError: (err, newProduct, context) => {
-      // If the mutation fails, use the context to roll back
-      queryClient.setQueryData(["products"], context?.previousProducts);
-      toast.error("Failed to add product");
-    },
-    onSettled: async () => {
-      // Always refetch after error or success
-      await queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-    onSuccess: () => {
+    mutationFn: addProduct,
+    onSuccess: (newProduct) => {
+      queryClient.setQueryData<ProductType[]>(["products"], (old) => {
+        if (!old) return [newProduct];
+        return [...old, newProduct];
+      });
       toast.success("Product added successfully");
+    },
+    onError: () => {
+      toast.error("Failed to add product");
     },
   });
 
   const editMutation = useMutation({
-    mutationFn: async (product: ProductType) => {
-      return editProduct(product);
-    },
+    mutationFn: editProduct,
     onMutate: async (product) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: ["products"] });
@@ -79,14 +55,16 @@ const useProducts = () => {
       queryClient.setQueryData(["products"], context?.previousProducts);
       toast.error("Error editing product");
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Always refetch after error or success
-      void queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Product updated successfully");
     },
   });
+
   const deleteProductMutation = useMutation({
     mutationFn: async (deletedUuid: string) => {
       const result = deleteProduct(deletedUuid);
@@ -102,14 +80,13 @@ const useProducts = () => {
       );
       return { previousProducts };
     },
-    onError: (err, newTodo, context) => {
+    onError: (err, deletedUuid, context) => {
       queryClient.setQueryData(["products"], context?.previousProducts);
       toast.error("Failed to delete product");
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Invalidate both products and product keys queries
-      void queryClient.invalidateQueries({ queryKey: ["products"] });
-      void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onSuccess: () => {
       toast.success("Product deleted successfully");
@@ -159,10 +136,10 @@ const useProducts = () => {
       queryClient.setQueryData(["products"], context?.previousProducts);
       toast.error("Failed to delete pricing");
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Invalidate both products and product keys queries
-      void queryClient.invalidateQueries({ queryKey: ["products"] });
-      void queryClient.invalidateQueries({ queryKey: ["productKeys"] });
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Pricing deleted successfully");

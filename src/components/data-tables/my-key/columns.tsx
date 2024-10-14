@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import useMyKeys from "~/hooks/useMyKeys";
+import useProducts from "~/hooks/useProducts";
 import {
   censorUUID,
   copyToClipboard,
@@ -57,6 +58,21 @@ const ActionsCell: React.FC<{
       </DropdownMenuContent>
     </DropdownMenu>
   );
+};
+
+const ProductCell: React.FC<{
+  row: Row<ProductKeyType>;
+}> = ({ row }) => {
+  const { product } = row.original;
+  const {
+    query: { data: products },
+  } = useProducts();
+
+  if (!products) return null;
+
+  const productName = products.find((p) => p.uuid === product)?.name;
+
+  return productName;
 };
 
 export const getColumns = (): ColumnDef<ProductKeyType>[] => [
@@ -141,15 +157,12 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
-    cell: ({ row }) => {
-      const { product } = row.original;
-      return product.name;
-    },
+    cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string[]) => {
       const { product } = row.original;
-      return value.includes(product.name);
+      return value.includes(product);
     },
-    accessorFn: (row) => row.product.name,
+    accessorFn: (row) => row.product,
   },
   {
     accessorKey: "key",

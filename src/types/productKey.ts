@@ -3,7 +3,7 @@ import { type ProductType } from "./product";
 
 export type ProductKeyType = {
   uuid: string;
-  product: ProductType;
+  product: ProductType["uuid"];
   key: string;
   expiry?: string | null;
   hardwareId: string | null;

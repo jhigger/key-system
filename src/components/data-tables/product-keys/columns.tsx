@@ -1,6 +1,5 @@
 import { type ColumnDef, type Row } from "@tanstack/react-table";
 import { Copy, Menu, Trash } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 import DebouncedInput from "~/components/debounced-input";
 import { Badge } from "~/components/ui/badge";
@@ -37,40 +36,47 @@ const ProductCell: React.FC<{
   row: Row<ProductKeyType>;
 }> = ({ row }) => {
   const { editMode } = useUIStore();
-  const [currentProduct, setCurrentProduct] = useState<string>(
-    row.original.product.name,
-  );
   const {
     mutation: { editProductKey },
   } = useProductKeys();
   const {
-    query: { data: products },
+    query: { data: products, isLoading },
   } = useProducts();
 
+  if (isLoading) return <div>Loading...</div>;
   if (!products) return null;
+
+  const currentProduct = products.find((p) => p.uuid === row.original.product);
+  const currentProductName = currentProduct ? currentProduct.name : "";
 
   if (editMode) {
     return (
       <Select
-        value={currentProduct}
-        onValueChange={(newProduct) => {
-          const product = products?.find((p) => p.name === newProduct);
-          if (!product) return;
-          setCurrentProduct(newProduct);
+        value={row.original.product}
+        onValueChange={(newProductUuid) => {
+          const newProduct = products.find((p) => p.uuid === newProductUuid);
+          if (!newProduct) return;
+
+          // Reset duration to the first available duration of the new product
+          const newDuration = newProduct.pricing[0]?.duration ?? 0;
+
           editProductKey({
             ...row.original,
-            product,
+            product: newProductUuid,
+            duration: newDuration,
           });
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
-          <SelectValue placeholder="Select a product" />
+          <SelectValue placeholder="Select a product">
+            {currentProductName}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {products.map((product) => (
             <SelectItem
               key={product.uuid}
-              value={product.name}
+              value={product.uuid}
               className="capitalize"
             >
               {product.name}
@@ -81,7 +87,7 @@ const ProductCell: React.FC<{
     );
   }
 
-  return currentProduct;
+  return currentProductName;
 };
 
 const DurationCell: React.FC<{
@@ -113,7 +119,7 @@ const DurationCell: React.FC<{
         </SelectTrigger>
         <SelectContent>
           {products
-            .find((p) => p.name === row.original.product.name)
+            .find((p) => p.uuid === row.original.product)
             ?.pricing.map((product) => (
               <SelectItem
                 key={formatDuration(product.duration)}
@@ -206,6 +212,26 @@ const ActionsCell: React.FC<{
   );
 };
 
+const PricingCell: React.FC<{
+  row: Row<ProductKeyType>;
+}> = ({ row }) => {
+  const { product: uuid } = row.original;
+  const {
+    query: { data: products },
+  } = useProducts();
+
+  if (!products) return null;
+
+  const product = products.find((p) => p.uuid === uuid);
+
+  if (!product) return null;
+
+  return formatPrice(
+    product.pricing.find((p) => p.duration === row.original.duration)?.value ??
+      0,
+  );
+};
+
 export const getColumns = (): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "createdAt",
@@ -244,14 +270,12 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
     ),
     cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string[]) => {
-      return value.includes(row.original.product.name);
+      return value.includes(row.original.product);
     },
     sortingFn: (rowA, rowB) => {
-      return rowA.original.product.name.localeCompare(
-        rowB.original.product.name,
-      );
+      return rowA.original.product.localeCompare(rowB.original.product);
     },
-    accessorFn: (row) => row.product.name,
+    accessorFn: (row) => row.product,
   },
   {
     accessorKey: "duration",
@@ -271,21 +295,11 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Price" />
     ),
-    cell: ({ row }) =>
-      formatPrice(
-        row.original.product.pricing.find(
-          (p) => p.duration === row.original.duration,
-        )?.value ?? 0,
-      ),
+    cell: ({ row }) => <PricingCell row={row} />,
     filterFn: (row, id, value: number[]) => {
-      return value.includes(
-        row.original.product.pricing.find(
-          (p) => p.duration === row.original.duration,
-        )?.value ?? 0,
-      );
+      return value.includes(row.original.duration);
     },
-    accessorFn: (row) =>
-      row.product.pricing.find((p) => p.duration === row.duration)?.value ?? 0,
+    accessorFn: (row) => row.duration,
   },
   {
     accessorKey: "key",

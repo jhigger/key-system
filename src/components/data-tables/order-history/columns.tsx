@@ -1,4 +1,5 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, type Row } from "@tanstack/react-table";
+import useProducts from "~/hooks/useProducts";
 import {
   dateFilterFn,
   formatDuration,
@@ -7,6 +8,21 @@ import {
 } from "~/lib/utils";
 import { type OrderType } from "~/types/order";
 import { DataTableColumnHeader } from "../../data-table-column-header";
+
+const ProductCell: React.FC<{
+  row: Row<OrderType>;
+}> = ({ row }) => {
+  const { productKey } = row.original;
+  const {
+    query: { data: products },
+  } = useProducts();
+
+  if (!products) return null;
+
+  const productName = products.find((p) => p.uuid === productKey.product)?.name;
+
+  return productName;
+};
 
 export const columns: ColumnDef<OrderType>[] = [
   {
@@ -44,10 +60,11 @@ export const columns: ColumnDef<OrderType>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
+    cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string[]) => {
       return value.includes(row.getValue(id));
     },
-    accessorFn: (row) => row.productKey.product.name,
+    accessorFn: (row) => row.productKey.product,
   },
   {
     accessorKey: "invoiceLink",

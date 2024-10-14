@@ -33,10 +33,10 @@ export const editProductKey = async (
   const newDuration = getDuration(productKey.duration);
 
   // Increase stock for the old product key
-  await updateProductStock(oldKey.product.uuid, oldDuration, -1);
+  await updateProductStock(oldKey.product, oldDuration, -1);
 
   // Decrease stock for the new product key
-  await updateProductStock(productKey.product.uuid, newDuration, 1);
+  await updateProductStock(productKey.product, newDuration, 1);
 
   // Create a new object with the updated values
   const updatedKey = { ...oldKey, ...productKey, duration: newDuration };
@@ -52,7 +52,7 @@ export const addProductKey = async (
 
   productKeys.push(productKey);
   // Update stock when adding a new product key
-  await updateProductStock(productKey.product.uuid, productKey.duration, 1);
+  await updateProductStock(productKey.product, productKey.duration, 1);
   return productKey;
 };
 
@@ -72,7 +72,7 @@ export const deleteProductKey = async (
   }
 
   // Update stock when deleting a product key
-  await updateProductStock(deletedKey.product.uuid, deletedKey.duration, -1);
+  await updateProductStock(deletedKey.product, deletedKey.duration, -1);
 
   productKeys.splice(index, 1);
 
