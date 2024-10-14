@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dices, Loader } from "lucide-react";
+import { Dices } from "lucide-react";
+import Link from "next/link";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
@@ -13,9 +14,11 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import useProducts from "~/hooks/useProducts";
 import { fakeProducts } from "~/lib/fakeData";
 import { formatDuration } from "~/lib/utils";
 import { type ProductKeyType } from "~/types/productKey";
+import Loader from "./loader";
 import { Input } from "./ui/input";
 import {
   Select,
@@ -57,15 +60,22 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
         key: "",
       },
     });
+
+    const {
+      query: { data: products, isLoading },
+    } = useProducts();
+
     const onSubmit = (values: z.infer<typeof formSchema>) => {
+      const product = products?.find((p) => p.name === values.product);
+
+      if (product === undefined) return;
+
       const productKey: ProductKeyType = {
         ...values,
         uuid: uuidv4(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        product:
-          fakeProducts.find((p) => p.name === values.product) ??
-          fakeProducts[0]!,
+        product,
         hardwareId: null,
         owner: null,
       };
@@ -75,6 +85,23 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
     const generateKey = () => {
       return uuidv4();
     };
+
+    if (isLoading) {
+      return <Loader />;
+    }
+
+    if (products?.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center p-4">
+          <p>Please create a product first</p>
+          <Button variant="link" className="underline" asChild>
+            <Link href="/admin#products?openForm=true">
+              Click here to create a product
+            </Link>
+          </Button>
+        </div>
+      );
+    }
 
     return (
       <Form {...form}>
@@ -98,7 +125,7 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
                       <SelectValue placeholder="Select a product" />
                     </SelectTrigger>
                     <SelectContent>
-                      {fakeProducts.map((product) => (
+                      {products?.map((product) => (
                         <SelectItem key={product.uuid} value={product.name}>
                           {product.name}
                         </SelectItem>

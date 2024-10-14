@@ -43,8 +43,9 @@ const DataTableToolBar = <TData,>({
   const { asPath } = useRouter();
   const [showForm, setShowForm] = useState(false);
   const isAdminPage = asPath === "/admin";
-  const isProductsPage = isAdminPage || asPath === "/admin#products";
-  const isProductKeysPage = asPath === "/admin#product-keys";
+  const isProductsPage =
+    isAdminPage || asPath.split("?")[0] === "/admin#products";
+  const isProductKeysPage = asPath.split("?")[0] === "/admin#product-keys";
   const productFormRef = useRef<ProductFormRef>(null);
   const productKeyFormRef = useRef<ProductKeyFormRef>(null);
   const {
@@ -62,6 +63,12 @@ const DataTableToolBar = <TData,>({
       }, 100);
     }
   }, [showForm, isProductsPage, isProductKeysPage]);
+
+  useEffect(() => {
+    if (asPath === "/admin#products?openForm=true") {
+      setShowForm(true);
+    }
+  }, [asPath]);
 
   const productColumn = table
     .getAllColumns()
