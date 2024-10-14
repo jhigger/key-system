@@ -1,6 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Trash2 } from "lucide-react";
-import React, { forwardRef, useImperativeHandle, useRef } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import * as z from "zod";
@@ -13,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import useProducts from "~/hooks/useProducts";
 import { cn } from "~/lib/utils";
 import { type ProductType } from "~/types/product";
 import Loader from "./loader";
@@ -62,6 +68,19 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       },
     }));
 
+    const {
+      query: { data: products },
+    } = useProducts();
+
+    const validateProductName = useCallback(
+      async (name: string) => {
+        if (name === initialValues?.name) return true;
+        const exists = products?.some((product) => product.name === name);
+        return exists ? "Product name already exists" : true;
+      },
+      [products, initialValues?.name],
+    );
+
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -87,7 +106,16 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       await form.trigger("pricing");
     };
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+      const nameValidationResult = await validateProductName(values.name);
+      if (nameValidationResult !== true) {
+        form.setError("name", {
+          type: "manual",
+          message: nameValidationResult,
+        });
+        return;
+      }
+
       const product: ProductType = {
         uuid: uuidv4(),
         createdAt: new Date().toISOString(),
@@ -117,7 +145,22 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
               <FormItem>
                 <FormLabel>Product Name</FormLabel>
                 <FormControl>
-                  <Input {...field} ref={firstInputRef} disabled={isEditing} />
+                  <Input
+                    {...field}
+                    ref={firstInputRef}
+                    disabled={isEditing}
+                    onBlur={async () => {
+                      const result = await validateProductName(field.value);
+                      if (result !== true) {
+                        form.setError("name", {
+                          type: "manual",
+                          message: result,
+                        });
+                      } else {
+                        form.clearErrors("name");
+                      }
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
