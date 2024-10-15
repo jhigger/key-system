@@ -6,39 +6,40 @@ import {
 import { NextResponse } from "next/server";
 import { type RoleType } from "./types/user";
 
-const isProtectedRoute = createRouteMatcher([
-  "/",
-  "/admin(.*)",
-  "/account(.*)",
-]);
+const isProtectedRoute = createRouteMatcher(["/account(.*)"]);
 const isAuthRoute = createRouteMatcher(["/login(.*)", "/register(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = auth();
 
-  if (!userId) return console.log("no user");
-
-  const user = await clerkClient().users.getUser(userId);
-  const userRole = (user.publicMetadata.role as RoleType) ?? "user";
-  console.log("userRole", userRole);
-
-  if (isProtectedRoute(req)) {
-    if (!userId) {
+  if (!userId) {
+    if (
+      isProtectedRoute(req) ||
+      isAdminRoute(req) ||
+      req.nextUrl.pathname === "/"
+    ) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-
-    // Check if user is admin and trying to access non-admin routes
-    if (userRole === "admin" && !isAdminRoute(req)) {
-      return NextResponse.redirect(new URL("/admin", req.url));
-    }
-
-    // User is authenticated, allow access to protected routes
     return NextResponse.next();
   }
 
-  if (isAuthRoute(req) && userId) {
-    // Redirect admin to admin dashboard, others to home
+  const user = await clerkClient().users.getUser(userId);
+  const userRole = (user.publicMetadata.role as RoleType) ?? "user";
+
+  // Handle root path separately
+  if (req.nextUrl.pathname === "/") {
+    if (userRole === "admin") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+    return NextResponse.next();
+  }
+
+  if (isAdminRoute(req) && userRole !== "admin") {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  if (isAuthRoute(req)) {
     const redirectUrl = userRole === "admin" ? "/admin" : "/";
     return NextResponse.redirect(new URL(redirectUrl, req.url));
   }
