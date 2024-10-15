@@ -26,7 +26,7 @@ const BREAKPOINT = 768; // Adjust this breakpoint as needed
 const DevRoleSwitch = () => {
   const { user: clerkUser, isLoaded } = useUser();
   const { user, setUser } = useUserStore();
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(user?.role === "admin");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
