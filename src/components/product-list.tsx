@@ -9,6 +9,7 @@ import {
   useForm,
   useFormContext,
 } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import useProducts from "~/hooks/useProducts";
 import { formatDuration, formatPrice } from "~/lib/utils";
@@ -83,22 +84,26 @@ const ProductList = () => {
     // Combine similar price levels
     const cart = filteredData.map((product) => {
       const priceGroups = product.keys.reduce<
-        Record<string, { quantity: number }>
+        Record<string, { quantity: number; duration: number }>
       >((acc, key) => {
         const price = key.price;
         if (!acc[price]) {
-          acc[price] = { quantity: 0 };
+          acc[price] = { quantity: 0, duration: 0 };
         }
         acc[price].quantity += key.quantity; // Sum quantities for the same price
+        acc[price].duration = key.duration;
         return acc;
       }, {});
 
       return {
         name: product.productName,
-        keys: Object.entries(priceGroups).map(([price, { quantity }]) => ({
-          quantity,
-          price: Number(price),
-        })),
+        keys: Object.entries(priceGroups).map(
+          ([price, { quantity, duration }]) => ({
+            quantity,
+            price: Number(price),
+            duration,
+          }),
+        ),
         totalPrice: Object.entries(priceGroups).reduce(
           (acc, [price, { quantity }]) => acc + quantity * Number(price),
           0,
@@ -106,7 +111,12 @@ const ProductList = () => {
       };
     });
 
-    console.log("Submitted Data", cart);
+    toast.info("Submitted Data", {
+      description: JSON.stringify(cart, null, 2),
+      classNames: {
+        description: "whitespace-pre",
+      },
+    });
   };
 
   const calculateTotal = (products: ProductFormValues["products"]) => {
@@ -226,7 +236,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
           🔑 Product: <b>{product.name}</b>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6 divide-y divide-dashed pt-6 md:divide-solid">
+      <CardContent className="space-y-6 divide-y divide-dashed md:divide-solid">
         {fields.map((field, index) => (
           <KeyRow
             key={field.id}
@@ -317,7 +327,7 @@ const KeyRow = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border !border-b border-muted bg-transparent p-3">
+    <div className="flex flex-col gap-2 rounded-md border !border-b border-muted bg-transparent p-3 first:mt-6">
       <div className="flex h-9 items-center justify-center gap-2 text-sm text-muted-foreground shadow-sm">
         <span>
           {`${formatDuration(currentDuration)} - $${currentPrice}`} keys left:
