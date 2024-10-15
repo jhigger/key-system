@@ -1,11 +1,12 @@
 import { KeyRound, PackageSearch, UserSearch } from "lucide-react";
 import Head from "next/head";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import ProductKeys from "~/components/data-tables/product-keys";
 import Products from "~/components/data-tables/products";
 import Users from "~/components/data-tables/users";
 import RootLayout from "~/components/layouts/root-layout";
 import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
+import Loader from "~/components/loader";
 import { useUserStore } from "~/state/user.store";
 
 const PATH = "/admin";
@@ -33,11 +34,19 @@ export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
 
 const Admin = () => {
   const { user } = useUserStore();
-  const { pathname, push } = useRouter();
+  const router = useRouter();
 
-  if (user !== null && user.role !== "admin" && pathname === "/admin") {
-    push("/").catch(console.error);
+  if (!user) {
     return null;
+  }
+
+  if (user.role !== "admin") {
+    router.push("/");
+    return (
+      <RootLayout>
+        <Loader />
+      </RootLayout>
+    );
   }
 
   return (
@@ -47,7 +56,7 @@ const Admin = () => {
         <link rel="icon" href="/icon.png" />
       </Head>
       <RootLayout>
-        {user?.role === "admin" && <TabsLayout path={PATH} tabs={ADMIN_TABS} />}
+        <TabsLayout path={PATH} tabs={ADMIN_TABS} />
       </RootLayout>
     </>
   );

@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useUserStore } from "~/state/user.store";
-import PleaseLoginToView from "../please-login-to-view";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export type TabType = {
@@ -20,7 +18,6 @@ type TabLayoutProps = {
 const TabsLayout = ({ path, tabs }: TabLayoutProps) => {
   type TabValue = (typeof tabs)[number]["value"];
   const [activeTab, setActiveTab] = useState<TabValue>(tabs[0]?.value ?? "");
-  const { user } = useUserStore();
   const { asPath } = useRouter();
 
   useEffect(() => {
@@ -33,10 +30,6 @@ const TabsLayout = ({ path, tabs }: TabLayoutProps) => {
       );
     }
   }, [asPath, tabs]);
-
-  if (!user) {
-    return <PleaseLoginToView />;
-  }
 
   return (
     <Tabs

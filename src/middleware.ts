@@ -14,12 +14,8 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId } = auth();
 
   if (!userId) {
-    if (
-      isProtectedRoute(req) ||
-      isAdminRoute(req) ||
-      req.nextUrl.pathname === "/"
-    ) {
-      return NextResponse.redirect(new URL("/login", req.url));
+    if (isProtectedRoute(req) || isAdminRoute(req)) {
+      return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.next();
   }

@@ -4,9 +4,7 @@ import { type UserType } from "~/types/user";
 
 type UserStore = {
   user: UserType | null;
-  isLoading: boolean;
   setUser: (user: UserType) => void;
-  setIsLoading: (isLoading: boolean) => void;
   logout: () => void;
 };
 
@@ -16,7 +14,6 @@ export const useUserStore = create<UserStore>()(
       user: null,
       isLoading: true,
       setUser: (user) => set({ user }),
-      setIsLoading: (isLoading) => set({ isLoading }),
       logout: () => {
         set({ user: null });
       },
