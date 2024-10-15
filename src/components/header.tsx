@@ -1,11 +1,15 @@
+import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/nextjs";
+import axios from "axios";
 import { CircleUser, LogOut, Moon, Store, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ACCOUNT_TABS } from "~/pages/account";
 import { ADMIN_TABS } from "~/pages/admin";
 import { useUserStore } from "~/state/user.store";
+import Loader from "./loader";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -20,35 +24,54 @@ import { Switch } from "./ui/switch";
 const BREAKPOINT = 768; // Adjust this breakpoint as needed
 
 const DevRoleSwitch = () => {
-  const { user } = useUserStore();
+  const { user: clerkUser, isLoaded } = useUser();
+  const { user, setUser } = useUserStore();
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (!user) return null;
+  useEffect(() => {
+    setIsEnabled(user?.role === "admin");
+  }, [user?.role]);
 
-  return (
-    <Switch
-      checked={user.role === "admin"}
-      onCheckedChange={(checked) => {
-        if (checked) {
-          useUserStore.setState({ user: { ...user, role: "admin" } });
-        } else {
-          useUserStore.setState({ user: { ...user, role: "user" } });
-        }
-      }}
-    />
-  );
+  const handleChangeRole = async (checked: boolean) => {
+    const newRole = checked ? "admin" : "user";
+    setIsLoading(true);
+    try {
+      await axios.post("/api/role", { userId: clerkUser?.id, role: newRole });
+      setIsEnabled(checked);
+      setUser({ ...user!, role: newRole });
+      toast.success(
+        `Role updated to ${newRole.charAt(0).toUpperCase() + newRole.slice(1)}`,
+      );
+    } catch (error) {
+      toast.error("Failed to update role", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isLoaded || !user) return null;
+  if (isLoading) return <Loader />;
+
+  return <Switch checked={isEnabled} onCheckedChange={handleChangeRole} />;
 };
 
 const NavigationItems = () => {
+  const { signOut } = useClerk();
   const { user, logout } = useUserStore();
-
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-
   const { theme, setTheme } = useTheme();
-
   const { pathname } = useRouter();
 
   const handleThemeChange = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleLogout = async () => {
+    await signOut({ redirectUrl: "/login" });
+    logout();
   };
 
   useEffect(() => {
@@ -68,93 +91,92 @@ const NavigationItems = () => {
     };
   }, []);
 
-  if (!user) {
-    return (
-      <>
+  return (
+    <>
+      <SignedOut>
         <Button variant={"outline"} asChild>
           <Link href="/login">Login</Link>
         </Button>
         <Button asChild>
           <Link href="/register">Register</Link>
         </Button>
-      </>
-    );
-  }
-
-  return (
-    <>
-      {user.role !== "admin" && (
-        <Button
-          variant={pathname === "/" ? "secondary" : "ghost"}
-          className="gap-2"
-          asChild
-        >
-          <Link href="/">
-            Buy <Store size={16} />
-          </Link>
-        </Button>
-      )}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      </SignedOut>
+      <SignedIn>
+        {user && user.role !== "admin" && (
           <Button
-            variant={
-              ["/account", "/admin"].includes(pathname) ? "secondary" : "ghost"
-            }
+            variant={pathname === "/" ? "secondary" : "ghost"}
             className="gap-2"
+            asChild
           >
-            Account <CircleUser size={16} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align={isSmallScreen ? "center" : "end"}>
-          <DropdownMenuLabel className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap md:max-w-full">
-            {user.email}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {user.role === "admin" ? (
-            <>
-              {ADMIN_TABS.map((tab) => (
-                <DropdownMenuItem
-                  key={tab.value}
-                  className="flex justify-between gap-4"
-                  asChild
-                >
-                  <Link href={`/admin#${tab.value}`}>
-                    {tab.label} {tab.icon}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </>
-          ) : (
-            <>
-              {ACCOUNT_TABS.map((tab) => (
-                <DropdownMenuItem
-                  key={tab.value}
-                  className="flex justify-between gap-4"
-                  asChild
-                >
-                  <Link href={`/account#${tab.value}`}>
-                    {tab.label} {tab.icon}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </>
-          )}
-          <DropdownMenuItem
-            className="flex justify-between gap-4"
-            onClick={handleThemeChange}
-          >
-            Toggle Theme{" "}
-            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem className="flex justify-between gap-2" asChild>
-            <Link href="/login" onClick={logout}>
-              Logout
-              <LogOut className="ml-2 size-3.5" />
+            <Link href="/">
+              Buy <Store size={16} />
             </Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </Button>
+        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={
+                ["/account", "/admin"].includes(pathname)
+                  ? "secondary"
+                  : "ghost"
+              }
+              className="gap-2"
+            >
+              Account <CircleUser size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align={isSmallScreen ? "center" : "end"}>
+            <DropdownMenuLabel className="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap md:max-w-full">
+              {user?.email}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {user?.role === "admin" ? (
+              <>
+                {ADMIN_TABS.map((tab) => (
+                  <DropdownMenuItem
+                    key={tab.value}
+                    className="flex justify-between gap-4"
+                    asChild
+                  >
+                    <Link href={`/admin#${tab.value}`}>
+                      {tab.label} {tab.icon}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </>
+            ) : (
+              <>
+                {ACCOUNT_TABS.map((tab) => (
+                  <DropdownMenuItem
+                    key={tab.value}
+                    className="flex justify-between gap-4"
+                    asChild
+                  >
+                    <Link href={`/account#${tab.value}`}>
+                      {tab.label} {tab.icon}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+            <DropdownMenuItem
+              className="flex justify-between gap-4"
+              onClick={handleThemeChange}
+            >
+              Toggle Theme{" "}
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="flex justify-between gap-2" asChild>
+              <Link href="/login" onClick={handleLogout}>
+                Logout
+                <LogOut className="ml-2 size-3.5" />
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SignedIn>
     </>
   );
 };

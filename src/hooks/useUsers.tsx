@@ -1,9 +1,14 @@
+import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { changeUserRole, getUsers } from "~/data-access/users";
-import { type UserType } from "~/types/user";
+import { fakeOwnerId } from "~/lib/fakeData";
+import { useUserStore } from "~/state/user.store";
+import { type RoleType, type UserType } from "~/types/user";
 
 const useUsers = () => {
+  const { client } = useClerk();
+  const { setUser } = useUserStore();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -44,9 +49,31 @@ const useUsers = () => {
     },
   });
 
+  const setClerkUser = () => {
+    const user = client.activeSessions[0]?.user;
+    if (!user) {
+      toast.error("User not found");
+      return;
+    }
+    const userRole = (user.publicMetadata.role as RoleType) ?? "user";
+    const payload: UserType = {
+      uuid: fakeOwnerId,
+      role: userRole,
+      username: user.username ?? "dev",
+      email: user.emailAddresses[0]?.emailAddress ?? "",
+      orders: [],
+      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
+      updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
+    };
+
+    console.log("Setting user payload:", payload);
+    setUser(payload);
+  };
+
   return {
     query,
     mutation: { changeRole: changeRoleMutation.mutate },
+    setClerkUser,
   };
 };
 

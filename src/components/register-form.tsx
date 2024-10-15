@@ -1,7 +1,10 @@
+import { useSignUp } from "@clerk/nextjs";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
@@ -21,12 +24,16 @@ import {
   FormLabel,
   FormMessage,
 } from "./ui/form";
+import VerificationForm from "./verification-form";
 
-const formSchema = z
+export const RegisterFormSchema = z
   .object({
-    username: z.string().min(1, "Username is required"),
+    username: z
+      .string()
+      .min(4, "Username must be at least 4 characters")
+      .max(64, "Username must be at most 64 characters"),
     email: z.string().email(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -35,8 +42,13 @@ const formSchema = z
   });
 
 export function RegisterForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const { isLoaded, signUp } = useSignUp();
+  const [isVerifyStep, setIsVerifyStep] = useState(false);
+
+  const form = useForm<
+    z.infer<typeof RegisterFormSchema> & { formError: string }
+  >({
+    resolver: zodResolver(RegisterFormSchema),
     defaultValues: {
       username: "",
       email: "",
@@ -44,12 +56,50 @@ export function RegisterForm() {
       confirmPassword: "",
     },
   });
-  const router = useRouter();
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.table(values);
-    router.push("/login");
+  const handleRegister = async ({
+    username,
+    emailAddress,
+    password,
+  }: {
+    username: string;
+    emailAddress: string;
+    password: string;
+  }) => {
+    try {
+      if (!isLoaded) throw new Error();
+      await signUp.create({
+        username,
+        emailAddress,
+        password,
+      });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      toast.success("A verification code has been sent to your email");
+      setIsVerifyStep(true);
+    } catch (err) {
+      if (isClerkAPIResponseError(err)) {
+        toast.error(`Error: ${err.errors[0]?.longMessage}`);
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    }
   };
+
+  const onSubmit = async ({
+    username,
+    email,
+    password,
+  }: z.infer<typeof RegisterFormSchema>) => {
+    await handleRegister({ username, emailAddress: email, password });
+  };
+
+  if (!isLoaded) {
+    return <Loader />;
+  }
+
+  if (isVerifyStep) {
+    return <VerificationForm values={form.getValues()} />;
+  }
 
   return (
     <Card className="mx-auto w-full max-w-md">

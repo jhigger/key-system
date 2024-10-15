@@ -1,7 +1,9 @@
+import { useSignIn } from "@clerk/nextjs";
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import {
@@ -12,8 +14,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import { fakeOwnerId } from "~/lib/fakeData";
-import { useUserStore } from "~/state/user.store";
+import useUsers from "~/hooks/useUsers";
 import Loader from "./loader";
 import {
   Form,
@@ -30,6 +31,9 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
+  const { signIn, isLoaded: isSignInLoaded } = useSignIn();
+  const { setClerkUser } = useUsers();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -37,22 +41,41 @@ export function LoginForm() {
       password: "",
     },
   });
-  const { setUser } = useUserStore();
-  const router = useRouter();
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.table(values);
-    setUser({
-      uuid: fakeOwnerId,
-      role: "user",
-      username: "dev",
-      email: values.email,
-      orders: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-    router.push("/");
+  const handleLogin = async ({
+    email,
+    password,
+  }: z.infer<typeof formSchema>) => {
+    try {
+      if (!isSignInLoaded) throw new Error("Sign-in not loaded");
+      const completeSignIn = await signIn.create({
+        strategy: "password",
+        identifier: email,
+        password,
+      });
+      if (completeSignIn.status !== "complete") {
+        toast.error(completeSignIn.status);
+      }
+      if (completeSignIn.status === "complete") {
+        setClerkUser();
+        window.location.href = "/";
+      }
+    } catch (err) {
+      if (isClerkAPIResponseError(err)) {
+        toast.error(`Error: ${err.errors[0]?.longMessage}`);
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    }
   };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await handleLogin(values);
+  };
+
+  if (!isSignInLoaded) {
+    return <Loader />;
+  }
 
   return (
     <Card className="mx-auto w-full max-w-md">

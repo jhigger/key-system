@@ -1,3 +1,4 @@
+import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { useEffect } from "react";
@@ -11,7 +12,6 @@ import {
 import { z } from "zod";
 import useProducts from "~/hooks/useProducts";
 import { formatDuration, formatPrice } from "~/lib/utils";
-import { useUserStore } from "~/state/user.store";
 import { type ProductType } from "~/types/product";
 import DottedLine from "./dotted-line";
 import Loader from "./loader";
@@ -47,7 +47,7 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
-  const { user } = useUserStore();
+  const { user, isLoaded } = useUser();
 
   const {
     query: { data: products, isLoading },
@@ -121,12 +121,12 @@ const ProductList = () => {
     }, 0);
   };
 
-  if (!user) {
-    return <PleaseLoginToView />;
+  if (isLoading || !isLoaded) {
+    return <Loader />;
   }
 
-  if (isLoading) {
-    return <Loader />;
+  if (!user) {
+    return <PleaseLoginToView />;
   }
 
   return (

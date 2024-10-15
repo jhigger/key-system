@@ -1,25 +1,57 @@
-import type { NextRequest } from "next/server";
+import {
+  clerkClient,
+  clerkMiddleware,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { useUserStore } from "./state/user.store";
+import { type RoleType } from "./types/user";
 
-export function middleware(request: NextRequest) {
-  const user = useUserStore.getState().user; // TODO: change to cookie
+const isProtectedRoute = createRouteMatcher([
+  "/",
+  "/admin(.*)",
+  "/account(.*)",
+]);
+const isAuthRoute = createRouteMatcher(["/login(.*)", "/register(.*)"]);
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
-  // If the user is logged in and trying to access protected routes, redirect to home
-  if (
-    user !== null &&
-    ["/login", "/register", "/account", "/admin"].includes(
-      request.nextUrl.pathname,
-    )
-  ) {
-    console.log("User is logged in, redirecting to home");
-    return NextResponse.redirect(new URL("/", request.url));
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = auth();
+
+  if (!userId) return console.log("no user");
+
+  const user = await clerkClient().users.getUser(userId);
+  const userRole = (user.publicMetadata.role as RoleType) ?? "user";
+  console.log("userRole", userRole);
+
+  if (isProtectedRoute(req)) {
+    if (!userId) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    // Check if user is admin and trying to access non-admin routes
+    if (userRole === "admin" && !isAdminRoute(req)) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
+    // User is authenticated, allow access to protected routes
+    return NextResponse.next();
   }
 
-  // Allow access to all other routes, including home page if logged in
+  if (isAuthRoute(req) && userId) {
+    // Redirect admin to admin dashboard, others to home
+    const redirectUrl = userRole === "admin" ? "/admin" : "/";
+    return NextResponse.redirect(new URL(redirectUrl, req.url));
+  }
+
+  // For all other routes, continue without any redirection
   return NextResponse.next();
-}
+});
 
 export const config = {
-  matcher: ["/login", "/register", "/account", "/admin"],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
 };
