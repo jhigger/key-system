@@ -183,7 +183,7 @@ const NavigationItems = () => {
 
 const Header = () => {
   return (
-    <header>
+    <header className="relative z-10">
       <div className="container mx-auto flex flex-col flex-wrap items-center gap-2 p-5 md:flex-row">
         <Link href="/" className="mb-4 flex items-center font-medium md:mb-0">
           <div className="size-10 rounded-full bg-accent p-2">

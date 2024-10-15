@@ -1,5 +1,7 @@
+import { cn } from "~/lib/utils";
 import Footer from "../footer";
 import Header from "../header";
+import GridPattern from "../ui/grid-pattern";
 
 type RootLayoutProps = {
   children: React.ReactNode;
@@ -7,9 +9,17 @@ type RootLayoutProps = {
 
 const RootLayout = ({ children }: RootLayoutProps) => {
   return (
-    <div className="flex h-full min-h-screen flex-col items-center bg-background text-foreground [&>*]:w-full">
+    <div className="relative flex h-full min-h-screen flex-col items-center bg-background text-foreground [&>*]:w-full">
       <Header />
-      <main className="container mx-auto flex flex-1 flex-col items-center justify-center px-4 py-16">
+      <GridPattern
+        width={30}
+        height={30}
+        x={-1}
+        y={-1}
+        strokeDasharray={"4 2"}
+        className={cn("opacity-10")}
+      />
+      <main className="container z-10 mx-auto flex flex-1 flex-col items-center justify-center px-4 py-16">
         {children}
       </main>
       <Footer />

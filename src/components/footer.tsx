@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 
 const Footer = () => {
   return (
-    <footer>
+    <footer className="relative z-10">
       <div className="container mx-auto flex flex-col flex-wrap items-center justify-between gap-2 p-5 md:flex-row">
         <p className="mb-4 text-sm md:mb-0">
           Made with ❤️ by{" "}
