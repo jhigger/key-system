@@ -1,3 +1,4 @@
+import { useTheme } from "next-themes";
 import { useId } from "react";
 
 import { cn } from "~/lib/utils";
@@ -24,13 +25,17 @@ export function GridPattern({
   ...props
 }: GridPatternProps) {
   const id = useId();
+  const { theme } = useTheme();
 
   return (
     <svg
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-0 h-full w-full fill-gray-400/30 stroke-gray-400/30",
+        "pointer-events-none absolute inset-0 h-full w-full",
         className,
+        theme === "dark"
+          ? "fill-gray-400/30 stroke-gray-400/30"
+          : "fill-gray-400 stroke-gray-400",
       )}
       {...props}
     >
