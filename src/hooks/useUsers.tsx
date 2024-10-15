@@ -66,7 +66,6 @@ const useUsers = () => {
       updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
     };
 
-    console.log("Setting user payload:", payload);
     setUser(payload);
   };
 
