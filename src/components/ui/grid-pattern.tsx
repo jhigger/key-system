@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { useId } from "react";
+import { useEffect, useId, useState } from "react";
 
 import { cn } from "~/lib/utils";
 
@@ -26,6 +26,17 @@ export function GridPattern({
 }: GridPatternProps) {
   const id = useId();
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const themeClass = mounted
+    ? theme === "dark"
+      ? "fill-gray-400/30 stroke-gray-400/30"
+      : "fill-gray-400 stroke-gray-400"
+    : "fill-gray-400/30 stroke-gray-400/30"; // Default to dark theme for initial render
 
   return (
     <svg
@@ -33,9 +44,7 @@ export function GridPattern({
       className={cn(
         "pointer-events-none absolute inset-0 h-full w-full",
         className,
-        theme === "dark"
-          ? "fill-gray-400/30 stroke-gray-400/30"
-          : "fill-gray-400 stroke-gray-400",
+        themeClass,
       )}
       {...props}
     >
