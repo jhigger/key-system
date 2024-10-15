@@ -66,6 +66,7 @@ const DurationCell: React.FC<{
                 });
               }}
               className="w-20"
+              disabled
             />
           ) : (
             formatDuration(p.duration)
