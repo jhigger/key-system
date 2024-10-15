@@ -11,6 +11,7 @@ import {
 import useUsers from "~/hooks/useUsers";
 import { dateFilterFn, formatISOStringToDate } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
+import { useUserStore } from "~/state/user.store";
 import { roles, type RoleType, type UserType } from "~/types/user";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
@@ -22,6 +23,7 @@ const RoleCell: React.FC<{
   const {
     mutation: { changeRole },
   } = useUsers();
+  const { user: currentUser } = useUserStore();
 
   if (editMode) {
     return (
@@ -31,6 +33,7 @@ const RoleCell: React.FC<{
           setCurrentRole(newRole as RoleType);
           changeRole({ ...row.original, role: newRole as RoleType });
         }}
+        disabled={currentUser?.uuid === row.original.uuid}
       >
         <SelectTrigger className="w-[180px] capitalize">
           <SelectValue placeholder="Select a role" />
