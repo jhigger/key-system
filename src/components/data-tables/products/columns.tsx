@@ -31,13 +31,13 @@ import { type ProductType } from "~/types/product";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
 const DurationCell: React.FC<{
-  pricing: ProductType["pricing"];
   row: Row<ProductType>;
-}> = ({ pricing, row }) => {
+}> = ({ row }) => {
   const { editMode } = useUIStore();
   const {
     mutation: { editProduct },
   } = useProducts();
+  const pricing = row.original.pricing;
 
   return (
     <>
@@ -66,7 +66,6 @@ const DurationCell: React.FC<{
                 });
               }}
               className="w-20"
-              disabled
             />
           ) : (
             formatDuration(p.duration)
@@ -78,13 +77,13 @@ const DurationCell: React.FC<{
 };
 
 const PricingCell: React.FC<{
-  pricing: ProductType["pricing"];
   row: Row<ProductType>;
-}> = ({ pricing, row }) => {
+}> = ({ row }) => {
   const { editMode } = useUIStore();
   const {
     mutation: { editProduct },
   } = useProducts();
+  const pricing = row.original.pricing;
 
   return (
     <>
@@ -120,9 +119,10 @@ const PricingCell: React.FC<{
 };
 
 const StockCell: React.FC<{
-  pricing: ProductType["pricing"];
-}> = ({ pricing }) => {
+  row: Row<ProductType>;
+}> = ({ row }) => {
   const { editMode } = useUIStore();
+  const pricing = row.original.pricing;
 
   return (
     <>
@@ -177,7 +177,7 @@ const ActionsCell: React.FC<{
 }> = ({ row }) => {
   const { uuid } = row.original;
   const {
-    mutation: { deleteProduct, deletePricing, editProduct },
+    mutation: { deleteProduct, deletePricing, editPricing },
   } = useProducts();
   const { editMode } = useUIStore();
   const [showForm, setShowForm] = useState(false);
@@ -261,9 +261,9 @@ const ActionsCell: React.FC<{
               <ProductForm
                 ref={productKeyFormRef}
                 handleSubmit={(values) => {
-                  editProduct({
-                    ...row.original,
-                    pricing: values.pricing,
+                  editPricing({
+                    productUuid: row.original.uuid,
+                    newPricing: values.pricing,
                   });
                   setShowForm(false);
                 }}
@@ -325,17 +325,15 @@ export const getColumns = (): ColumnDef<ProductType>[] => [
   },
   {
     header: "Duration",
-    cell: ({ row }) => (
-      <DurationCell pricing={row.original.pricing} row={row} />
-    ),
+    cell: ({ row }) => <DurationCell row={row} />,
   },
   {
     header: "Pricing",
-    cell: ({ row }) => <PricingCell pricing={row.original.pricing} row={row} />,
+    cell: ({ row }) => <PricingCell row={row} />,
   },
   {
     header: "Stock",
-    cell: ({ row }) => <StockCell pricing={row.original.pricing} />,
+    cell: ({ row }) => <StockCell row={row} />,
   },
   {
     id: "actions",

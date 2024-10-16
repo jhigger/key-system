@@ -6,16 +6,45 @@ import { type ProductKeyType } from "~/types/productKey";
 import { type UserType } from "~/types/user";
 
 export const fakeOwnerId = "67dd6c56-29a6-46c7-a038-33f7e37fc72a";
-const fakeProductId1 = "195bb7db-ec9a-4a43-92d6-ba140c716e5d";
-const fakeProductId2 = "564fb206-2ec1-4a75-80a8-10f08f4dc606";
-const fakeProductId3 = "7d7201c5-2359-40a3-a9ea-6e1ad41185b9";
+
+const fakeProductId1 = uuidv4();
+const fakeProductId2 = uuidv4();
+const fakeProductId3 = uuidv4();
+
+const fakePricingId1 = uuidv4();
+const fakePricingId2 = uuidv4();
+const fakePricingId3 = uuidv4();
+const fakePricingId4 = uuidv4();
+const fakePricingId5 = uuidv4();
+
+const fakeProductKeyId1 = uuidv4();
+const fakeProductKeyId2 = uuidv4();
+const fakeProductKeyId3 = uuidv4();
+const fakeProductKeyId4 = uuidv4();
+const fakeProductKeyId5 = uuidv4();
+const fakeProductKeyId6 = uuidv4();
+const fakeProductKeyId7 = uuidv4();
+
+const fakeOrderId1 = uuidv4();
+const fakeOrderId2 = uuidv4();
+const fakeOrderId3 = uuidv4();
+const fakeOrderId4 = uuidv4();
+const fakeOrderId5 = uuidv4();
+
+const fakeUserId1 = uuidv4();
+const fakeUserId2 = uuidv4();
+const fakeUserId3 = fakeOwnerId;
+const fakeUserId4 = uuidv4();
+const fakeUserId5 = uuidv4();
+const fakeUserId6 = uuidv4();
+const fakeUserId7 = uuidv4();
 
 export const DEFAULT_PRICING: PricingType[] = [
-  { uuid: uuidv4(), duration: 1, value: 1.5, stock: 0 },
-  { uuid: uuidv4(), duration: 3, value: 3, stock: 0 },
-  { uuid: uuidv4(), duration: 7, value: 5, stock: 0 },
-  { uuid: uuidv4(), duration: 30, value: 13, stock: 0 },
-  { uuid: uuidv4(), duration: 0, value: 150, stock: 0 },
+  { uuid: fakePricingId1, duration: 1, value: 1.5, stock: 0 },
+  { uuid: fakePricingId2, duration: 3, value: 3, stock: 0 },
+  { uuid: fakePricingId3, duration: 7, value: 5, stock: 0 },
+  { uuid: fakePricingId4, duration: 30, value: 13, stock: 0 },
+  { uuid: fakePricingId5, duration: 0, value: 150, stock: 0 },
 ];
 
 export const fakeProducts: ProductType[] = [
@@ -25,11 +54,11 @@ export const fakeProducts: ProductType[] = [
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
     name: "Distortion",
     pricing: [
-      { uuid: uuidv4(), duration: 1, value: 1.5, stock: 1 },
-      { uuid: uuidv4(), duration: 3, value: 3, stock: 0 },
-      { uuid: uuidv4(), duration: 7, value: 5, stock: 0 },
-      { uuid: uuidv4(), duration: 30, value: 13, stock: 0 },
-      { uuid: uuidv4(), duration: 0, value: 150, stock: 1 },
+      { uuid: fakePricingId1, duration: 1, value: 1.5, stock: 1 },
+      { uuid: fakePricingId2, duration: 3, value: 3, stock: 0 },
+      { uuid: fakePricingId3, duration: 7, value: 5, stock: 0 },
+      { uuid: fakePricingId4, duration: 30, value: 13, stock: 0 },
+      { uuid: fakePricingId5, duration: 0, value: 150, stock: 1 },
     ],
   },
   {
@@ -50,115 +79,115 @@ export const fakeProducts: ProductType[] = [
 
 export const fakeProductKeys: ProductKeyType[] = [
   {
-    uuid: uuidv4(),
-    product: fakeProductId1,
-    key: uuidv4(),
+    uuid: fakeProductKeyId1,
+    productId: fakeProductId1,
+    key: fakePricingId1,
     expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
     hardwareId: null,
     owner: null,
-    duration: 1,
+    pricingId: fakeProducts[0]?.pricing[0]?.uuid ?? "",
   },
   {
-    uuid: uuidv4(),
-    product: fakeProductId2,
-    key: uuidv4(),
+    uuid: fakeProductKeyId2,
+    productId: fakeProductId2,
+    key: fakePricingId2,
     expiry: new Date(2024, 10 - 1, 8 + 30).toISOString(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
     hardwareId: "b81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
-    duration: 30,
+    pricingId: fakeProducts[1]?.pricing[0]?.uuid ?? "",
   },
   {
-    uuid: uuidv4(),
-    product: fakeProductId1,
-    key: uuidv4(),
+    uuid: fakeProductKeyId3,
+    productId: fakeProductId1,
+    key: fakePricingId3,
     expiry: new Date(2024, 10 - 1, 7 + 1).toISOString(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 7).toISOString(),
     hardwareId: "c81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
-    duration: 1,
+    pricingId: fakeProducts[0]?.pricing[0]?.uuid ?? "",
   },
   {
-    uuid: uuidv4(),
-    product: fakeProductId2,
-    key: uuidv4(),
+    uuid: fakeProductKeyId4,
+    productId: fakeProductId2,
+    key: fakePricingId4,
     expiry: null,
     createdAt: new Date(2024, 10 - 1, 6).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 6).toISOString(),
     hardwareId: "d81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
-    duration: 0,
+    pricingId: fakeProducts[1]?.pricing[0]?.uuid ?? "",
   },
   {
-    uuid: uuidv4(),
-    product: fakeProductId1,
-    key: uuidv4(),
+    uuid: fakeProductKeyId5,
+    productId: fakeProductId1,
+    key: fakePricingId5,
     expiry: new Date(2024, 10 - 1, 5 + 7).toISOString(),
     createdAt: new Date(2024, 10 - 1, 5).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 5).toISOString(),
     hardwareId: "e81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
-    duration: 7,
+    pricingId: fakeProducts[0]?.pricing[0]?.uuid ?? "",
   },
   {
-    uuid: uuidv4(),
-    product: fakeProductId2,
-    key: uuidv4(),
+    uuid: fakeProductKeyId6,
+    productId: fakeProductId2,
+    key: fakePricingId1,
     expiry: new Date(2024, 10 - 1, 4 + 3).toISOString(),
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
     hardwareId: "f81826ac-6a44-4043-91e1-86573c24a9b5",
     owner: fakeOwnerId,
-    duration: 3,
+    pricingId: fakeProducts[1]?.pricing[0]?.uuid ?? "",
   },
   {
-    uuid: uuidv4(),
-    product: fakeProductId1,
-    key: uuidv4(),
+    uuid: fakeProductKeyId7,
+    productId: fakeProductId1,
+    key: fakePricingId1,
     expiry: undefined,
     createdAt: new Date(2024, 10 - 1, 3).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 3).toISOString(),
     hardwareId: null,
     owner: null,
-    duration: 0,
+    pricingId: fakeProducts[0]?.pricing[4]?.uuid ?? "",
   },
 ];
 
 export const fakeOrders: OrderType[] = [
   {
-    uuid: uuidv4(),
+    uuid: fakeOrderId1,
     purchasedBy: fakeOwnerId,
     productKey: fakeProductKeys[1]!,
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeOrderId2,
     purchasedBy: fakeOwnerId,
     productKey: fakeProductKeys[2]!,
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeOrderId3,
     purchasedBy: fakeOwnerId,
     productKey: fakeProductKeys[3]!,
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeOrderId4,
     purchasedBy: fakeOwnerId,
     productKey: fakeProductKeys[4]!,
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeOrderId5,
     purchasedBy: fakeOwnerId,
     productKey: fakeProductKeys[5]!,
     invoiceLink: uuidv4(),
@@ -168,7 +197,7 @@ export const fakeOrders: OrderType[] = [
 
 export const fakeUsers: UserType[] = [
   {
-    uuid: uuidv4(),
+    uuid: fakeUserId1,
     role: "admin",
     username: "admin",
     email: "email_one@example.com",
@@ -177,7 +206,7 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeUserId2,
     role: "reseller",
     username: "reseller1",
     email: "email_two@example.com",
@@ -186,7 +215,7 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
   },
   {
-    uuid: fakeOwnerId,
+    uuid: fakeUserId3,
     role: "user",
     username: "dev",
     email: "email_three@example.com",
@@ -195,7 +224,7 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeUserId4,
     role: "user",
     username: "user2",
     email: "email_four@example.com",
@@ -204,7 +233,7 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 6).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeUserId5,
     role: "user",
     username: "user5",
     email: "email_five@example.com",
@@ -213,7 +242,7 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeUserId6,
     role: "user",
     username: "user6",
     email: "email_six@example.com",
@@ -222,7 +251,7 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
   },
   {
-    uuid: uuidv4(),
+    uuid: fakeUserId7,
     role: "user",
     username: "user7",
     email: "email_seven@example.com",

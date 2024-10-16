@@ -28,19 +28,8 @@ const useProductKeys = () => {
       );
       return { previousProductKeys };
     },
-    onError: (err, newProductKey, context: unknown) => {
-      if (
-        context &&
-        typeof context === "object" &&
-        "previousProductKeys" in context
-      ) {
-        queryClient.setQueryData(
-          ["productKeys"],
-          (context as { previousProductKeys?: ProductKeyType[] })
-            .previousProductKeys,
-        );
-      }
-      toast.error("Failed to add product key");
+    onError: (error) => {
+      toast.error(`Failed to add product key: ${error.message}`);
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
@@ -57,17 +46,18 @@ const useProductKeys = () => {
       const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([
         "productKeys",
       ]);
+
       queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) => {
         if (!old) return [updatedProductKey];
         return old.map((key) =>
-          key.uuid === updatedProductKey.uuid ? updatedProductKey : key,
+          key.uuid === updatedProductKey.uuid ? updatedProductKey : key
         );
       });
+
       return { previousProductKeys };
     },
-    onError: (err, newProductKey, context) => {
-      queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
-      toast.error("Failed to update product key");
+    onError: (error) => {
+      toast.error(`Failed to edit product key: ${error.message}`);
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
@@ -89,9 +79,8 @@ const useProductKeys = () => {
       );
       return { previousProductKeys };
     },
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
-      toast.error("Failed to delete product key");
+    onError: (error) => {
+      toast.error(`Failed to delete product key: ${error.message}`);
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: ["productKeys"] });

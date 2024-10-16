@@ -29,6 +29,7 @@ import {
   sortByVariant,
 } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
+import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
@@ -46,24 +47,26 @@ const ProductCell: React.FC<{
   if (isLoading) return <div>Loading...</div>;
   if (!products) return null;
 
-  const currentProduct = products.find((p) => p.uuid === row.original.product);
+  const currentProduct = products.find(
+    (p) => p.uuid === row.original.productId,
+  );
   const currentProductName = currentProduct ? currentProduct.name : "";
 
   if (editMode) {
     return (
       <Select
-        value={row.original.product}
+        value={row.original.productId}
         onValueChange={(newProductUuid) => {
           const newProduct = products.find((p) => p.uuid === newProductUuid);
           if (!newProduct) return;
 
-          // Reset duration to the first available duration of the new product
-          const newDuration = newProduct.pricing[0]?.duration ?? 0;
+          // Reset pricingUuid to the first available pricing of the new product
+          const newPricingUuid = newProduct.pricing[0]?.uuid ?? "";
 
           editProductKey({
             ...row.original,
-            product: newProductUuid,
-            duration: newDuration,
+            productId: newProductUuid,
+            pricingId: newPricingUuid,
           });
         }}
       >
@@ -103,32 +106,39 @@ const DurationCell: React.FC<{
 
   if (!products) return null;
 
+  const product = products.find((p) => p.uuid === row.original.productId);
+  if (!product) return null;
+
+  const currentPricing = product.pricing.find(
+    (p) => p.uuid === row.original.pricingId,
+  );
+
   if (editMode) {
     return (
       <Select
-        value={formatDuration(row.original.duration)}
-        onValueChange={(newVariant: string) => {
+        value={row.original.pricingId}
+        onValueChange={(newPricingUuid) => {
           editProductKey({
             ...row.original,
-            duration: parseInt(newVariant),
+            pricingId: newPricingUuid,
           });
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
-          <SelectValue placeholder="Select a variant" />
+          <SelectValue placeholder="Select a duration">
+            {currentPricing ? formatDuration(currentPricing.duration) : "N/A"}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {products
-            .find((p) => p.uuid === row.original.product)
-            ?.pricing.map((product) => (
-              <SelectItem
-                key={formatDuration(product.duration)}
-                value={formatDuration(product.duration)}
-                className="capitalize"
-              >
-                {formatDuration(product.duration)}
-              </SelectItem>
-            ))}
+          {product.pricing.map((pricing) => (
+            <SelectItem
+              key={pricing.uuid}
+              value={pricing.uuid}
+              className="capitalize"
+            >
+              {formatDuration(pricing.duration)}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     );
@@ -136,7 +146,7 @@ const DurationCell: React.FC<{
 
   return (
     <Badge className="capitalize">
-      {formatDuration(row.original.duration)}
+      {currentPricing ? formatDuration(currentPricing.duration) : "N/A"}
     </Badge>
   );
 };
@@ -215,7 +225,7 @@ const ActionsCell: React.FC<{
 const PricingCell: React.FC<{
   row: Row<ProductKeyType>;
 }> = ({ row }) => {
-  const { product: uuid } = row.original;
+  const { productId: uuid, pricingId: pricingUuid } = row.original;
   const {
     query: { data: products },
   } = useProducts();
@@ -226,13 +236,16 @@ const PricingCell: React.FC<{
 
   if (!product) return null;
 
-  return formatPrice(
-    product.pricing.find((p) => p.duration === row.original.duration)?.value ??
-      0,
-  );
+  const pricing = product.pricing.find((p) => p.uuid === pricingUuid);
+
+  return formatPrice(pricing?.value ?? 0);
 };
 
-export const getColumns = (): ColumnDef<ProductKeyType>[] => [
+export const getColumns = ({
+  products,
+}: {
+  products?: ProductType[];
+}): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -270,24 +283,24 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
     ),
     cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string[]) => {
-      return value.includes(row.original.product);
+      return value.includes(row.original.productId);
     },
     sortingFn: (rowA, rowB) => {
-      return rowA.original.product.localeCompare(rowB.original.product);
+      return rowA.original.productId.localeCompare(rowB.original.productId);
     },
-    accessorFn: (row) => row.product,
+    accessorFn: (row) => row.productId,
   },
   {
-    accessorKey: "duration",
+    accessorKey: "pricingUuid",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Duration" />
     ),
     cell: ({ row }) => <DurationCell row={row} />,
-    filterFn: (row, id, value: number[]) => {
-      return value.includes(row.original.duration);
+    filterFn: (row, id, value: string[]) => {
+      return value.includes(row.original.pricingId);
     },
-    sortingFn: sortByVariant,
-    accessorFn: (row) => row.duration,
+    sortingFn: (rowA, rowB) => sortByVariant(rowA, rowB, products ?? []),
+    accessorFn: (row) => row.pricingId,
   },
   {
     id: "price",
@@ -296,10 +309,10 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
       <DataTableColumnHeader column={column} title="Price" />
     ),
     cell: ({ row }) => <PricingCell row={row} />,
-    filterFn: (row, id, value: number[]) => {
-      return value.includes(row.original.duration);
+    filterFn: (row, id, value: string[]) => {
+      return value.includes(row.original.pricingId);
     },
-    accessorFn: (row) => row.duration,
+    accessorFn: (row) => row.pricingId,
   },
   {
     accessorKey: "key",

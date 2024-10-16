@@ -11,48 +11,23 @@ export const editProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
   const productKeys = getProductKeys();
+  const oldKey = findProductKeyById(productKeys, productKey.uuid);
+  const { productChanged, pricingChanged } = checkChanges(oldKey, productKey);
 
-  const index = productKeys.findIndex((key) => key.uuid === productKey.uuid);
-  if (index === -1) {
-    throw new Error(`Key ${productKey.key} not found`);
+  if (productChanged || pricingChanged) {
+    await updateProductStocks(oldKey, productKey);
   }
 
-  const oldKey = productKeys[index];
-  if (!oldKey) {
-    throw new Error(`Key ${productKey.key} is undefined`);
-  }
-
-  const getDuration = (duration: number | null | undefined): number => {
-    if (duration === null || duration === undefined || isNaN(duration)) {
-      return 0; // Lifetime
-    }
-    return duration;
-  };
-
-  const oldDuration = getDuration(oldKey.duration);
-  const newDuration = getDuration(productKey.duration);
-
-  // Increase stock for the old product key
-  await updateProductStock(oldKey.product, oldDuration, -1);
-
-  // Decrease stock for the new product key
-  await updateProductStock(productKey.product, newDuration, 1);
-
-  // Create a new object with the updated values
-  const updatedKey = { ...oldKey, ...productKey, duration: newDuration };
-  // Replace the old object with the new one
-  productKeys[index] = updatedKey;
-  return updatedKey;
+  const updatedKey = { ...oldKey, ...productKey };
+  return updateProductKeyInList(productKeys, updatedKey);
 };
 
 export const addProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
   const productKeys = getProductKeys();
-
   productKeys.push(productKey);
-  // Update stock when adding a new product key
-  await updateProductStock(productKey.product, productKey.duration, 1);
+  await updateProductStock(productKey.productId, productKey.pricingId, 1);
   return productKey;
 };
 
@@ -60,21 +35,49 @@ export const deleteProductKey = async (
   uuid: string,
 ): Promise<ProductKeyType[]> => {
   const productKeys = getProductKeys();
-
-  const index = productKeys.findIndex((productKey) => productKey.uuid === uuid);
-  if (index === -1) {
-    throw new Error(`Key with UUID ${uuid} not found`);
+  const deletedKeyIndex = productKeys.findIndex((key) => key.uuid === uuid);
+  if (deletedKeyIndex === -1) {
+    throw new Error(`Key ${uuid} not found`);
   }
-
-  const deletedKey = productKeys[index];
+  const deletedKey = productKeys[deletedKeyIndex];
   if (!deletedKey) {
-    throw new Error(`Key with UUID ${uuid} is undefined`);
+    throw new Error(`Key ${uuid} not found`);
   }
-
-  // Update stock when deleting a product key
-  await updateProductStock(deletedKey.product, deletedKey.duration, -1);
-
-  productKeys.splice(index, 1);
-
+  await updateProductStock(deletedKey.productId, deletedKey.pricingId, -1);
+  productKeys.splice(deletedKeyIndex, 1);
   return productKeys;
+};
+
+// Helper functions
+const findProductKeyById = (
+  productKeys: ProductKeyType[],
+  uuid: string,
+): ProductKeyType => {
+  const key = productKeys.find((key) => key.uuid === uuid);
+  if (!key) throw new Error(`Key ${uuid} not found`);
+  return key;
+};
+
+const checkChanges = (oldKey: ProductKeyType, newKey: ProductKeyType) => ({
+  productChanged: oldKey.productId !== newKey.productId,
+  pricingChanged: oldKey.pricingId !== newKey.pricingId,
+});
+
+const updateProductStocks = async (
+  oldKey: ProductKeyType,
+  newKey: ProductKeyType,
+) => {
+  await updateProductStock(oldKey.productId, oldKey.pricingId, -1);
+  await updateProductStock(newKey.productId, newKey.pricingId, 1);
+};
+
+const updateProductKeyInList = (
+  productKeys: ProductKeyType[],
+  updatedKey: ProductKeyType,
+): ProductKeyType => {
+  const index = productKeys.findIndex((key) => key.uuid === updatedKey.uuid);
+  if (index !== -1) {
+    productKeys[index] = updatedKey;
+  }
+  return updatedKey;
 };

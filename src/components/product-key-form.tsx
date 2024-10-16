@@ -29,7 +29,7 @@ import {
 
 const formSchema = z.object({
   product: z.string().min(1, "Product is required"),
-  duration: z.number().min(0, "Duration is required"),
+  pricingUuid: z.string().min(1, "Pricing is required"),
   key: z.string().min(1, "Key is required"),
 });
 
@@ -55,7 +55,7 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
       resolver: zodResolver(formSchema),
       defaultValues: {
         product: "",
-        duration: 0,
+        pricingUuid: "",
         key: "",
       },
     });
@@ -74,7 +74,8 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
         uuid: uuidv4(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        product: product.uuid,
+        productId: product.uuid,
+        pricingId: product.pricing.find((p) => p.uuid === values.pricingUuid)?.uuid ?? "",
         hardwareId: null,
         owner: null,
       };
@@ -138,25 +139,23 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
           />
           <FormField
             control={form.control}
-            name="duration"
+            name="pricingUuid"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Duration</FormLabel>
+                <FormLabel>Pricing</FormLabel>
                 <FormControl>
                   <Select
-                    onValueChange={(value) => field.onChange(Number(value))}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a duration" />
+                      <SelectValue placeholder="Select a pricing" />
                     </SelectTrigger>
                     <SelectContent>
                       {products
                         ?.find((p) => p.name === form.getValues("product"))
                         ?.pricing?.map((pricing) => (
-                          <SelectItem
-                            key={pricing.duration}
-                            value={pricing.duration.toString()}
-                          >
+                          <SelectItem key={pricing.uuid} value={pricing.uuid}>
                             {formatDuration(pricing.duration)}
                           </SelectItem>
                         )) ?? []}

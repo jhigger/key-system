@@ -4,9 +4,11 @@ import {
   dateFilterFn,
   formatDuration,
   formatISOStringToDate,
+  getProductPricingDuration,
   sortByVariant,
 } from "~/lib/utils";
 import { type OrderType } from "~/types/order";
+import { type ProductType } from "~/types/product";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
 const ProductCell: React.FC<{
@@ -19,12 +21,32 @@ const ProductCell: React.FC<{
 
   if (!products) return null;
 
-  const productName = products.find((p) => p.uuid === productKey.product)?.name;
+  const productName = products.find(
+    (p) => p.uuid === productKey.productId,
+  )?.name;
 
   return productName;
 };
 
-export const columns: ColumnDef<OrderType>[] = [
+const VariantCell: React.FC<{
+  row: Row<OrderType>;
+}> = ({ row }) => {
+  const { productKey } = row.original;
+  const {
+    query: { data: products },
+  } = useProducts();
+
+  if (!products) return null;
+
+  const duration = getProductPricingDuration(productKey.pricingId, products);
+  return formatDuration(duration);
+};
+
+export const getColumns = ({
+  products,
+}: {
+  products?: ProductType[];
+}): ColumnDef<OrderType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -64,7 +86,7 @@ export const columns: ColumnDef<OrderType>[] = [
     filterFn: (row, id, value: string[]) => {
       return value.includes(row.getValue(id));
     },
-    accessorFn: (row) => row.productKey.product,
+    accessorFn: (row) => row.productKey.productId,
   },
   {
     accessorKey: "invoiceLink",
@@ -76,14 +98,11 @@ export const columns: ColumnDef<OrderType>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Variant" />
     ),
-    cell: ({ row }) => {
-      const { productKey } = row.original;
-      return formatDuration(productKey.duration);
+    cell: ({ row }) => <VariantCell row={row} />,
+    filterFn: (row, id, value: string[]) => {
+      return value.includes(row.original.productKey.pricingId);
     },
-    filterFn: (row, id, value: number[]) => {
-      return value.includes(row.original.productKey.duration);
-    },
-    sortingFn: sortByVariant,
-    accessorFn: (row) => row.productKey.duration,
+    sortingFn: (rowA, rowB) => sortByVariant(rowA, rowB, products ?? []),
+    accessorFn: (row) => row.productKey.pricingId,
   },
 ];

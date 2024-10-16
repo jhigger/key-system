@@ -63,7 +63,7 @@ const ActionsCell: React.FC<{
 const ProductCell: React.FC<{
   row: Row<ProductKeyType>;
 }> = ({ row }) => {
-  const { product } = row.original;
+  const { productId: product } = row.original;
   const {
     query: { data: products },
   } = useProducts();
@@ -159,10 +159,10 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
     ),
     cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string[]) => {
-      const { product } = row.original;
+      const { productId: product } = row.original;
       return value.includes(product);
     },
-    accessorFn: (row) => row.product,
+    accessorFn: (row) => row.productId,
   },
   {
     accessorKey: "key",

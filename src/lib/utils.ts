@@ -3,6 +3,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { validate as uuidValidate, version as uuidVersion } from "uuid";
 import { type OrderType } from "~/types/order";
+import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 
 export function cn(...inputs: ClassValue[]) {
@@ -72,30 +73,43 @@ export const formatDuration = (duration: number) => {
     : `${duration} Day${duration > 1 ? "s" : ""}`;
 };
 
+export const getProductPricingDuration = (
+  pricingId: string,
+  products: ProductType[],
+): number => {
+  for (const product of products) {
+    const pricing = product.pricing.find((p) => p.uuid === pricingId);
+    if (pricing) {
+      return pricing.duration ?? 0;
+    }
+  }
+  return 0;
+};
+
 export const sortByVariant = <T extends OrderType | ProductKeyType>(
   rowA: Row<T>,
   rowB: Row<T>,
+  products: ProductType[],
 ): number => {
   const getVariantValue = (row: Row<T>): number => {
-    if ("productKey" in row.original) {
-      return row.original.productKey.duration;
-    } else if ("duration" in row.original) {
-      return row.original.duration;
-    }
-    return 0; // Default value if neither property exists
+    const pricingId =
+      "productKey" in row.original
+        ? row.original.productKey.pricingId
+        : row.original.pricingId;
+
+    return pricingId ? getProductPricingDuration(pricingId, products) : 0;
   };
 
   const variantA = getVariantValue(rowA);
   const variantB = getVariantValue(rowB);
 
   // Special cases
-  if (variantA === 0) return 1; // 0 (Lifetime) is always first
-  if (variantB === 0) return -1;
-  if (variantA === 30 && variantB !== 0) return 1; // 30 is second, unless compared to 0
-  if (variantB === 30 && variantA !== 0) return -1;
+  if (variantA === 0 && variantB === 0) return 0; // Both are Lifetime, so they're equal
+  if (variantA === 0) return -1; // 0 (Lifetime) is the highest
+  if (variantB === 0) return 1;
 
   // For all other cases, sort in descending order
-  return variantA - variantB;
+  return variantB - variantA;
 };
 
 export const getStatus = (expiry?: string | null) => {

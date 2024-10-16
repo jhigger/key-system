@@ -3,12 +3,12 @@ import { type ProductType } from "./product";
 
 export type ProductKeyType = {
   uuid: string;
-  product: ProductType["uuid"];
+  productId: ProductType["uuid"];
   key: string;
   expiry?: string | null;
   hardwareId: string | null;
   owner: string | null;
-  duration: PricingType["duration"];
+  pricingId: PricingType["uuid"];
   createdAt: string;
   updatedAt: string;
 };

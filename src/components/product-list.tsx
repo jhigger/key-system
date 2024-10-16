@@ -37,8 +37,7 @@ const productSchema = z.object({
           quantity: z
             .number({ invalid_type_error: "Quantity must be a number" })
             .min(1, { message: "Quantity must be at least 1" }),
-          price: z.number().min(1, { message: "Price is required" }),
-          duration: z.number(),
+          pricingUuid: z.string().min(1, { message: "Pricing is required" }),
         }),
       ),
     }),
@@ -52,6 +51,7 @@ const ProductList = () => {
 
   const {
     query: { data: products, isLoading },
+    query: { data: productsData },
   } = useProducts();
 
   const form = useForm<ProductFormValues>({
@@ -81,31 +81,28 @@ const ProductList = () => {
       (product) => product.keys.length > 0,
     );
 
-    // Combine similar price levels
+    // Combine similar pricing levels
     const cart = filteredData.map((product) => {
       const priceGroups = product.keys.reduce<
-        Record<string, { quantity: number; duration: number }>
+        Record<string, { quantity: number; pricingUuid: string }>
       >((acc, key) => {
-        const price = key.price;
-        if (!acc[price]) {
-          acc[price] = { quantity: 0, duration: 0 };
+        if (!acc[key.pricingUuid]) {
+          acc[key.pricingUuid] = { quantity: 0, pricingUuid: key.pricingUuid };
         }
-        acc[price].quantity += key.quantity; // Sum quantities for the same price
-        acc[price].duration = key.duration;
+        acc[key.pricingUuid]!.quantity += key.quantity;
         return acc;
       }, {});
 
       return {
         name: product.productName,
-        keys: Object.entries(priceGroups).map(
-          ([price, { quantity, duration }]) => ({
-            quantity,
-            price: Number(price),
-            duration,
-          }),
-        ),
+        keys: Object.values(priceGroups),
         totalPrice: Object.entries(priceGroups).reduce(
-          (acc, [price, { quantity }]) => acc + quantity * Number(price),
+          (acc, [pricingUuid, { quantity }]) => {
+            const pricing = products
+              ?.find((p) => p.name === product.productName)
+              ?.pricing.find((p) => p.uuid === pricingUuid);
+            return acc + (pricing?.value ?? 0) * quantity;
+          },
           0,
         ),
       };
@@ -123,10 +120,12 @@ const ProductList = () => {
     return products.reduce((total, product) => {
       return (
         total +
-        product.keys.reduce(
-          (acc, key) => acc + Number(key.price) * key.quantity,
-          0,
-        )
+        product.keys.reduce((acc, key) => {
+          const pricing = productsData
+            ?.find((p) => p.name === product.productName)
+            ?.pricing.find((p) => p.uuid === key.pricingUuid);
+          return acc + (pricing?.value ?? 0) * key.quantity;
+        }, 0)
       );
     }, 0);
   };
@@ -206,19 +205,21 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
 
   const formValues = watch(`products.${productIndex}.keys`);
 
-  const calculateSubtotal = (quantity: number, price: string) =>
-    formatPrice(Number(price) * quantity);
+  const calculateSubtotal = (quantity: number, pricingUuid: string) => {
+    const pricing = product.pricing.find((p) => p.uuid === pricingUuid);
+    return formatPrice((pricing?.value ?? 0) * quantity);
+  };
 
   // Calculate remaining stock for each pricing option
   const remainingStock = product.pricing.reduce(
     (acc, price) => {
       const totalQuantity = formValues.reduce((sum, key) => {
-        if (key.price === price.value && key.duration === price.duration) {
+        if (key.pricingUuid === price.uuid) {
           return sum + (key.quantity || 0);
         }
         return sum;
       }, 0);
-      acc[`${price.value}-${price.duration}`] = price.stock - totalQuantity;
+      acc[price.uuid] = price.stock - totalQuantity;
       return acc;
     },
     {} as Record<string, number>,
@@ -226,7 +227,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
 
   // Find the first available pricing option
   const firstAvailableOption = product.pricing.find(
-    (price) => remainingStock[`${price.value}-${price.duration}`] ?? 0 > 0,
+    (price) => remainingStock[price.uuid] ?? 0 > 0,
   );
 
   return (
@@ -244,7 +245,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
             product={product}
             subtotal={calculateSubtotal(
               formValues[index]?.quantity ?? 1,
-              formValues[index]?.price.toString() ?? "0",
+              formValues[index]?.pricingUuid ?? "",
             )}
             productIndex={productIndex}
             remainingStock={remainingStock}
@@ -261,8 +262,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
             if (firstAvailableOption) {
               append({
                 quantity: 1,
-                price: firstAvailableOption.value,
-                duration: firstAvailableOption.duration,
+                pricingUuid: firstAvailableOption.uuid,
               });
             }
           }}
@@ -299,14 +299,13 @@ const KeyRow = ({
     setValue,
   } = useFormContext<ProductFormValues>();
 
-  const currentPrice = watch(`products.${productIndex}.keys.${index}.price`);
-  const currentDuration = watch(
-    `products.${productIndex}.keys.${index}.duration`,
+  const currentPricingUuid = watch(
+    `products.${productIndex}.keys.${index}.pricingUuid`,
   );
 
   // Find the current pricing option
   const currentPricingOption = product.pricing.find(
-    (p) => p.value === currentPrice && p.duration === currentDuration,
+    (p) => p.uuid === currentPricingUuid,
   );
 
   const handleQuantityChange = (
@@ -317,7 +316,7 @@ const KeyRow = ({
     newValue: number,
   ) => {
     const maxAllowedQuantity =
-      remainingStock[`${currentPrice}-${currentDuration}`] ?? 0 + field.value;
+      remainingStock[currentPricingUuid] ?? 0 + field.value;
     const validValue = Math.min(Math.max(1, newValue), maxAllowedQuantity);
     field.onChange(validValue);
   };
@@ -330,72 +329,60 @@ const KeyRow = ({
     <div className="flex flex-col gap-2 rounded-md border !border-b border-muted bg-transparent p-3 first:mt-6">
       <div className="flex h-9 items-center justify-center gap-2 text-sm text-muted-foreground shadow-sm">
         <span>
-          {`${formatDuration(currentDuration)} - $${currentPrice}`} keys left:
+          {currentPricingOption
+            ? `${formatDuration(currentPricingOption.duration)} - ${formatPrice(currentPricingOption.value)}`
+            : "Select pricing"}{" "}
+          keys left:
         </span>
         <span className="text-foreground">
-          {Math.max(
-            0,
-            remainingStock[`${currentPrice}-${currentDuration}`] ?? 0,
-          )}
+          {Math.max(0, remainingStock[currentPricingUuid] ?? 0)}
         </span>
       </div>
 
       <div className="grid w-full gap-4 md:grid-cols-11">
-        {/* Price Select */}
+        {/* Pricing Select */}
         <Controller
-          name={`products.${productIndex}.keys.${index}.price`}
+          name={`products.${productIndex}.keys.${index}.pricingUuid`}
           control={control}
           render={({ field }) => (
             <div className="col-span-full flex flex-col md:col-span-3">
               <Select
-                value={field.value.toString()}
-                onValueChange={(value) => {
-                  const selectedPricing = product.pricing.find(
-                    (p) => p.value.toString() === value,
+                value={field.value}
+                onValueChange={(newPricingUuid) => {
+                  setValue(
+                    `products.${productIndex}.keys.${index}.pricingUuid`,
+                    newPricingUuid,
                   );
-                  field.onChange(Number(value));
-                  if (selectedPricing) {
-                    setValue(
-                      `products.${productIndex}.keys.${index}.duration`,
-                      selectedPricing.duration,
-                    );
-                    // Reset quantity to 1 when changing price
-                    setValue(
-                      `products.${productIndex}.keys.${index}.quantity`,
-                      1,
-                    );
-                  }
+                  // Reset quantity to 1 when changing pricing
+                  setValue(
+                    `products.${productIndex}.keys.${index}.quantity`,
+                    1,
+                  );
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Price">
+                  <SelectValue placeholder="Select Pricing">
                     {currentPricingOption
-                      ? `${formatDuration(currentPricingOption.duration)} - $${
-                          currentPricingOption.value
-                        }`
-                      : "Select Price"}
+                      ? `${formatDuration(currentPricingOption.duration)} - ${formatPrice(currentPricingOption.value)}`
+                      : "Select Pricing"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {product.pricing
-                    .filter(
-                      (price) =>
-                        remainingStock[`${price.value}-${price.duration}`] ??
-                        0 > 0,
-                    )
+                    .filter((price) => remainingStock[price.uuid] ?? 0 > 0)
                     .map((price) => (
-                      <SelectItem
-                        key={`${price.value}-${price.duration}`}
-                        value={price.value.toString()}
-                      >
-                        {`${formatDuration(price.duration)} - $${price.value}`}
+                      <SelectItem key={price.uuid} value={price.uuid}>
+                        {`${formatDuration(price.duration)} - ${formatPrice(price.value)}`}
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
-              {errors.products?.[productIndex]?.keys?.[index]?.price && (
+              {errors.products?.[productIndex]?.keys?.[index]?.pricingUuid && (
                 <span className="text-sm text-destructive">
-                  {errors.products[productIndex].keys[index].price?.message}
+                  {
+                    errors.products[productIndex].keys[index].pricingUuid
+                      ?.message
+                  }
                 </span>
               )}
             </div>

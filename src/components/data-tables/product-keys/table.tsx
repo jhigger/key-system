@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import useProductKeys from "~/hooks/useProductKeys";
+import useProducts from "~/hooks/useProducts";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTable } from "../../ui/data-table";
 import { getColumns } from "./columns";
@@ -9,8 +10,11 @@ const ProductKeysTable = () => {
     query: { data: productKeys },
     mutation: { addProductKey },
   } = useProductKeys();
+  const {
+    query: { data: products },
+  } = useProducts();
 
-  const columns = useMemo(() => getColumns(), []);
+  const columns = useMemo(() => getColumns({ products }), [products]);
 
   return (
     <DataTable

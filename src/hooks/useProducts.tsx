@@ -4,9 +4,11 @@ import {
   addProduct,
   deletePricing,
   deleteProduct,
+  editPricing,
   editProduct,
   getProducts,
 } from "~/data-access/products";
+import { type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 const useProducts = () => {
   const queryClient = useQueryClient();
@@ -25,8 +27,8 @@ const useProducts = () => {
       });
       toast.success("Product added successfully");
     },
-    onError: () => {
-      toast.error("Failed to add product");
+    onError: (error) => {
+      toast.error(`Failed to add product: ${error.message}`);
     },
   });
 
@@ -80,9 +82,8 @@ const useProducts = () => {
       );
       return { previousProducts };
     },
-    onError: (err, deletedUuid, context) => {
-      queryClient.setQueryData(["products"], context?.previousProducts);
-      toast.error("Failed to delete product");
+    onError: (error) => {
+      toast.error(`Failed to delete product: ${error.message}`);
     },
     onSettled: async () => {
       // Invalidate both products and product keys queries
@@ -103,7 +104,7 @@ const useProducts = () => {
     }) => {
       return deletePricing(productUuid, pricingUuid);
     },
-    onMutate: async ({ pricingUuid }) => {
+    onMutate: async ({ productUuid, pricingUuid }) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: ["products"] });
 
@@ -116,7 +117,7 @@ const useProducts = () => {
       queryClient.setQueryData<ProductType[]>(["products"], (old) =>
         old
           ? old.map((product) =>
-              product.pricing.find((p) => p.uuid === pricingUuid)
+              product.uuid === productUuid
                 ? {
                     ...product,
                     pricing: product.pricing.filter(
@@ -131,10 +132,8 @@ const useProducts = () => {
       // Return a context object with the snapshotted value
       return { previousProducts };
     },
-    onError: (err, data, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(["products"], context?.previousProducts);
-      toast.error("Failed to delete pricing");
+    onError: (error) => {
+      toast.error(`Failed to delete pricing: ${error.message}`);
     },
     onSettled: async () => {
       // Invalidate both products and product keys queries
@@ -146,12 +145,54 @@ const useProducts = () => {
     },
   });
 
+  const editPricingMutation = useMutation({
+    mutationFn: async ({
+      productUuid,
+      newPricing,
+    }: {
+      productUuid: string;
+      newPricing: PricingType[];
+    }) => {
+      return editPricing(productUuid, newPricing);
+    },
+    onMutate: async ({ productUuid, newPricing }) => {
+      await queryClient.cancelQueries({ queryKey: ["products"] });
+
+      const previousProducts = queryClient.getQueryData<ProductType[]>([
+        "products",
+      ]);
+
+      queryClient.setQueryData<ProductType[]>(["products"], (old) =>
+        old
+          ? old.map((product) =>
+              product.uuid === productUuid
+                ? { ...product, pricing: newPricing }
+                : product,
+            )
+          : [],
+      );
+
+      return { previousProducts };
+    },
+    onError: (error) => {
+      toast.error(`Failed to edit pricing: ${error.message}`);
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
+    },
+    onSuccess: () => {
+      toast.success("Pricing updated successfully");
+    },
+  });
+
   return {
     query,
     mutation: {
       addProduct: addProductMutation.mutate,
       editProduct: editMutation.mutate,
       deleteProduct: deleteProductMutation.mutate,
+      editPricing: editPricingMutation.mutate,
       deletePricing: deletePricingMutation.mutate,
     },
   };

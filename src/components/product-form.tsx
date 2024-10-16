@@ -24,29 +24,20 @@ import { type ProductType } from "~/types/product";
 import Loader from "./loader";
 import { Input } from "./ui/input";
 
-const pricingSchema = z.object({
-  duration: z.number().min(0, "Duration must be a non-negative number"),
-  value: z
-    .number()
-    .refine(
-      (val) => !isNaN(val) && val > 0,
-      "Pricing must be a number greater than zero",
-    ),
-  stock: z.number().min(0, "Stock must be a non-negative number"),
-});
-
 const formSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   pricing: z
-    .array(pricingSchema)
-    .min(1, "At least one pricing variant is required")
-    .refine(
-      (pricing) => {
-        const durations = pricing.map((p) => p.duration);
-        return new Set(durations).size === durations.length;
-      },
-      { message: "Durations must be unique across all pricing variants" },
-    ),
+    .array(
+      z.object({
+        uuid: z.string().optional(),
+        duration: z.number().min(0, "Duration must be a non-negative number"),
+        value: z.number().min(0.01, "Price must be greater than 0"),
+        stock: z.number().min(0, "Stock cannot be negative"),
+      }),
+    )
+    .refine((pricing) => pricing.some((p) => p.duration > 0 && p.value > 0), {
+      message: "At least one valid pricing entry is required",
+    }),
 });
 
 export interface ProductFormRef {
@@ -118,15 +109,16 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       }
 
       const product: ProductType = {
-        uuid: uuidv4(),
-        createdAt: new Date().toISOString(),
+        uuid: initialValues?.uuid ?? uuidv4(),
+        createdAt: initialValues?.createdAt ?? new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         name: values.name,
         pricing: values.pricing.map((p) => ({
           ...p,
-          uuid: uuidv4(),
+          uuid: initialValues?.pricing.find(op => op.uuid === p.uuid)?.uuid ?? uuidv4(),
         })),
       };
+
       handleSubmit(product);
     };
 
