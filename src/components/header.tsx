@@ -23,6 +23,7 @@ import { Switch } from "./ui/switch";
 
 const BREAKPOINT = 768; // Adjust this breakpoint as needed
 
+// TODO: remove on production
 const DevRoleSwitch = () => {
   const { user: clerkUser, isLoaded } = useUser();
   const { user, setUser } = useUserStore();

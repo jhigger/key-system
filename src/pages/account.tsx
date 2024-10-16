@@ -1,14 +1,11 @@
+import { useUser } from "@clerk/nextjs";
 import { History, KeyRound } from "lucide-react";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
 import MyKeys from "~/components/data-tables/my-key";
 import OrderHistory from "~/components/data-tables/order-history";
 import RootLayout from "~/components/layouts/root-layout";
 import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
 import Loader from "~/components/loader";
-import { useUserStore } from "~/state/user.store";
-
-const PATH = "/account";
 
 export const ACCOUNT_TABS: TabType[] = [
   {
@@ -26,20 +23,18 @@ export const ACCOUNT_TABS: TabType[] = [
 ] as const;
 
 const Account = () => {
-  const { user } = useUserStore();
-  const router = useRouter();
+  const { user, isLoaded } = useUser();
 
-  if (!user) {
-    return null;
-  }
-
-  if (user.role === "admin") {
-    router.push("/admin");
+  if (!isLoaded) {
     return (
       <RootLayout>
         <Loader />
       </RootLayout>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
@@ -49,7 +44,7 @@ const Account = () => {
         <link rel="icon" href="/icon.png" />
       </Head>
       <RootLayout>
-        <TabsLayout path={PATH} tabs={ACCOUNT_TABS} />
+        <TabsLayout tabs={ACCOUNT_TABS} />
       </RootLayout>
     </>
   );

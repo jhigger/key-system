@@ -7,7 +7,7 @@ import { useUserStore } from "~/state/user.store";
 import { type RoleType, type UserType } from "~/types/user";
 
 const useUsers = () => {
-  const { client } = useClerk();
+  const { client, setActive } = useClerk();
   const { setUser } = useUserStore();
   const queryClient = useQueryClient();
 
@@ -49,7 +49,7 @@ const useUsers = () => {
     },
   });
 
-  const setClerkUser = () => {
+  const setClerkUser = async (sessionId: string | null) => {
     const user = client.activeSessions[0]?.user;
     if (!user) {
       toast.error("User not found");
@@ -67,6 +67,7 @@ const useUsers = () => {
     };
 
     setUser(payload);
+    await setActive({ session: sessionId });
   };
 
   return {

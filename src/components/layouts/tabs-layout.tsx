@@ -11,11 +11,10 @@ export type TabType = {
 };
 
 type TabLayoutProps = {
-  path: string;
   tabs: TabType[];
 };
 
-const TabsLayout = ({ path, tabs }: TabLayoutProps) => {
+const TabsLayout = ({ tabs }: TabLayoutProps) => {
   type TabValue = (typeof tabs)[number]["value"];
   const [activeTab, setActiveTab] = useState<TabValue>(tabs[0]?.value ?? "");
   const { asPath } = useRouter();
@@ -45,7 +44,7 @@ const TabsLayout = ({ path, tabs }: TabLayoutProps) => {
             className="flex flex-1 items-center justify-center gap-2"
             asChild
           >
-            <Link href={`${path}#${value}`}>
+            <Link href={`#${value}`}>
               {icon} {label}
             </Link>
           </TabsTrigger>

@@ -57,7 +57,7 @@ export function LoginForm() {
         toast.error(completeSignIn.status);
       }
       if (completeSignIn.status === "complete") {
-        setClerkUser();
+        await setClerkUser(signIn.createdSessionId);
         window.location.href = "/";
       }
     } catch (err) {

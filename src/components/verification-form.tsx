@@ -70,7 +70,7 @@ const VerificationForm = ({ values }: VerificationFormProps) => {
         toast.error(completeSignUp.status);
       }
       if (completeSignUp.status === "complete") {
-        setClerkUser();
+        await setClerkUser(signUp.createdSessionId);
         window.location.href = "/";
       }
     } catch (err) {

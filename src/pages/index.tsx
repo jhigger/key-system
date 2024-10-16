@@ -24,6 +24,7 @@ export default function Home() {
     return null;
   }
 
+  // TODO: remove on production
   if (user?.role === "admin") {
     router.push("/admin");
     return (

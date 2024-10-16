@@ -4,7 +4,7 @@ import { type UserType } from "~/types/user";
 
 type UserStore = {
   user: UserType | null;
-  setUser: (user: UserType) => void;
+  setUser: (user: UserType | null) => void;
   logout: () => void;
 };
 
@@ -20,7 +20,7 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: "user-storage", // name of the item in the storage (must be unique)
-      storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' isLoading: boolean; used
+      storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' isLoading: boolean; used
     },
   ),
 );
