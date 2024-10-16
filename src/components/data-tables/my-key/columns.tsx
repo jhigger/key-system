@@ -18,6 +18,7 @@ import {
   getStatus,
 } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
+import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 import { Badge } from "../../ui/badge";
@@ -75,7 +76,11 @@ const ProductCell: React.FC<{
   return productName;
 };
 
-export const getColumns = (): ColumnDef<ProductKeyType>[] => [
+export const getColumns = ({
+  products,
+}: {
+  products?: ProductType[];
+}): ColumnDef<ProductKeyType>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (
@@ -162,7 +167,10 @@ export const getColumns = (): ColumnDef<ProductKeyType>[] => [
       const { productId: product } = row.original;
       return value.includes(product);
     },
-    accessorFn: (row) => row.productId,
+    accessorFn: (row) => {
+      const product = products?.find((p) => p.uuid === row.productId);
+      return product?.name ?? "";
+    },
   },
   {
     accessorKey: "key",

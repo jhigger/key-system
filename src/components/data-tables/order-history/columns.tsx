@@ -86,7 +86,12 @@ export const getColumns = ({
     filterFn: (row, id, value: string[]) => {
       return value.includes(row.getValue(id));
     },
-    accessorFn: (row) => row.productKey.productId,
+    accessorFn: (row) => {
+      const product = products?.find(
+        (p) => p.uuid === row.productKey.productId,
+      );
+      return product?.name ?? "";
+    },
   },
   {
     accessorKey: "invoiceLink",
@@ -99,10 +104,17 @@ export const getColumns = ({
       <DataTableColumnHeader column={column} title="Variant" />
     ),
     cell: ({ row }) => <VariantCell row={row} />,
-    filterFn: (row, id, value: string[]) => {
-      return value.includes(row.original.productKey.pricingId);
+    filterFn: (row, id, value: number[]) => {
+      const pricingId = row.original.productKey.pricingId;
+      const duration = getProductPricingDuration(pricingId, products ?? []);
+      console.log(value);
+      return value.includes(duration);
     },
     sortingFn: (rowA, rowB) => sortByVariant(rowA, rowB, products ?? []),
-    accessorFn: (row) => row.productKey.pricingId,
+    accessorFn: (row) => {
+      const pricingId = row.productKey.pricingId;
+      const duration = getProductPricingDuration(pricingId, products ?? []);
+      return duration;
+    },
   },
 ];

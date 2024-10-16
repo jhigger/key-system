@@ -296,7 +296,10 @@ export const getColumns = ({
       return value.includes(row.original.productId);
     },
     sortingFn: (rowA, rowB) => sortByProduct(rowA, rowB, products ?? []),
-    accessorFn: (row) => row.productId,
+    accessorFn: (row) => {
+      const product = products?.find((p) => p.uuid === row.productId);
+      return product?.name ?? "";
+    },
   },
   {
     accessorKey: "pricingUuid",
