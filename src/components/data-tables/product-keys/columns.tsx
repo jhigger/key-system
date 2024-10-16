@@ -26,6 +26,7 @@ import {
   formatDuration,
   formatISOStringToDate,
   formatPrice,
+  sortByProduct,
   sortByVariant,
 } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
@@ -294,9 +295,7 @@ export const getColumns = ({
     filterFn: (row, id, value: string[]) => {
       return value.includes(row.original.productId);
     },
-    sortingFn: (rowA, rowB) => {
-      return rowA.original.productId.localeCompare(rowB.original.productId);
-    },
+    sortingFn: (rowA, rowB) => sortByProduct(rowA, rowB, products ?? []),
     accessorFn: (row) => row.productId,
   },
   {

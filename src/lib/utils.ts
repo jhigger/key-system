@@ -119,3 +119,18 @@ export const getStatus = (expiry?: string | null) => {
       : "active"
     : "active";
 };
+
+export const sortByProduct = <T extends ProductKeyType>(
+  rowA: Row<T>,
+  rowB: Row<T>,
+  products: ProductType[],
+): number => {
+  const productA = products.find(
+    (product) => product.uuid === rowA.original.productId,
+  );
+  const productB = products.find(
+    (product) => product.uuid === rowB.original.productId,
+  );
+
+  return (productA?.name ?? "").localeCompare(productB?.name ?? "");
+};
