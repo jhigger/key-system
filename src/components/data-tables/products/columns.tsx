@@ -51,7 +51,7 @@ const DurationCell: React.FC<{
         >
           {editMode ? (
             <Drawer open={showForm} onOpenChange={setShowForm}>
-              <DrawerTrigger>
+              <DrawerTrigger asChild>
                 <Button
                   type="button"
                   variant="ghost"
