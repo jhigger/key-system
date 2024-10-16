@@ -359,7 +359,6 @@ export const getColumns = (): ColumnDef<ProductType>[] => [
     cell: ({ row }) => <StockCell row={row} />,
   },
   {
-    id: "actions",
     header: "Actions",
     cell: ({ row }) => <ActionsCell row={row} />,
   },

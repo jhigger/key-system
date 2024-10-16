@@ -107,7 +107,6 @@ export const getColumns = ({
     filterFn: (row, id, value: number[]) => {
       const pricingId = row.original.productKey.pricingId;
       const duration = getProductPricingDuration(pricingId, products ?? []);
-      console.log(value);
       return value.includes(duration);
     },
     sortingFn: (rowA, rowB) => sortByVariant(rowA, rowB, products ?? []),
