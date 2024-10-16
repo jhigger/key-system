@@ -33,7 +33,7 @@ const RoleCell: React.FC<{
           setCurrentRole(newRole as RoleType);
           changeRole({ ...row.original, role: newRole as RoleType });
         }}
-        disabled={currentUser?.id === row.original.id}
+        disabled={currentUser?.uuid === row.original.uuid}
       >
         <SelectTrigger className="w-[180px] capitalize">
           <SelectValue placeholder="Select a role" />

@@ -14,7 +14,7 @@ const OrderHistory = () => {
   const { user } = useUserStore();
   const {
     query: { data: orders, isLoading, isError },
-  } = useOrders(user?.id);
+  } = useOrders(user?.uuid);
 
   if (isError) {
     return <div className="flex justify-center p-4">Error fetching data</div>;

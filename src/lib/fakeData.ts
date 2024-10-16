@@ -197,7 +197,8 @@ export const fakeOrders: OrderType[] = [
 
 export const fakeUsers: UserType[] = [
   {
-    id: fakeUserId1,
+    uuid: fakeUserId1,
+    clerkId: "clerk_id_one",
     role: "admin",
     username: "admin",
     email: "email_one@example.com",
@@ -206,7 +207,8 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
   },
   {
-    id: fakeUserId2,
+    uuid: fakeUserId2,
+    clerkId: "clerk_id_two",
     role: "reseller",
     username: "reseller1",
     email: "email_two@example.com",
@@ -215,7 +217,8 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
   },
   {
-    id: fakeUserId3,
+    uuid: fakeUserId3,
+    clerkId: "clerk_id_three",
     role: "user",
     username: "dev",
     email: "email_three@example.com",
@@ -224,7 +227,8 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
-    id: fakeUserId4,
+    uuid: fakeUserId4,
+    clerkId: "clerk_id_four",
     role: "user",
     username: "user2",
     email: "email_four@example.com",
@@ -233,7 +237,8 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 6).toISOString(),
   },
   {
-    id: fakeUserId5,
+    uuid: fakeUserId5,
+    clerkId: "clerk_id_five",
     role: "user",
     username: "user5",
     email: "email_five@example.com",
@@ -242,7 +247,8 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
   },
   {
-    id: fakeUserId6,
+    uuid: fakeUserId6,
+    clerkId: "clerk_id_six",
     role: "user",
     username: "user6",
     email: "email_six@example.com",
@@ -251,7 +257,8 @@ export const fakeUsers: UserType[] = [
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
   },
   {
-    id: fakeUserId7,
+    uuid: fakeUserId7,
+    clerkId: "clerk_id_seven",
     role: "user",
     username: "user7",
     email: "email_seven@example.com",

@@ -29,7 +29,7 @@ const ActionsCell: React.FC<{
   const { user } = useUserStore();
   const {
     mutation: { resetHardwareId },
-  } = useMyKeys(user?.id);
+  } = useMyKeys(user?.uuid);
   const { hardwareId, expiry } = row.original;
   const isExpired = expiry ? new Date(expiry) < new Date() : false;
 

@@ -9,7 +9,7 @@ const MyKeysTable = () => {
   const { user } = useUserStore();
   const {
     query: { data: keys },
-  } = useMyKeys(user?.id);
+  } = useMyKeys(user?.uuid);
   const {
     query: { data: products },
   } = useProducts();

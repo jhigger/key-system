@@ -6,7 +6,7 @@ export const getUsers = (): UserType[] => fakeUsers;
 export const changeUserRole = (user: UserType): UserType => {
   const users = getUsers();
 
-  const index = users.findIndex((u) => u.id === user.id);
+  const index = users.findIndex((u) => u.uuid === user.uuid);
   if (index !== -1) {
     const existingUser = users[index];
     if (existingUser) {

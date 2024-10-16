@@ -14,7 +14,7 @@ const MyKeys = () => {
   const { user } = useUserStore();
   const {
     query: { data: keys, isLoading, isError },
-  } = useMyKeys(user?.id);
+  } = useMyKeys(user?.uuid);
 
   if (isError) {
     return <div className="flex justify-center p-4">Error fetching data</div>;
