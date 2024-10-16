@@ -254,7 +254,7 @@ const ActionsCell: React.FC<{
           asChild
         >
           <Button variant={"ghost"} className="justify-between gap-2 px-2">
-            Edit Pricing <Pencil size={16} />
+            Add/Edit <Pencil size={16} />
           </Button>
         </DropdownMenuItem>
         <DropdownMenuItem
