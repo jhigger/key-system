@@ -130,15 +130,24 @@ const DurationCell: React.FC<{
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {product.pricing.map((pricing) => (
-            <SelectItem
-              key={pricing.uuid}
-              value={pricing.uuid}
-              className="capitalize"
-            >
-              {formatDuration(pricing.duration)}
-            </SelectItem>
-          ))}
+          {product.pricing
+            .slice() // Create a shallow copy to avoid mutating the original array
+            .sort((a, b) => {
+              // Place zero duration at the bottom
+              if (a.duration === 0) return 1;
+              if (b.duration === 0) return -1;
+              // Sort other durations in ascending order
+              return a.duration - b.duration;
+            })
+            .map((pricing) => (
+              <SelectItem
+                key={pricing.uuid}
+                value={pricing.uuid}
+                className="capitalize"
+              >
+                {formatDuration(pricing.duration)}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
     );
