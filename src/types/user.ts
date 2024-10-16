@@ -5,7 +5,7 @@ export const roles = ["admin", "user", "reseller"] as const;
 export type RoleType = (typeof roles)[number];
 
 export type UserType = {
-  uuid: string;
+  id: string;
   role: RoleType;
   username: string;
   email: string;

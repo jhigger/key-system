@@ -57,7 +57,7 @@ const useUsers = () => {
     }
     const userRole = (user.publicMetadata.role as RoleType) ?? "user";
     const payload: UserType = {
-      uuid: fakeOwnerId,
+      id: fakeOwnerId,
       role: userRole,
       username: user.username ?? "dev",
       email: user.emailAddresses[0]?.emailAddress ?? "",
