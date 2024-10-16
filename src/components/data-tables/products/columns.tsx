@@ -12,6 +12,7 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
+  DrawerTrigger,
 } from "~/components/ui/drawer";
 import {
   DropdownMenu,
@@ -35,8 +36,10 @@ const DurationCell: React.FC<{
 }> = ({ row }) => {
   const { editMode } = useUIStore();
   const {
-    mutation: { editProduct },
+    mutation: { editPricing },
   } = useProducts();
+  const [showForm, setShowForm] = useState(false);
+  const productKeyFormRef = useRef<ProductFormRef>(null);
   const pricing = row.original.pricing;
 
   return (
@@ -47,26 +50,46 @@ const DurationCell: React.FC<{
           className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
         >
           {editMode ? (
-            <DebouncedInput
-              type="number"
-              min="0"
-              step="1"
-              value={p.duration}
-              onChange={(value) => {
-                editProduct({
-                  ...row.original,
-                  pricing: pricing.map((item) =>
-                    item.uuid === p.uuid
-                      ? {
-                          ...item,
-                          duration: Number(value),
-                        }
-                      : item,
-                  ),
-                });
-              }}
-              className="w-20"
-            />
+            <Drawer open={showForm} onOpenChange={setShowForm}>
+              <DrawerTrigger>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex h-9 min-w-20 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
+                >
+                  {formatDuration(p.duration)}
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
+                  <div className="mx-auto w-full max-w-screen-sm">
+                    <DrawerHeader>
+                      <DrawerTitle>Add a new pricing</DrawerTitle>
+                      <DrawerDescription>
+                        Click submit when you&apos;re done or cancel to discard
+                        changes.
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <ProductForm
+                      ref={productKeyFormRef}
+                      handleSubmit={(values) => {
+                        editPricing({
+                          productUuid: row.original.uuid,
+                          newPricing: values.pricing,
+                        });
+                        setShowForm(false);
+                      }}
+                      initialValues={row.original}
+                    />
+                    <DrawerFooter>
+                      <DrawerClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </div>
+                </div>
+              </DrawerContent>
+            </Drawer>
           ) : (
             formatDuration(p.duration)
           )}

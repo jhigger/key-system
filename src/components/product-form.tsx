@@ -37,7 +37,16 @@ const formSchema = z.object({
     )
     .refine((pricing) => pricing.some((p) => p.duration > 0 && p.value > 0), {
       message: "At least one valid pricing entry is required",
-    }),
+    })
+    .refine(
+      (pricing) => {
+        const durations = pricing.map((p) => p.duration);
+        return new Set(durations).size === durations.length;
+      },
+      {
+        message: "Duration must be unique across all pricing variants",
+      },
+    ),
 });
 
 export interface ProductFormRef {
@@ -115,7 +124,9 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
         name: values.name,
         pricing: values.pricing.map((p) => ({
           ...p,
-          uuid: initialValues?.pricing.find(op => op.uuid === p.uuid)?.uuid ?? uuidv4(),
+          uuid:
+            initialValues?.pricing.find((op) => op.uuid === p.uuid)?.uuid ??
+            uuidv4(),
         })),
       };
 
