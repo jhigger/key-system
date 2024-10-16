@@ -153,8 +153,7 @@ const VerificationForm = ({ values }: VerificationFormProps) => {
               className="col-span-full"
               disabled={form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting && <Loader />}
-              Verify
+              {form.formState.isSubmitting ? <Loader /> : "Verify"}
             </Button>
           </form>
         </Form>

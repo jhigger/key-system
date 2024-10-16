@@ -270,8 +270,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
               className="w-full"
               disabled={form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting && <Loader />}
-              Submit
+              {form.formState.isSubmitting ? <Loader /> : "Submit"}
             </Button>
           </div>
         </form>

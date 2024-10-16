@@ -177,8 +177,7 @@ export function RegisterForm() {
               className="col-span-full"
               disabled={form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting && <Loader />}
-              Create an account
+              {form.formState.isSubmitting ? <Loader /> : "Create an account"}
             </Button>
           </form>
         </Form>

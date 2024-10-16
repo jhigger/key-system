@@ -127,8 +127,7 @@ export function LoginForm() {
               className="w-full"
               disabled={form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting && <Loader />}
-              Login
+              {form.formState.isSubmitting ? <Loader /> : "Login"}
             </Button>
           </form>
         </Form>

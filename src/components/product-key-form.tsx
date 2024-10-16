@@ -75,7 +75,9 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         productId: product.uuid,
-        pricingId: product.pricing.find((p) => p.uuid === values.pricingUuid)?.uuid ?? "",
+        pricingId:
+          product.pricing.find((p) => p.uuid === values.pricingUuid)?.uuid ??
+          "",
         hardwareId: null,
         owner: null,
       };
@@ -198,8 +200,7 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
             className="w-full"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting && <Loader />}
-            Submit
+            {form.formState.isSubmitting ? <Loader /> : "Submit"}
           </Button>
         </form>
       </Form>
