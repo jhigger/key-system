@@ -36,6 +36,14 @@ export const editProductKey = async (
   productKeyUuid: string,
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
+  const oldPricingId = (await getProductKeyById(productKeyUuid)).pricingId;
+  const newPricingId = productKey.pricingId;
+
+  if (newPricingId !== oldPricingId) {
+    await updateProductStock(productKey.productId, oldPricingId, -1);
+    await updateProductStock(productKey.productId, newPricingId, 1);
+  }
+
   const { data: productKeyData, error: productKeyError } = await supabase
     .from("product_keys")
     .update({
@@ -72,10 +80,37 @@ export const editProductKey = async (
 export const addProductKey = async (
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const productKeys = await getProductKeys();
-  productKeys.push(productKey);
+  const { data, error } = await supabase
+    .from("product_keys")
+    .insert({
+      product_id: productKey.productId,
+      key: productKey.key,
+      expiry: productKey.expiry,
+      hardware_id: productKey.hardwareId,
+      owner: productKey.owner,
+      pricing_id: productKey.pricingId,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error adding product key:", error);
+    throw new Error("Failed to add product key");
+  }
+
   await updateProductStock(productKey.productId, productKey.pricingId, 1);
-  return productKey;
+
+  return {
+    uuid: data.uuid,
+    productId: data.product_id,
+    key: data.key,
+    expiry: data.expiry,
+    hardwareId: data.hardware_id,
+    owner: data.owner,
+    pricingId: data.pricing_id,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
 };
 
 export const deleteProductKey = async (
@@ -93,4 +128,13 @@ export const deleteProductKey = async (
   await updateProductStock(deletedKey.productId, deletedKey.pricingId, -1);
   productKeys.splice(deletedKeyIndex, 1);
   return productKeys;
+};
+
+const getProductKeyById = async (uuid: string): Promise<ProductKeyType> => {
+  const productKeys = await getProductKeys();
+  const productKey = productKeys.find((key) => key.uuid === uuid);
+  if (!productKey) {
+    throw new Error(`Key ${uuid} not found`);
+  }
+  return productKey;
 };

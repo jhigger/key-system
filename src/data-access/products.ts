@@ -245,8 +245,7 @@ export const updateProductStock = async (
   const { error } = await supabase
     .from("pricings")
     .update({ stock: updatedPricing.stock })
-    .eq("uuid", pricingUuid)
-    .select();
+    .eq("uuid", pricingUuid);
 
   if (error) {
     throw new Error(`Failed to update pricing stock: ${error.message}`);

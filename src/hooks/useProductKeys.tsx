@@ -66,6 +66,7 @@ const useProductKeys = () => {
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onSuccess: () => {
       toast.success("Product key updated successfully");
