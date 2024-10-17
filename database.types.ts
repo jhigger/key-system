@@ -55,7 +55,7 @@ export type Database = {
           duration: number
           stock: number
           updated_at?: string
-          uuid?: string
+          uuid: string
           value: number
         }
         Update: {
