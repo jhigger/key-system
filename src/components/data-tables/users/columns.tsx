@@ -1,5 +1,4 @@
 import { type ColumnDef, type Row } from "@tanstack/react-table";
-import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import {
   Select,
@@ -19,7 +18,6 @@ const RoleCell: React.FC<{
   row: Row<UserType>;
 }> = ({ row }) => {
   const { editMode } = useUIStore();
-  const [currentRole, setCurrentRole] = useState<RoleType>(row.original.role);
   const {
     mutation: { changeRole },
   } = useUsers();
@@ -28,9 +26,8 @@ const RoleCell: React.FC<{
   if (editMode) {
     return (
       <Select
-        value={currentRole}
+        value={row.original.role}
         onValueChange={(newRole) => {
-          setCurrentRole(newRole as RoleType);
           changeRole({ ...row.original, role: newRole as RoleType });
         }}
         disabled={currentUser?.uuid === row.original.uuid}
@@ -49,7 +46,7 @@ const RoleCell: React.FC<{
     );
   }
 
-  return <Badge className="capitalize">{currentRole}</Badge>;
+  return <Badge className="capitalize">{row.original.role}</Badge>;
 };
 
 export const getColumns = (): ColumnDef<UserType>[] => [

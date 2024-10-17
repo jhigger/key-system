@@ -2,7 +2,10 @@ import { supabase } from "~/lib/initSupabase";
 import { type RoleType, type UserType } from "~/types/user";
 
 export const getUsers = async (): Promise<UserType[]> => {
-  const { data, error } = await supabase.from("users").select("*");
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(error.message);
@@ -23,19 +26,29 @@ export const getUsers = async (): Promise<UserType[]> => {
 };
 
 export const changeUserRole = async (user: UserType): Promise<UserType> => {
-  const users = await getUsers();
+  const { data, error } = await supabase
+    .from("users")
+    .update({ role: user.role })
+    .eq("uuid", user.uuid)
+    .select()
+    .single();
 
-  const index = users.findIndex((u) => u.uuid === user.uuid);
-  if (index !== -1) {
-    const existingUser = users[index];
-    if (existingUser) {
-      const updatedUser: UserType = {
-        ...existingUser,
-        role: user.role,
-      };
-      users[index] = updatedUser;
-      return updatedUser;
-    }
+  if (error) {
+    throw new Error(`Failed to update user role: ${error.message}`);
   }
-  throw new Error(`User with email ${user.email} not found`);
+
+  if (!data) {
+    throw new Error(`User with UUID ${user.uuid} not found`);
+  }
+
+  return {
+    uuid: data.uuid,
+    clerkId: data.clerk_id,
+    role: data.role as RoleType,
+    username: data.username,
+    email: data.email,
+    orders: data.orders ?? [],
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
 };
