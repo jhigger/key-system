@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "~/lib/initSupabase";
 import { ACCOUNT_TABS } from "~/pages/account";
 import { ADMIN_TABS } from "~/pages/admin";
 import { useUserStore } from "~/state/user.store";
@@ -35,12 +36,17 @@ const DevRoleSwitch = () => {
   }, [user?.role]);
 
   const handleChangeRole = async (checked: boolean) => {
+    if (!user) return;
     const newRole = checked ? "admin" : "user";
     setIsLoading(true);
     try {
       await axios.post("/api/role", { userId: clerkUser?.id, role: newRole });
+      await supabase
+        .from("users")
+        .update({ role: newRole })
+        .eq("uuid", user.uuid);
       setIsEnabled(checked);
-      setUser({ ...user!, role: newRole });
+      setUser({ ...user, role: newRole });
       toast.success(
         `Role updated to ${newRole.charAt(0).toUpperCase() + newRole.slice(1)}`,
       );
