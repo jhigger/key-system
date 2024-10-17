@@ -315,12 +315,11 @@ export const getColumns = (): ColumnDef<ProductType>[] => [
       <DataTableColumnHeader column={column} title="Date Created" />
     ),
     cell: ({ row }) => {
-      const { createdAt: purchasedAt } = row.original;
+      const { createdAt } = row.original;
 
-      if (!purchasedAt) return null;
+      if (!createdAt) return null;
 
-      const { formattedDate, formattedTime } =
-        formatISOStringToDate(purchasedAt);
+      const { formattedDate, formattedTime } = formatISOStringToDate(createdAt);
       return (
         <div className="flex flex-col gap-1 font-mono">
           <span>{formattedDate}</span>

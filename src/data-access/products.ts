@@ -1,8 +1,6 @@
-import { QueryClient } from "@tanstack/react-query";
 import { supabase } from "~/lib/initSupabase";
 import { type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
-import { getProductKeys } from "./productKeys";
 
 export const getProducts = async (): Promise<ProductType[]> => {
   const { data: products, error: productError } = await supabase
@@ -51,39 +49,90 @@ export const getProducts = async (): Promise<ProductType[]> => {
   return productsWithPricing;
 };
 
-export const editProduct = async (
-  product: ProductType,
-): Promise<ProductType> => {
-  const products = await getProducts();
-  const oldProduct = findProductById(products, product.uuid);
-  const updatedProduct = mergeProducts(oldProduct, product);
+const getPricings = async (ids: string[]): Promise<PricingType[]> => {
+  const { data: pricings, error: pricingError } = await supabase
+    .from("pricings")
+    .select("*")
+    .in("uuid", ids);
 
-  // Update associated product keys
-  await updateAssociatedProductKeys(oldProduct, updatedProduct);
+  if (pricingError) {
+    console.error("Error fetching pricings:", pricingError);
+    throw new Error(pricingError.message);
+  }
 
-  return product;
+  return pricings;
 };
 
-export const addProduct = async (
+export const editProduct = async (
+  productUuid: string,
   product: ProductType,
 ): Promise<ProductType> => {
+  const { data: productData, error: productError } = await supabase
+    .from("products")
+    .update({
+      name: product.name,
+      pricings: product.pricings.map((p) => p.uuid),
+    })
+    .eq("uuid", productUuid)
+    .select()
+    .single();
+
+  if (productError) {
+    console.error("Error updating product:", productError);
+    throw new Error("Failed to update product");
+  }
+
+  const pricings = await getPricings(product.pricings.map((p) => p.uuid));
+
+  const newProduct: ProductType = {
+    uuid: productData.uuid,
+    createdAt: productData.created_at,
+    updatedAt: new Date().toISOString(),
+    name: productData.name,
+    pricings: pricings,
+  };
+
+  return newProduct;
+};
+
+export const addProduct = async (product: ProductType) => {
   const products = await getProducts();
   products.push(product);
   return product;
 };
 
-export const deleteProduct = async (uuid: string): Promise<ProductType[]> => {
-  const products = await getProducts();
-  const productKeys = await getProductKeys();
-  const updatedProducts = products.filter((product) => product.uuid !== uuid);
-  const updatedProductKeys = productKeys.filter(
-    (key) => key.productId !== uuid,
-  );
-  productKeys.length = 0;
-  productKeys.push(...updatedProductKeys);
-  products.length = 0;
-  products.push(...updatedProducts);
-  return updatedProducts;
+export const deleteProduct = async (uuid: string) => {
+  // Delete associated product keys
+  const { error: deleteKeysError } = await supabase
+    .from("product_keys")
+    .delete()
+    .eq("product_id", uuid);
+
+  if (deleteKeysError) {
+    throw new Error("Failed to delete associated product keys");
+  }
+
+  // Delete the product from the database
+  const { data: productData, error: deleteError } = await supabase
+    .from("products")
+    .delete()
+    .eq("uuid", uuid)
+    .select()
+    .single();
+
+  if (deleteError) {
+    throw new Error("Failed to delete product");
+  }
+
+  // Delete associated pricings
+  const { error: deletePricingsError } = await supabase
+    .from("pricings")
+    .delete()
+    .in("uuid", productData?.pricings);
+
+  if (deletePricingsError) {
+    throw new Error("Failed to delete associated pricings");
+  }
 };
 
 export const editPricing = async (
@@ -112,35 +161,54 @@ export const editPricing = async (
 export const deletePricing = async (
   productUuid: string,
   pricingUuid: string,
-): Promise<ProductType | null> => {
-  const products = await getProducts();
-  const product = findProductById(products, productUuid);
-  const updatedPricing = product.pricings.filter(
-    (pricing) => pricing.uuid !== pricingUuid,
+) => {
+  // Delete the pricing
+  const { error: deletePricingError } = await supabase
+    .from("pricings")
+    .delete()
+    .eq("uuid", pricingUuid);
+
+  if (deletePricingError) {
+    throw new Error("Failed to delete pricing");
+  }
+
+  const pricings = await getProducts().then((products) =>
+    products
+      .find((p) => p.uuid === productUuid)
+      ?.pricings.filter((p) => p.uuid !== pricingUuid)
+      .map((p) => p.uuid),
   );
+
+  console.log("pricings", pricings);
+
+  if (pricings && pricings.length === 0) {
+    return await deleteProduct(productUuid);
+  }
+
+  // Update the product's pricings array
+  const { error: updateProductError } = await supabase
+    .from("products")
+    .update({
+      pricings,
+    })
+    .eq("uuid", productUuid)
+    .select()
+    .single();
+
+  if (updateProductError) {
+    throw new Error("Failed to update product");
+  }
 
   // Delete associated product keys
-  const productKeys = await getProductKeys();
-  const updatedProductKeys = productKeys.filter(
-    (key) => !(key.productId === productUuid && key.pricingId === pricingUuid),
-  );
+  const { error: deleteKeysError } = await supabase
+    .from("product_keys")
+    .delete()
+    .eq("pricing_id", pricingUuid);
 
-  // Update product keys
-  productKeys.length = 0;
-  productKeys.push(...updatedProductKeys);
-
-  // Update the product
-  const updatedProduct = updateProductPricing(
-    products,
-    product,
-    updatedPricing,
-  );
-
-  // Invalidate product keys query
-  const queryClient = new QueryClient();
-  await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
-
-  return updatedProduct;
+  if (deleteKeysError && deleteKeysError.code !== "PGRST116") {
+    console.error("Error deleting product keys:", deleteKeysError);
+    throw new Error("Failed to delete associated product keys");
+  }
 };
 
 export const updateProductStock = async (
@@ -190,64 +258,6 @@ const findPricingById = (pricing: PricingType[], uuid: string): PricingType => {
   return pricingItem;
 };
 
-const mergeProducts = (
-  oldProduct: ProductType,
-  newProduct: ProductType,
-): ProductType => ({
-  ...oldProduct,
-  ...newProduct,
-  pricings: newProduct.pricings.map((newPricing) => {
-    const oldPricing = oldProduct.pricings.find(
-      (p) => p.uuid === newPricing.uuid,
-    );
-    return {
-      ...newPricing,
-      stock: oldPricing?.stock ?? newPricing.stock,
-    };
-  }),
-});
-
-const updateProductPricing = async (
-  products: ProductType[],
-  product: ProductType,
-  updatedPricing: PricingType[],
-): Promise<ProductType | null> => {
-  if (updatedPricing.length === 0) {
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("uuid", product.uuid);
-
-    if (error) {
-      throw new Error(`Failed to delete product: ${error.message}`);
-    }
-
-    return null;
-  } else {
-    const { data, error } = await supabase
-      .from("pricings")
-      .upsert(
-        updatedPricing.map((p) => ({
-          duration: p.duration,
-          value: p.value,
-          stock: p.stock,
-        })),
-      )
-      .eq("uuid", product.uuid)
-      .select();
-
-    if (error) {
-      throw new Error(`Failed to update product pricing: ${error.message}`);
-    }
-
-    if (!data || data.length === 0) {
-      throw new Error(`No product found with uuid: ${product.uuid}`);
-    }
-
-    return product;
-  }
-};
-
 const updatePricingStock = (
   pricing: PricingType,
   change: number,
@@ -255,49 +265,3 @@ const updatePricingStock = (
   ...pricing,
   stock: Math.max(0, (pricing.stock || 0) + change),
 });
-
-const updateAssociatedProductKeys = async (
-  oldProduct: ProductType,
-  newProduct: ProductType,
-) => {
-  const productKeys = await getProductKeys();
-  let updated = false;
-
-  productKeys.forEach((key) => {
-    if (key.productId === newProduct.uuid) {
-      const oldPricing = oldProduct.pricings.find(
-        (p) => p.uuid === key.pricingId,
-      );
-      if (oldPricing) {
-        const newPricing = newProduct.pricings.find(
-          (p) => p.duration === oldPricing.duration,
-        );
-        if (newPricing && newPricing.uuid !== key.pricingId) {
-          key.pricingId = newPricing.uuid;
-          updated = true;
-        }
-      }
-    }
-  });
-
-  if (updated) {
-    const { error } = await supabase.from("product_keys").upsert(
-      productKeys.map((key) => ({
-        uuid: key.uuid,
-        product_id: key.productId,
-        key: key.key,
-        expiry: key.expiry,
-        created_at: key.createdAt,
-        updated_at: new Date().toISOString(),
-        hardware_id: key.hardwareId,
-        owner: key.owner,
-        pricing_id: key.pricingId,
-      })),
-    );
-
-    if (error) {
-      console.error("Error updating product keys:", error);
-      throw new Error("Failed to update product keys");
-    }
-  }
-};

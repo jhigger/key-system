@@ -130,21 +130,21 @@ export type Database = {
         Row: {
           created_at: string
           name: string
-          pricings: string[] | null
+          pricings: string[]
           updated_at: string
           uuid: string
         }
         Insert: {
           created_at?: string
           name: string
-          pricings?: string[] | null
+          pricings: string[]
           updated_at?: string
           uuid?: string
         }
         Update: {
           created_at?: string
           name?: string
-          pricings?: string[] | null
+          pricings?: string[]
           updated_at?: string
           uuid?: string
         }
