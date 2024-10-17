@@ -49,20 +49,6 @@ export const getProducts = async (): Promise<ProductType[]> => {
   return productsWithPricing;
 };
 
-const getPricings = async (ids: string[]): Promise<PricingType[]> => {
-  const { data: pricings, error: pricingError } = await supabase
-    .from("pricings")
-    .select("*")
-    .in("uuid", ids);
-
-  if (pricingError) {
-    console.error("Error fetching pricings:", pricingError);
-    throw new Error(pricingError.message);
-  }
-
-  return pricings;
-};
-
 export const editProduct = async (
   productUuid: string,
   product: ProductType,
@@ -82,7 +68,19 @@ export const editProduct = async (
     throw new Error("Failed to update product");
   }
 
-  const pricings = await getPricings(product.pricings.map((p) => p.uuid));
+  const { data: pricings, error: pricingError } = await supabase
+    .from("pricings")
+    .upsert(product.pricings)
+    .in(
+      "uuid",
+      product.pricings.map((p) => p.uuid),
+    )
+    .select();
+
+  if (pricingError) {
+    console.error("Error fetching pricings:", pricingError);
+    throw new Error(pricingError.message);
+  }
 
   const newProduct: ProductType = {
     uuid: productData.uuid,
@@ -95,9 +93,36 @@ export const editProduct = async (
   return newProduct;
 };
 
-export const addProduct = async (product: ProductType) => {
-  const products = await getProducts();
-  products.push(product);
+export const addProduct = async (
+  product: ProductType,
+): Promise<ProductType> => {
+  const { error: productError } = await supabase
+    .from("products")
+    .insert({
+      name: product.name,
+      pricings: product.pricings.map((p) => p.uuid),
+    })
+    .single();
+
+  if (productError) {
+    console.error("Error adding product:", productError);
+    throw new Error("Failed to add product");
+  }
+
+  const { error: pricingError } = await supabase.from("pricings").insert(
+    product.pricings.map((p) => ({
+      uuid: p.uuid,
+      duration: p.duration,
+      value: p.value,
+      stock: p.stock,
+    })),
+  );
+
+  if (pricingError) {
+    console.error("Error adding pricings:", pricingError);
+    throw new Error("Failed to add pricings");
+  }
+
   return product;
 };
 
@@ -139,7 +164,7 @@ export const editPricing = async (
   pricingUuid: string,
   newPricing: PricingType,
 ) => {
-  const { data: pricingData, error: pricingError } = await supabase
+  const { error: pricingError } = await supabase
     .from("pricings")
     .update({
       duration: newPricing.duration,
@@ -149,8 +174,6 @@ export const editPricing = async (
     .eq("uuid", pricingUuid)
     .select()
     .single();
-
-  console.log("pricingData", pricingData);
 
   if (pricingError) {
     console.error("Error updating pricings:", pricingError);
