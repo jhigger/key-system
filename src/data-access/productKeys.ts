@@ -36,6 +36,7 @@ export const editProductKey = async (
   productKeyUuid: string,
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
+  const oldProductKey = await getProductKeyById(productKeyUuid);
   const { data: productKeyData, error: productKeyError } = await supabase
     .from("product_keys")
     .update({
@@ -56,25 +57,10 @@ export const editProductKey = async (
     throw new Error("Failed to update product key");
   }
 
-  const oldProductKey = await getProductKeyById(productKeyUuid);
-  const newPricingId = productKey.pricingId;
-
-  if (
-    newPricingId !== oldProductKey.pricingId &&
-    productKey.productId === oldProductKey.productId
-  ) {
-    await updateProductStock(productKey.productId, oldProductKey.pricingId, -1);
-    await updateProductStock(productKey.productId, newPricingId, 1);
-  } else if (
-    newPricingId !== oldProductKey.pricingId &&
-    productKey.productId !== oldProductKey.productId
-  ) {
-    await updateProductStock(
-      oldProductKey.productId,
-      oldProductKey.pricingId,
-      -1,
-    );
-    await updateProductStock(productKey.productId, newPricingId, 1);
+  // Always update stock for both old and new pricings
+  if (oldProductKey.pricingId !== productKey.pricingId) {
+    await updateProductStock(oldProductKey.productId, oldProductKey.pricingId, -1);
+    await updateProductStock(productKey.productId, productKey.pricingId, 1);
   }
 
   return {

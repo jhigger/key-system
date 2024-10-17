@@ -119,10 +119,12 @@ const DurationCell: React.FC<{
       <Select
         value={row.original.pricingId}
         onValueChange={(newPricingUuid) => {
-          editProductKey({
-            ...row.original,
-            pricingId: newPricingUuid,
-          });
+          if (newPricingUuid !== row.original.pricingId) {
+            editProductKey({
+              ...row.original,
+              pricingId: newPricingUuid,
+            });
+          }
         }}
       >
         <SelectTrigger className="w-[180px] capitalize">
