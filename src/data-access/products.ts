@@ -236,7 +236,7 @@ export const updateProductStock = async (
   productUuid: string,
   pricingUuid: string,
   change: number,
-): Promise<ProductType> => {
+) => {
   const products = await getProducts();
   const product = findProductById(products, productUuid);
   const pricing = findPricingById(product.pricings, pricingUuid);
@@ -250,16 +250,6 @@ export const updateProductStock = async (
   if (error) {
     throw new Error(`Failed to update pricing stock: ${error.message}`);
   }
-
-  // Update the product in memory
-  const updatedProduct = {
-    ...product,
-    pricings: product.pricings.map((p) =>
-      p.uuid === pricingUuid ? updatedPricing : p,
-    ),
-  };
-
-  return updatedProduct;
 };
 
 // Helper functions

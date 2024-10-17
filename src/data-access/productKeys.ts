@@ -36,6 +36,26 @@ export const editProductKey = async (
   productKeyUuid: string,
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
+  const { data: productKeyData, error: productKeyError } = await supabase
+    .from("product_keys")
+    .update({
+      product_id: productKey.productId,
+      key: productKey.key,
+      hardware_id: productKey.hardwareId,
+      owner: productKey.owner,
+      pricing_id: productKey.pricingId,
+      expiry: productKey.expiry,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("uuid", productKeyUuid)
+    .select()
+    .single();
+
+  if (productKeyError) {
+    console.error("Error updating product key:", productKeyError);
+    throw new Error("Failed to update product key");
+  }
+
   const oldProductKey = await getProductKeyById(productKeyUuid);
   const newPricingId = productKey.pricingId;
 
@@ -55,26 +75,6 @@ export const editProductKey = async (
       -1,
     );
     await updateProductStock(productKey.productId, newPricingId, 1);
-  }
-
-  const { data: productKeyData, error: productKeyError } = await supabase
-    .from("product_keys")
-    .update({
-      product_id: productKey.productId,
-      key: productKey.key,
-      hardware_id: productKey.hardwareId,
-      owner: productKey.owner,
-      pricing_id: productKey.pricingId,
-      expiry: productKey.expiry,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("uuid", productKeyUuid)
-    .select()
-    .single();
-
-  if (productKeyError) {
-    console.error("Error updating product key:", productKeyError);
-    throw new Error("Failed to update product key");
   }
 
   return {
@@ -126,21 +126,20 @@ export const addProductKey = async (
   };
 };
 
-export const deleteProductKey = async (
-  uuid: string,
-): Promise<ProductKeyType[]> => {
-  const productKeys = await getProductKeys();
-  const deletedKeyIndex = productKeys.findIndex((key) => key.uuid === uuid);
-  if (deletedKeyIndex === -1) {
-    throw new Error(`Key ${uuid} not found`);
+export const deleteProductKey = async (uuid: string): Promise<void> => {
+  const productKey = await getProductKeyById(uuid);
+
+  const { error } = await supabase
+    .from("product_keys")
+    .delete()
+    .eq("uuid", uuid);
+
+  if (error) {
+    console.error("Error deleting product key:", error);
+    throw new Error("Failed to delete product key");
   }
-  const deletedKey = productKeys[deletedKeyIndex];
-  if (!deletedKey) {
-    throw new Error(`Key ${uuid} not found`);
-  }
-  await updateProductStock(deletedKey.productId, deletedKey.pricingId, -1);
-  productKeys.splice(deletedKeyIndex, 1);
-  return productKeys;
+
+  await updateProductStock(productKey.productId, productKey.pricingId, -1);
 };
 
 const getProductKeyById = async (uuid: string): Promise<ProductKeyType> => {

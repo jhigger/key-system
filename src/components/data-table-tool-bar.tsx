@@ -136,6 +136,7 @@ const DataTableToolBar = <TData,>({
                             setShowForm(false);
                           });
                         }}
+                        setShowForm={setShowForm}
                       />
                     )}
                     <DrawerFooter>

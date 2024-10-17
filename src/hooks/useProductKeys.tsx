@@ -18,24 +18,34 @@ const useProductKeys = () => {
 
   const addProductKeyMutation = useMutation({
     mutationFn: addProductKey,
-    onMutate: async (newProductKey) => {
+    onMutate: async () => {
+      // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
+
+      // Snapshot the previous value
       const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([
         "productKeys",
       ]);
-      queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) =>
-        old ? [...old, newProductKey] : [newProductKey],
-      );
+
+      // Return a context object with the snapshotted value
       return { previousProductKeys };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      if (context?.previousProductKeys) {
+        queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
+      }
       toast.error(`Failed to add product key: ${error.message}`);
+    },
+    onSuccess: (newProductKey) => {
+      // Optimistically update to the new value
+      queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) => {
+        if (!old) return [newProductKey];
+        return [...old, newProductKey];
+      });
+      toast.success("Product key added successfully");
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
-    },
-    onSuccess: () => {
-      toast.success("Product key added successfully");
     },
   });
 

@@ -39,10 +39,11 @@ export interface ProductKeyFormRef {
 
 type ProductKeyFormProps = {
   handleSubmit: (values: ProductKeyType) => void;
+  setShowForm: (showForm: boolean) => void;
 };
 
 const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
-  ({ handleSubmit }, ref) => {
+  ({ handleSubmit, setShowForm }, ref) => {
     const firstInputRef = useRef<HTMLButtonElement>(null);
 
     useImperativeHandle(ref, () => ({
@@ -96,7 +97,14 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
       return (
         <div className="flex flex-col items-center justify-center p-4">
           <p>Please create a product first</p>
-          <Button variant="link" className="underline" asChild>
+          <Button
+            variant="link"
+            className="underline"
+            onClick={() => {
+              setShowForm(false);
+            }}
+            asChild
+          >
             <Link href="/admin#products?openForm=true">
               Click here to create a product
             </Link>

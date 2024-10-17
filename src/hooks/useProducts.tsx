@@ -10,6 +10,7 @@ import {
 } from "~/data-access/products";
 import { type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
+import { type ProductKeyType } from "~/types/productKey";
 const useProducts = () => {
   const queryClient = useQueryClient();
 
@@ -20,15 +21,31 @@ const useProducts = () => {
 
   const addProductMutation = useMutation({
     mutationFn: addProduct,
+    onMutate: async () => {
+      // Cancel any outgoing refetches to avoid overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["products"] });
+
+      // Snapshot the previous value
+      const previousProducts = queryClient.getQueryData<ProductType[]>([
+        "products",
+      ]);
+
+      // Return a context object with the snapshotted value
+      return { previousProducts };
+    },
+    onError: (error, variables, context) => {
+      if (context?.previousProducts) {
+        queryClient.setQueryData(["products"], context?.previousProducts);
+      }
+      toast.error(`Failed to add product: ${error.message}`);
+    },
     onSuccess: (newProduct) => {
+      // Optimistically update to the new value
       queryClient.setQueryData<ProductType[]>(["products"], (old) => {
         if (!old) return [newProduct];
         return [...old, newProduct];
       });
       toast.success("Product added successfully");
-    },
-    onError: (error) => {
-      toast.error(`Failed to add product: ${error.message}`);
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -59,7 +76,9 @@ const useProducts = () => {
     },
     onError: (err, product, context) => {
       // If the mutation fails, use the context to roll back
-      queryClient.setQueryData(["products"], context?.previousProducts);
+      if (context?.previousProducts) {
+        queryClient.setQueryData(["products"], context.previousProducts);
+      }
       toast.error("Error editing product");
     },
     onSettled: async () => {
@@ -77,16 +96,38 @@ const useProducts = () => {
       return result;
     },
     onMutate: async (deletedUuid) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["products"] });
+      await queryClient.cancelQueries({ queryKey: ["productKeys"] });
+
+      // Snapshot the previous values
       const previousProducts = queryClient.getQueryData<ProductType[]>([
         "products",
       ]);
+      const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([
+        "productKeys",
+      ]);
+
+      // Optimistically update products
       queryClient.setQueryData<ProductType[]>(["products"], (old) =>
         old ? old.filter((product) => product.uuid !== deletedUuid) : [],
       );
-      return { previousProducts };
+
+      // Optimistically update product keys
+      queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) =>
+        old ? old.filter((key) => key.productId !== deletedUuid) : [],
+      );
+
+      return { previousProducts, previousProductKeys };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Revert the optimistic update on error
+      if (context?.previousProducts) {
+        queryClient.setQueryData(["products"], context.previousProducts);
+      }
+      if (context?.previousProductKeys) {
+        queryClient.setQueryData(["productKeys"], context.previousProductKeys);
+      }
       toast.error(`Failed to delete product: ${error.message}`);
     },
     onSettled: async () => {
