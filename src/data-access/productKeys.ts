@@ -36,11 +36,24 @@ export const editProductKey = async (
   productKeyUuid: string,
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const oldPricingId = (await getProductKeyById(productKeyUuid)).pricingId;
+  const oldProductKey = await getProductKeyById(productKeyUuid);
   const newPricingId = productKey.pricingId;
 
-  if (newPricingId !== oldPricingId) {
-    await updateProductStock(productKey.productId, oldPricingId, -1);
+  if (
+    newPricingId !== oldProductKey.pricingId &&
+    productKey.productId === oldProductKey.productId
+  ) {
+    await updateProductStock(productKey.productId, oldProductKey.pricingId, -1);
+    await updateProductStock(productKey.productId, newPricingId, 1);
+  } else if (
+    newPricingId !== oldProductKey.pricingId &&
+    productKey.productId !== oldProductKey.productId
+  ) {
+    await updateProductStock(
+      oldProductKey.productId,
+      oldProductKey.pricingId,
+      -1,
+    );
     await updateProductStock(productKey.productId, newPricingId, 1);
   }
 
