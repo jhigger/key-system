@@ -36,7 +36,7 @@ const DurationCell: React.FC<{
 }> = ({ row }) => {
   const { editMode } = useUIStore();
   const {
-    mutation: { editPricing },
+    mutation: { editProduct },
   } = useProducts();
   const [showForm, setShowForm] = useState(false);
   const productKeyFormRef = useRef<ProductFormRef>(null);
@@ -73,9 +73,9 @@ const DurationCell: React.FC<{
                     <ProductForm
                       ref={productKeyFormRef}
                       handleSubmit={(values) => {
-                        editPricing({
-                          productUuid: row.original.uuid,
-                          newPricing: values.pricings,
+                        editProduct({
+                          ...row.original,
+                          ...values,
                         });
                         setShowForm(false);
                       }}
@@ -104,13 +104,13 @@ const PricingCell: React.FC<{
 }> = ({ row }) => {
   const { editMode } = useUIStore();
   const {
-    mutation: { editProduct },
+    mutation: { editPricing },
   } = useProducts();
-  const pricing = row.original.pricings;
+  const { pricings } = row.original;
 
   return (
     <>
-      {pricing.map((p) => (
+      {pricings.map((p) => (
         <div
           key={p.uuid}
           className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
@@ -120,15 +120,18 @@ const PricingCell: React.FC<{
               type="number"
               min="0"
               step="0.01"
-              value={p.value}
+              value={p.value.toString()}
               onChange={(value) => {
                 const numValue = Math.max(0, Number(value));
-                editProduct({
-                  ...row.original,
-                  pricings: pricing.map((item) =>
-                    item.uuid === p.uuid ? { ...item, value: numValue } : item,
-                  ),
-                });
+                if (!isNaN(numValue) && numValue !== p.value) {
+                  editPricing({
+                    pricingUuid: p.uuid,
+                    newPricing: {
+                      ...p,
+                      value: numValue,
+                    },
+                  });
+                }
               }}
               className="w-20"
             />
@@ -200,7 +203,7 @@ const ActionsCell: React.FC<{
 }> = ({ row }) => {
   const { uuid } = row.original;
   const {
-    mutation: { deleteProduct, deletePricing, editPricing },
+    mutation: { deleteProduct, deletePricing, editProduct },
   } = useProducts();
   const { editMode } = useUIStore();
   const [showForm, setShowForm] = useState(false);
@@ -284,9 +287,9 @@ const ActionsCell: React.FC<{
               <ProductForm
                 ref={productKeyFormRef}
                 handleSubmit={(values) => {
-                  editPricing({
-                    productUuid: row.original.uuid,
-                    newPricing: values.pricings,
+                  editProduct({
+                    ...row.original,
+                    ...values,
                   });
                   setShowForm(false);
                 }}

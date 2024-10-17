@@ -30,6 +30,9 @@ const useProducts = () => {
     onError: (error) => {
       toast.error(`Failed to add product: ${error.message}`);
     },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
   });
 
   const editMutation = useMutation({
@@ -58,7 +61,6 @@ const useProducts = () => {
       toast.error("Error editing product");
     },
     onSettled: async () => {
-      // Always refetch after error or success
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
@@ -86,8 +88,8 @@ const useProducts = () => {
       toast.error(`Failed to delete product: ${error.message}`);
     },
     onSettled: async () => {
-      // Invalidate both products and product keys queries
       await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Product deleted successfully");
@@ -136,7 +138,6 @@ const useProducts = () => {
       toast.error(`Failed to delete pricing: ${error.message}`);
     },
     onSettled: async () => {
-      // Invalidate both products and product keys queries
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
@@ -147,39 +148,50 @@ const useProducts = () => {
 
   const editPricingMutation = useMutation({
     mutationFn: async ({
-      productUuid,
+      pricingUuid,
       newPricing,
     }: {
-      productUuid: string;
-      newPricing: PricingType[];
+      pricingUuid: string;
+      newPricing: PricingType;
     }) => {
-      return editPricing(productUuid, newPricing);
+      return editPricing(pricingUuid, newPricing);
     },
-    onMutate: async ({ productUuid, newPricing }) => {
+    onMutate: async ({ pricingUuid, newPricing }) => {
       await queryClient.cancelQueries({ queryKey: ["products"] });
 
       const previousProducts = queryClient.getQueryData<ProductType[]>([
         "products",
       ]);
 
-      queryClient.setQueryData<ProductType[]>(["products"], (old) =>
-        old
-          ? old.map((product) =>
-              product.uuid === productUuid
-                ? { ...product, pricings: newPricing }
-                : product,
-            )
-          : [],
+      queryClient.setQueryData<ProductType[]>(
+        ["products"],
+        (old) =>
+          old?.map((product) => ({
+            ...product,
+            pricings: product.pricings.map((p) => {
+              if (p.uuid === pricingUuid) {
+                return {
+                  ...p,
+                  duration: newPricing.duration,
+                  value: Number(newPricing.value.toFixed(2)),
+                  stock: newPricing.stock,
+                };
+              }
+              return p;
+            }),
+          })) ?? [],
       );
 
       return { previousProducts };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      if (context?.previousProducts) {
+        queryClient.setQueryData(["products"], context.previousProducts);
+      }
       toast.error(`Failed to edit pricing: ${error.message}`);
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["products"] });
-      await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
       toast.success("Pricing updated successfully");

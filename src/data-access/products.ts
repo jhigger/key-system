@@ -61,7 +61,7 @@ export const editProduct = async (
   // Update associated product keys
   await updateAssociatedProductKeys(oldProduct, updatedProduct);
 
-  return updateProductInList(products, updatedProduct);
+  return product;
 };
 
 export const addProduct = async (
@@ -87,19 +87,26 @@ export const deleteProduct = async (uuid: string): Promise<ProductType[]> => {
 };
 
 export const editPricing = async (
-  productUuid: string,
-  newPricing: PricingType[],
-): Promise<ProductType | null> => {
-  const products = await getProducts();
-  const product = findProductById(products, productUuid);
+  pricingUuid: string,
+  newPricing: PricingType,
+) => {
+  const { data: pricingData, error: pricingError } = await supabase
+    .from("pricings")
+    .update({
+      duration: newPricing.duration,
+      value: newPricing.value,
+      stock: newPricing.stock,
+    })
+    .eq("uuid", pricingUuid)
+    .select()
+    .single();
 
-  // Update the product's pricing with the new pricing
-  const updatedProduct = {
-    ...product,
-    pricing: newPricing,
-  };
+  console.log("pricingData", pricingData);
 
-  return updateProductInList(products, updatedProduct);
+  if (pricingError) {
+    console.error("Error updating pricings:", pricingError);
+    throw new Error("Failed to update pricings");
+  }
 };
 
 export const deletePricing = async (
@@ -145,12 +152,26 @@ export const updateProductStock = async (
   const product = findProductById(products, productUuid);
   const pricing = findPricingById(product.pricings, pricingUuid);
   const updatedPricing = updatePricingStock(pricing, change);
-  return updateProductInList(products, {
+  // Update the pricing in the database
+  const { error } = await supabase
+    .from("pricings")
+    .update({ stock: updatedPricing.stock })
+    .eq("uuid", pricingUuid)
+    .select();
+
+  if (error) {
+    throw new Error(`Failed to update pricing stock: ${error.message}`);
+  }
+
+  // Update the product in memory
+  const updatedProduct = {
     ...product,
     pricings: product.pricings.map((p) =>
       p.uuid === pricingUuid ? updatedPricing : p,
     ),
-  });
+  };
+
+  return updatedProduct;
 };
 
 // Helper functions
@@ -186,29 +207,44 @@ const mergeProducts = (
   }),
 });
 
-const updateProductInList = (
-  products: ProductType[],
-  updatedProduct: ProductType,
-): ProductType => {
-  const productIndex = products.findIndex(
-    (p) => p.uuid === updatedProduct.uuid,
-  );
-  products[productIndex] = updatedProduct;
-  return updatedProduct;
-};
-
-const updateProductPricing = (
+const updateProductPricing = async (
   products: ProductType[],
   product: ProductType,
   updatedPricing: PricingType[],
-): ProductType | null => {
+): Promise<ProductType | null> => {
   if (updatedPricing.length === 0) {
-    const productIndex = products.findIndex((p) => p.uuid === product.uuid);
-    products.splice(productIndex, 1);
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("uuid", product.uuid);
+
+    if (error) {
+      throw new Error(`Failed to delete product: ${error.message}`);
+    }
+
     return null;
   } else {
-    const updatedProduct = { ...product, pricing: updatedPricing };
-    return updateProductInList(products, updatedProduct);
+    const { data, error } = await supabase
+      .from("pricings")
+      .upsert(
+        updatedPricing.map((p) => ({
+          duration: p.duration,
+          value: p.value,
+          stock: p.stock,
+        })),
+      )
+      .eq("uuid", product.uuid)
+      .select();
+
+    if (error) {
+      throw new Error(`Failed to update product pricing: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      throw new Error(`No product found with uuid: ${product.uuid}`);
+    }
+
+    return product;
   }
 };
 
@@ -245,10 +281,23 @@ const updateAssociatedProductKeys = async (
   });
 
   if (updated) {
-    // Update the product keys in your data store
-    // This assumes that getProductKeys() returns a reference to the actual array
-    // If it returns a copy, you'll need to implement a way to update the original array
-    productKeys.length = 0;
-    productKeys.push(...productKeys);
+    const { error } = await supabase.from("product_keys").upsert(
+      productKeys.map((key) => ({
+        uuid: key.uuid,
+        product_id: key.productId,
+        key: key.key,
+        expiry: key.expiry,
+        created_at: key.createdAt,
+        updated_at: new Date().toISOString(),
+        hardware_id: key.hardwareId,
+        owner: key.owner,
+        pricing_id: key.pricingId,
+      })),
+    );
+
+    if (error) {
+      console.error("Error updating product keys:", error);
+      throw new Error("Failed to update product keys");
+    }
   }
 };
