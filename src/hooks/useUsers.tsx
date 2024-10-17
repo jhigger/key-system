@@ -2,7 +2,6 @@ import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { changeUserRole, getUsers } from "~/data-access/users";
-import { fakeOwnerId } from "~/lib/fakeData";
 import { useUserStore } from "~/state/user.store";
 import { type RoleType, type UserType } from "~/types/user";
 
@@ -59,7 +58,7 @@ const useUsers = () => {
     }
     const userRole = (user.publicMetadata.role as RoleType) ?? "user";
     const payload: UserType = {
-      uuid: fakeOwnerId,
+      uuid: user.id,
       clerkId: user.id,
       role: userRole,
       username: user.username ?? "dev",
