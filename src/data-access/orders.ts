@@ -25,6 +25,8 @@ export const getOrders = async (userUUID?: string): Promise<OrderType[]> => {
       invoiceLink: order.invoice_link,
       createdAt: order.created_at,
       uuid: order.uuid,
+      hardwareId: order.hardware_id,
+      updatedAt: order.updated_at,
     }),
   );
 

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { resetHardwareId } from "~/data-access/keys";
 import { getOrders } from "~/data-access/orders";
+import { type OrderType } from "~/types/order";
 import { type ProductKeyType } from "~/types/productKey";
 
 const useMyKeys = (userUUID?: string) => {
@@ -40,7 +41,7 @@ const useMyKeys = (userUUID?: string) => {
       console.error("Error resetting hardware ID:", err);
     },
     onSuccess: (updatedKey) => {
-      queryClient.setQueryData<ProductKeyType[]>(["keys", userUUID], (old) => {
+      queryClient.setQueryData<OrderType[]>(["orders", userUUID], (old) => {
         if (!old) return [updatedKey];
         return old.map((key) =>
           key.uuid === updatedKey.uuid ? updatedKey : key,

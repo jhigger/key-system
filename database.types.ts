@@ -12,23 +12,29 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          hardware_id: string | null
           invoice_link: string
           product_key_snapshot: Json
           purchased_by: string
+          updated_at: string
           uuid: string
         }
         Insert: {
           created_at?: string
+          hardware_id?: string | null
           invoice_link: string
           product_key_snapshot: Json
           purchased_by: string
+          updated_at?: string
           uuid?: string
         }
         Update: {
           created_at?: string
+          hardware_id?: string | null
           invoice_link?: string
           product_key_snapshot?: Json
           purchased_by?: string
+          updated_at?: string
           uuid?: string
         }
         Relationships: [

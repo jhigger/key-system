@@ -28,12 +28,12 @@ const ActionsCell: React.FC<{
   const {
     mutation: { resetHardwareId },
   } = useMyKeys(user?.uuid);
-  const { productKeySnapshot } = row.original;
+  const { productKeySnapshot, hardwareId } = row.original;
   const isExpired = productKeySnapshot.expiry
     ? new Date(productKeySnapshot.expiry) < new Date()
     : false;
 
-  if (!productKeySnapshot.hardwareId) return null;
+  if (!hardwareId) return null;
 
   return (
     <DropdownMenu>
@@ -50,8 +50,8 @@ const ActionsCell: React.FC<{
           <Button
             variant={"destructive"}
             size={"sm"}
-            onClick={() => resetHardwareId(productKeySnapshot.hardwareId ?? "")}
-            disabled={!productKeySnapshot.hardwareId || isExpired}
+            onClick={() => resetHardwareId(hardwareId)}
+            disabled={!hardwareId || isExpired}
           >
             Reset HWID <Trash size={16} />
           </Button>
@@ -198,9 +198,9 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
       <DataTableColumnHeader column={column} title="Hardware ID" />
     ),
     cell: ({ row }) => {
-      const { productKeySnapshot } = row.original;
+      const { hardwareId } = row.original;
 
-      if (!productKeySnapshot.hardwareId) return "None";
+      if (!hardwareId) return "None";
 
       return (
         <Button
@@ -208,29 +208,16 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
           size={"sm"}
           className="-ml-3 min-w-full max-w-40 gap-2"
           onClick={() =>
-            copyToClipboard(productKeySnapshot.hardwareId ?? "")
+            copyToClipboard(hardwareId)
               .then(() => toast.success("Hardware ID copied to clipboard"))
               .catch(() => toast.error("Failed to copy Hardware ID"))
           }
           title={"Click to copy full Hardware ID"}
         >
-          <span className="truncate">
-            {censorUUID(productKeySnapshot.hardwareId)}
-          </span>
-          {productKeySnapshot.hardwareId && (
-            <Copy size={16} className="shrink-0 text-gray-500" />
-          )}
+          <span className="truncate">{censorUUID(hardwareId)}</span>
+          {hardwareId && <Copy size={16} className="shrink-0 text-gray-500" />}
         </Button>
       );
-    },
-    sortingFn: (rowA, rowB) => {
-      const hardwareIdA = rowA.original.productKeySnapshot.hardwareId;
-      const hardwareIdB = rowB.original.productKeySnapshot.hardwareId;
-
-      if (!hardwareIdA) return 1;
-      if (!hardwareIdB) return -1;
-
-      return hardwareIdA.localeCompare(hardwareIdB);
     },
   },
   {

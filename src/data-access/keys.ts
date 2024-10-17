@@ -1,4 +1,5 @@
 import { supabase } from "~/lib/initSupabase";
+import { type OrderType } from "~/types/order";
 import { type ProductKeyType } from "~/types/productKey";
 import { getProductKeys } from "./productKeys";
 
@@ -35,23 +36,52 @@ export const addKey = async (key: ProductKeyType) => {
 
 export const resetHardwareId = async (
   hardwareId: string,
-): Promise<ProductKeyType> => {
-  const productKeys = await getProductKeys();
+): Promise<OrderType> => {
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ hardware_id: null })
+    .eq("hardware_id", hardwareId)
+    .select()
+    .single();
 
-  const key = productKeys.find((key) => key.hardwareId === hardwareId);
-  if (!key) {
+  if (error) {
+    console.error("Error resetting hardware ID:", error);
+    throw new Error(`Failed to reset hardware ID: ${error.message}`);
+  }
+
+  if (!data) {
     throw new Error(`Key with hardwareId ${hardwareId} not found`);
   }
 
-  const updatedKey: ProductKeyType = {
-    ...key,
-    hardwareId: null,
-  };
+  const productKeySnapshot = data.product_key_snapshot as OrderType;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { hardwareId: _, ...rest } = productKeySnapshot;
 
-  const index = productKeys.findIndex((k) => k.uuid === key.uuid);
-  if (index !== -1) {
-    productKeys[index] = updatedKey;
+  return {
+    uuid: data.uuid,
+    productKeySnapshot: rest.productKeySnapshot,
+    hardwareId: data.hardware_id,
+    purchasedBy: data.purchased_by,
+    invoiceLink: data.invoice_link,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  };
+};
+
+export const editMyKeysHardwareId = async (
+  orderUuid: string,
+  newHardwareId: string,
+) => {
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ hardware_id: newHardwareId })
+    .eq("uuid", orderUuid)
+    .select();
+
+  if (error) {
+    console.error("Error editing product key hardware ID:", error);
+    throw new Error(`Failed to edit product key hardware ID: ${error.message}`);
   }
 
-  return updatedKey;
+  return data;
 };
