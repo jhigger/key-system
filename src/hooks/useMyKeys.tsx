@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getKeys, resetHardwareId } from "~/data-access/keys";
+import { resetHardwareId } from "~/data-access/keys";
+import { getOrders } from "~/data-access/orders";
 import { type ProductKeyType } from "~/types/productKey";
 
 const useMyKeys = (userUUID?: string) => {
@@ -8,7 +9,7 @@ const useMyKeys = (userUUID?: string) => {
 
   const query = useQuery({
     queryKey: ["keys", userUUID],
-    queryFn: () => getKeys(userUUID),
+    queryFn: () => getOrders(userUUID),
     enabled: !!userUUID,
   });
 

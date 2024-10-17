@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import useMyKeys from "~/hooks/useMyKeys";
-import useProducts from "~/hooks/useProducts";
 import { useUserStore } from "~/state/user.store";
 import { DataTable } from "../../ui/data-table";
 import { getColumns } from "./columns";
@@ -10,11 +9,8 @@ const MyKeysTable = () => {
   const {
     query: { data: keys },
   } = useMyKeys(user?.uuid);
-  const {
-    query: { data: products },
-  } = useProducts();
 
-  const columns = useMemo(() => getColumns({ products }), [products]);
+  const columns = useMemo(() => getColumns(), []);
 
   return <DataTable columns={columns} data={keys ?? []} />;
 };
