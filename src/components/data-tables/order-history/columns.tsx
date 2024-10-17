@@ -13,18 +13,8 @@ import { DataTableColumnHeader } from "../../data-table-column-header";
 const ProductCell: React.FC<{
   row: Row<OrderType>;
 }> = ({ row }) => {
-  const { productKeySnapshot: productKey } = row.original;
-  const {
-    query: { data: products },
-  } = useProducts();
-
-  if (!products) return null;
-
-  const productName = products.find(
-    (p) => p.name === productKey.productName,
-  )?.name;
-
-  return productName;
+  const { productKeySnapshot } = row.original;
+  return productKeySnapshot.productName;
 };
 
 const VariantCell: React.FC<{
