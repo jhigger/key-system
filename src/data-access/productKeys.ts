@@ -33,18 +33,40 @@ export const getAvailableProductKeys = async (): Promise<ProductKeyType[]> => {
 };
 
 export const editProductKey = async (
+  productKeyUuid: string,
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const productKeys = await getProductKeys();
-  const oldKey = findProductKeyById(productKeys, productKey.uuid);
-  const { productChanged, pricingChanged } = checkChanges(oldKey, productKey);
+  const { data: productKeyData, error: productKeyError } = await supabase
+    .from("product_keys")
+    .update({
+      product_id: productKey.productId,
+      key: productKey.key,
+      hardware_id: productKey.hardwareId,
+      owner: productKey.owner,
+      pricing_id: productKey.pricingId,
+      expiry: productKey.expiry,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("uuid", productKeyUuid)
+    .select()
+    .single();
 
-  if (productChanged || pricingChanged) {
-    await updateProductStocks(oldKey, productKey);
+  if (productKeyError) {
+    console.error("Error updating product key:", productKeyError);
+    throw new Error("Failed to update product key");
   }
 
-  const updatedKey = { ...oldKey, ...productKey };
-  return updateProductKeyInList(productKeys, updatedKey);
+  return {
+    uuid: productKeyUuid,
+    productId: productKeyData.product_id,
+    key: productKeyData.key,
+    expiry: productKeyData.expiry,
+    hardwareId: productKeyData.hardware_id,
+    owner: productKeyData.owner,
+    pricingId: productKeyData.pricing_id,
+    createdAt: productKeyData.created_at,
+    updatedAt: productKeyData.updated_at,
+  };
 };
 
 export const addProductKey = async (
@@ -71,38 +93,4 @@ export const deleteProductKey = async (
   await updateProductStock(deletedKey.productId, deletedKey.pricingId, -1);
   productKeys.splice(deletedKeyIndex, 1);
   return productKeys;
-};
-
-// Helper functions
-const findProductKeyById = (
-  productKeys: ProductKeyType[],
-  uuid: string,
-): ProductKeyType => {
-  const key = productKeys.find((key) => key.uuid === uuid);
-  if (!key) throw new Error(`Key ${uuid} not found`);
-  return key;
-};
-
-const checkChanges = (oldKey: ProductKeyType, newKey: ProductKeyType) => ({
-  productChanged: oldKey.productId !== newKey.productId,
-  pricingChanged: oldKey.pricingId !== newKey.pricingId,
-});
-
-const updateProductStocks = async (
-  oldKey: ProductKeyType,
-  newKey: ProductKeyType,
-) => {
-  await updateProductStock(oldKey.productId, oldKey.pricingId, -1);
-  await updateProductStock(newKey.productId, newKey.pricingId, 1);
-};
-
-const updateProductKeyInList = (
-  productKeys: ProductKeyType[],
-  updatedKey: ProductKeyType,
-): ProductKeyType => {
-  const index = productKeys.findIndex((key) => key.uuid === updatedKey.uuid);
-  if (index !== -1) {
-    productKeys[index] = updatedKey;
-  }
-  return updatedKey;
 };

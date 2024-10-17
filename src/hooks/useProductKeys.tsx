@@ -40,23 +40,28 @@ const useProductKeys = () => {
   });
 
   const editProductKeyMutation = useMutation({
-    mutationFn: editProductKey,
-    onMutate: async (updatedProductKey) => {
+    mutationFn: (productKey: ProductKeyType) =>
+      editProductKey(productKey.uuid, productKey),
+    onMutate: async (productKey: ProductKeyType) => {
+      const { uuid, ...updatedProductKey } = productKey;
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
       const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([
         "productKeys",
       ]);
 
       queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) => {
-        if (!old) return [updatedProductKey];
+        if (!old) return [{ ...updatedProductKey, uuid }];
         return old.map((key) =>
-          key.uuid === updatedProductKey.uuid ? updatedProductKey : key
+          key.uuid === uuid ? { ...key, ...updatedProductKey, uuid } : key,
         );
       });
 
       return { previousProductKeys };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      if (context?.previousProductKeys) {
+        queryClient.setQueryData(["productKeys"], context.previousProductKeys);
+      }
       toast.error(`Failed to edit product key: ${error.message}`);
     },
     onSettled: async () => {
