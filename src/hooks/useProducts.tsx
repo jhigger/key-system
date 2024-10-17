@@ -145,16 +145,8 @@ const useProducts = () => {
       }
       toast.error(`Failed to delete pricing: ${error.message}`);
     },
-    onSuccess: (_, { productUuid }) => {
-      const products = queryClient.getQueryData<ProductType[]>(["products"]);
-      const product = products?.find((p) => p.uuid === productUuid);
-
-      if (product && product.pricings.length === 0) {
-        deleteProductMutation.mutate(productUuid);
-        toast.success("Last pricing deleted. Product removed.");
-      } else {
-        toast.success("Pricing deleted successfully");
-      }
+    onSuccess: () => {
+      toast.success("Pricing deleted successfully");
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["products"] });

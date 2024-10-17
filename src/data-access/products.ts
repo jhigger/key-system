@@ -202,8 +202,6 @@ export const deletePricing = async (
       .map((p) => p.uuid),
   );
 
-  console.log("pricings", pricings);
-
   if (pricings && pricings.length === 0) {
     return await deleteProduct(productUuid);
   }
