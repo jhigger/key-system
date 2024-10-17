@@ -185,6 +185,17 @@ export const deletePricing = async (
   productUuid: string,
   pricingUuid: string,
 ) => {
+  // Delete associated product keys
+  const { error: deleteKeysError } = await supabase
+    .from("product_keys")
+    .delete()
+    .eq("pricing_id", pricingUuid);
+
+  if (deleteKeysError && deleteKeysError.code !== "PGRST116") {
+    console.error("Error deleting product keys:", deleteKeysError);
+    throw new Error("Failed to delete associated product keys");
+  }
+
   // Delete the pricing
   const { error: deletePricingError } = await supabase
     .from("pricings")
@@ -212,23 +223,10 @@ export const deletePricing = async (
     .update({
       pricings,
     })
-    .eq("uuid", productUuid)
-    .select()
-    .single();
+    .eq("uuid", productUuid);
 
   if (updateProductError) {
     throw new Error("Failed to update product");
-  }
-
-  // Delete associated product keys
-  const { error: deleteKeysError } = await supabase
-    .from("product_keys")
-    .delete()
-    .eq("pricing_id", pricingUuid);
-
-  if (deleteKeysError && deleteKeysError.code !== "PGRST116") {
-    console.error("Error deleting product keys:", deleteKeysError);
-    throw new Error("Failed to delete associated product keys");
   }
 };
 
