@@ -38,7 +38,6 @@ const useMyKeys = (userUUID?: string) => {
         );
       }
       toast.error(`Failed to reset HWID: ${err.message}`);
-      console.error("Error resetting hardware ID:", err);
     },
     onSuccess: (updatedKey) => {
       queryClient.setQueryData<OrderType[]>(["orders", userUUID], (old) => {

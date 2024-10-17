@@ -45,7 +45,6 @@ export const resetHardwareId = async (
     .single();
 
   if (error) {
-    console.error("Error resetting hardware ID:", error);
     throw new Error(`Failed to reset hardware ID: ${error.message}`);
   }
 
@@ -79,7 +78,6 @@ export const editMyKeysHardwareId = async (
     .select();
 
   if (error) {
-    console.error("Error editing product key hardware ID:", error);
     throw new Error(`Failed to edit product key hardware ID: ${error.message}`);
   }
 

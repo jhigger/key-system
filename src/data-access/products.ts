@@ -9,7 +9,6 @@ export const getProducts = async (): Promise<ProductType[]> => {
     .order("created_at", { ascending: false });
 
   if (productError) {
-    console.error("Error fetching products:", productError);
     throw new Error(productError.message);
   }
 
@@ -20,7 +19,6 @@ export const getProducts = async (): Promise<ProductType[]> => {
     .in("uuid", productIds);
 
   if (pricingError) {
-    console.error("Error fetching pricings:", pricingError);
     throw new Error(pricingError.message);
   }
 
@@ -64,7 +62,6 @@ export const editProduct = async (
     .single();
 
   if (productError) {
-    console.error("Error updating product:", productError);
     throw new Error("Failed to update product");
   }
 
@@ -78,7 +75,6 @@ export const editProduct = async (
     .select();
 
   if (pricingError) {
-    console.error("Error fetching pricings:", pricingError);
     throw new Error(pricingError.message);
   }
 
@@ -105,7 +101,6 @@ export const addProduct = async (
     .single();
 
   if (productError) {
-    console.error("Error adding product:", productError);
     throw new Error("Failed to add product");
   }
 
@@ -119,7 +114,6 @@ export const addProduct = async (
   );
 
   if (pricingError) {
-    console.error("Error adding pricings:", pricingError);
     throw new Error("Failed to add pricings");
   }
 
@@ -176,7 +170,6 @@ export const editPricing = async (
     .single();
 
   if (pricingError) {
-    console.error("Error updating pricings:", pricingError);
     throw new Error("Failed to update pricings");
   }
 };
@@ -192,7 +185,6 @@ export const deletePricing = async (
     .eq("pricing_id", pricingUuid);
 
   if (deleteKeysError && deleteKeysError.code !== "PGRST116") {
-    console.error("Error deleting product keys:", deleteKeysError);
     throw new Error("Failed to delete associated product keys");
   }
 

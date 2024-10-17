@@ -53,13 +53,16 @@ export const editProductKey = async (
     .single();
 
   if (productKeyError) {
-    console.error("Error updating product key:", productKeyError);
     throw new Error("Failed to update product key");
   }
 
   // Always update stock for both old and new pricings
   if (oldProductKey.pricingId !== productKey.pricingId) {
-    await updateProductStock(oldProductKey.productId, oldProductKey.pricingId, -1);
+    await updateProductStock(
+      oldProductKey.productId,
+      oldProductKey.pricingId,
+      -1,
+    );
     await updateProductStock(productKey.productId, productKey.pricingId, 1);
   }
 
@@ -93,7 +96,6 @@ export const addProductKey = async (
     .single();
 
   if (error) {
-    console.error("Error adding product key:", error);
     throw new Error("Failed to add product key");
   }
 
@@ -121,7 +123,6 @@ export const deleteProductKey = async (uuid: string): Promise<void> => {
     .eq("uuid", uuid);
 
   if (error) {
-    console.error("Error deleting product key:", error);
     throw new Error("Failed to delete product key");
   }
 
