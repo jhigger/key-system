@@ -32,3 +32,47 @@ export const getOrders = async (userUUID?: string): Promise<OrderType[]> => {
 
   return orders;
 };
+
+export const addOrder = async (order: OrderType) => {
+  const { error: orderError } = await supabase
+    .from("orders")
+    .insert({
+      purchased_by: order.purchasedBy,
+      product_key_snapshot: order.productKeySnapshot,
+      invoice_link: order.invoiceLink,
+      created_at: order.createdAt,
+      uuid: order.uuid,
+      hardware_id: order.hardwareId,
+      updated_at: order.updatedAt,
+    })
+    .select();
+
+  if (orderError) {
+    throw new Error(orderError.message);
+  }
+
+  const { error: productKeyError } = await supabase
+    .from("product_keys")
+    .update({
+      expiry: order.productKeySnapshot.expiry,
+      owner: order.purchasedBy,
+      updated_at: order.updatedAt,
+    })
+    .eq("uuid", order.productKeySnapshot.key)
+    .select();
+
+  if (productKeyError) {
+    throw new Error(productKeyError.message);
+  }
+
+  const newOrder: OrderType = {
+    ...order,
+    productKeySnapshot: {
+      ...order.productKeySnapshot,
+      pricing: order.productKeySnapshot.pricing,
+      productName: order.productKeySnapshot.productName,
+    },
+  };
+
+  return newOrder;
+};
