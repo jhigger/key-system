@@ -62,7 +62,7 @@ const ProductCell: React.FC<{
           if (!newProduct) return;
 
           // Reset pricingUuid to the first available pricing of the new product
-          const newPricingUuid = newProduct.pricing[0]?.uuid ?? "";
+          const newPricingUuid = newProduct.pricings[0]?.uuid ?? "";
 
           editProductKey({
             ...row.original,
@@ -110,7 +110,7 @@ const DurationCell: React.FC<{
   const product = products.find((p) => p.uuid === row.original.productId);
   if (!product) return null;
 
-  const currentPricing = product.pricing.find(
+  const currentPricing = product.pricings.find(
     (p) => p.uuid === row.original.pricingId,
   );
 
@@ -131,7 +131,7 @@ const DurationCell: React.FC<{
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {product.pricing
+          {product.pricings
             .slice() // Create a shallow copy to avoid mutating the original array
             .sort((a, b) => {
               // Place zero duration at the bottom
@@ -246,7 +246,7 @@ const PricingCell: React.FC<{
 
   if (!product) return null;
 
-  const pricing = product.pricing.find((p) => p.uuid === pricingUuid);
+  const pricing = product.pricings.find((p) => p.uuid === pricingUuid);
 
   return formatPrice(pricing?.value ?? 0);
 };

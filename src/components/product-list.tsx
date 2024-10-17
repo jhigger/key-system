@@ -100,7 +100,7 @@ const ProductList = () => {
           (acc, [pricingUuid, { quantity }]) => {
             const pricing = products
               ?.find((p) => p.name === product.productName)
-              ?.pricing.find((p) => p.uuid === pricingUuid);
+              ?.pricings.find((p) => p.uuid === pricingUuid);
             return acc + (pricing?.value ?? 0) * quantity;
           },
           0,
@@ -123,7 +123,7 @@ const ProductList = () => {
         product.keys.reduce((acc, key) => {
           const pricing = productsData
             ?.find((p) => p.name === product.productName)
-            ?.pricing.find((p) => p.uuid === key.pricingUuid);
+            ?.pricings.find((p) => p.uuid === key.pricingUuid);
           return acc + (pricing?.value ?? 0) * key.quantity;
         }, 0)
       );
@@ -206,12 +206,12 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
   const formValues = watch(`products.${productIndex}.keys`);
 
   const calculateSubtotal = (quantity: number, pricingUuid: string) => {
-    const pricing = product.pricing.find((p) => p.uuid === pricingUuid);
+    const pricing = product.pricings.find((p) => p.uuid === pricingUuid);
     return formatPrice((pricing?.value ?? 0) * quantity);
   };
 
   // Calculate remaining stock for each pricing option
-  const remainingStock = product.pricing.reduce(
+  const remainingStock = product.pricings.reduce(
     (acc, price) => {
       const totalQuantity = formValues.reduce((sum, key) => {
         if (key.pricingUuid === price.uuid) {
@@ -226,7 +226,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
   );
 
   // Find the first available pricing option
-  const firstAvailableOption = product.pricing.find(
+  const firstAvailableOption = product.pricings.find(
     (price) => remainingStock[price.uuid] ?? 0 > 0,
   );
 
@@ -304,7 +304,7 @@ const KeyRow = ({
   );
 
   // Find the current pricing option
-  const currentPricingOption = product.pricing.find(
+  const currentPricingOption = product.pricings.find(
     (p) => p.uuid === currentPricingUuid,
   );
 
@@ -368,7 +368,7 @@ const KeyRow = ({
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {product.pricing
+                  {product.pricings
                     .filter((price) => remainingStock[price.uuid] ?? 0 > 0)
                     .map((price) => (
                       <SelectItem key={price.uuid} value={price.uuid}>

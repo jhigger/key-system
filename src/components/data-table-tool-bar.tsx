@@ -188,7 +188,7 @@ const DataTableToolBar = <TData,>({
             options={
               products?.reduce(
                 (acc, product) => {
-                  product.pricing?.forEach((pricing) => {
+                  product.pricings?.forEach((pricing) => {
                     if (!acc.some((item) => item.value === pricing.duration)) {
                       acc.push({
                         label: formatDuration(pricing.duration),

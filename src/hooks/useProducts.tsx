@@ -120,7 +120,7 @@ const useProducts = () => {
               product.uuid === productUuid
                 ? {
                     ...product,
-                    pricing: product.pricing.filter(
+                    pricings: product.pricings.filter(
                       (p) => p.uuid !== pricingUuid,
                     ),
                   }
@@ -166,7 +166,7 @@ const useProducts = () => {
         old
           ? old.map((product) =>
               product.uuid === productUuid
-                ? { ...product, pricing: newPricing }
+                ? { ...product, pricings: newPricing }
                 : product,
             )
           : [],

@@ -86,7 +86,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       resolver: zodResolver(formSchema),
       defaultValues: {
         name: initialValues?.name ?? "",
-        pricing: initialValues?.pricing ?? [
+        pricing: initialValues?.pricings ?? [
           {
             duration: 0,
             value: 1,
@@ -122,10 +122,10 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
         createdAt: initialValues?.createdAt ?? new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         name: values.name,
-        pricing: values.pricing.map((p) => ({
+        pricings: values.pricing.map((p) => ({
           ...p,
           uuid:
-            initialValues?.pricing.find((op) => op.uuid === p.uuid)?.uuid ??
+            initialValues?.pricings.find((op) => op.uuid === p.uuid)?.uuid ??
             uuidv4(),
         })),
       };
@@ -137,7 +137,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
 
     const removePricingVariant = async (index: number) => {
       if (initialValues) {
-        const pricingToDelete = initialValues.pricing[index];
+        const pricingToDelete = initialValues.pricings[index];
         if (pricingToDelete) {
           deletePricing({
             productUuid: initialValues.uuid,

@@ -76,7 +76,7 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
         updatedAt: new Date().toISOString(),
         productId: product.uuid,
         pricingId:
-          product.pricing.find((p) => p.uuid === values.pricingUuid)?.uuid ??
+          product.pricings.find((p) => p.uuid === values.pricingUuid)?.uuid ??
           "",
         hardwareId: null,
         owner: null,
@@ -156,7 +156,7 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
                     <SelectContent>
                       {products
                         ?.find((p) => p.name === form.getValues("product"))
-                        ?.pricing?.map((pricing) => (
+                        ?.pricings?.map((pricing) => (
                           <SelectItem key={pricing.uuid} value={pricing.uuid}>
                             {formatDuration(pricing.duration)}
                           </SelectItem>

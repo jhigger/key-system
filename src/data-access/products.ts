@@ -1,15 +1,60 @@
 import { QueryClient } from "@tanstack/react-query";
-import { fakeProducts } from "~/lib/fakeData";
+import { supabase } from "~/lib/initSupabase";
 import { type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { getProductKeys } from "./productKeys";
 
-export const getProducts = (): ProductType[] => fakeProducts;
+export const getProducts = async (): Promise<ProductType[]> => {
+  const { data: products, error: productError } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (productError) {
+    console.error("Error fetching products:", productError);
+    throw new Error(productError.message);
+  }
+
+  const productIds = products.map((product) => product.pricings).flat();
+  const { data: pricings, error: pricingError } = await supabase
+    .from("pricings")
+    .select("*")
+    .in("uuid", productIds);
+
+  if (pricingError) {
+    console.error("Error fetching pricings:", pricingError);
+    throw new Error(pricingError.message);
+  }
+
+  if (!pricings) {
+    throw new Error("No pricing data returned");
+  }
+
+  const productsWithPricing = products.map(
+    (product): ProductType => ({
+      uuid: product.uuid,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+      name: product.name,
+      pricings: pricings
+        .filter((pricing) => product?.pricings?.includes(pricing.uuid))
+        .sort((a, b) => {
+          // Place zero duration (Lifetime) at the bottom
+          if (a.duration === 0) return 1;
+          if (b.duration === 0) return -1;
+          // Sort other durations in ascending order
+          return a.duration - b.duration;
+        }),
+    }),
+  );
+
+  return productsWithPricing;
+};
 
 export const editProduct = async (
   product: ProductType,
 ): Promise<ProductType> => {
-  const products = getProducts();
+  const products = await getProducts();
   const oldProduct = findProductById(products, product.uuid);
   const updatedProduct = mergeProducts(oldProduct, product);
 
@@ -22,14 +67,14 @@ export const editProduct = async (
 export const addProduct = async (
   product: ProductType,
 ): Promise<ProductType> => {
-  const products = getProducts();
+  const products = await getProducts();
   products.push(product);
   return product;
 };
 
 export const deleteProduct = async (uuid: string): Promise<ProductType[]> => {
-  const products = getProducts();
-  const productKeys = getProductKeys();
+  const products = await getProducts();
+  const productKeys = await getProductKeys();
   const updatedProducts = products.filter((product) => product.uuid !== uuid);
   const updatedProductKeys = productKeys.filter(
     (key) => key.productId !== uuid,
@@ -45,7 +90,7 @@ export const editPricing = async (
   productUuid: string,
   newPricing: PricingType[],
 ): Promise<ProductType | null> => {
-  const products = getProducts();
+  const products = await getProducts();
   const product = findProductById(products, productUuid);
 
   // Update the product's pricing with the new pricing
@@ -61,14 +106,14 @@ export const deletePricing = async (
   productUuid: string,
   pricingUuid: string,
 ): Promise<ProductType | null> => {
-  const products = getProducts();
+  const products = await getProducts();
   const product = findProductById(products, productUuid);
-  const updatedPricing = product.pricing.filter(
+  const updatedPricing = product.pricings.filter(
     (pricing) => pricing.uuid !== pricingUuid,
   );
 
   // Delete associated product keys
-  const productKeys = getProductKeys();
+  const productKeys = await getProductKeys();
   const updatedProductKeys = productKeys.filter(
     (key) => !(key.productId === productUuid && key.pricingId === pricingUuid),
   );
@@ -96,13 +141,13 @@ export const updateProductStock = async (
   pricingUuid: string,
   change: number,
 ): Promise<ProductType> => {
-  const products = getProducts();
+  const products = await getProducts();
   const product = findProductById(products, productUuid);
-  const pricing = findPricingById(product.pricing, pricingUuid);
+  const pricing = findPricingById(product.pricings, pricingUuid);
   const updatedPricing = updatePricingStock(pricing, change);
   return updateProductInList(products, {
     ...product,
-    pricing: product.pricing.map((p) =>
+    pricings: product.pricings.map((p) =>
       p.uuid === pricingUuid ? updatedPricing : p,
     ),
   });
@@ -130,8 +175,8 @@ const mergeProducts = (
 ): ProductType => ({
   ...oldProduct,
   ...newProduct,
-  pricing: newProduct.pricing.map((newPricing) => {
-    const oldPricing = oldProduct.pricing.find(
+  pricings: newProduct.pricings.map((newPricing) => {
+    const oldPricing = oldProduct.pricings.find(
       (p) => p.uuid === newPricing.uuid,
     );
     return {
@@ -179,16 +224,16 @@ const updateAssociatedProductKeys = async (
   oldProduct: ProductType,
   newProduct: ProductType,
 ) => {
-  const productKeys = getProductKeys();
+  const productKeys = await getProductKeys();
   let updated = false;
 
   productKeys.forEach((key) => {
     if (key.productId === newProduct.uuid) {
-      const oldPricing = oldProduct.pricing.find(
+      const oldPricing = oldProduct.pricings.find(
         (p) => p.uuid === key.pricingId,
       );
       if (oldPricing) {
-        const newPricing = newProduct.pricing.find(
+        const newPricing = newProduct.pricings.find(
           (p) => p.duration === oldPricing.duration,
         );
         if (newPricing && newPricing.uuid !== key.pricingId) {

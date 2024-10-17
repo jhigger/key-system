@@ -40,7 +40,7 @@ const DurationCell: React.FC<{
   } = useProducts();
   const [showForm, setShowForm] = useState(false);
   const productKeyFormRef = useRef<ProductFormRef>(null);
-  const pricing = row.original.pricing;
+  const pricing = row.original.pricings;
 
   return (
     <>
@@ -75,7 +75,7 @@ const DurationCell: React.FC<{
                       handleSubmit={(values) => {
                         editPricing({
                           productUuid: row.original.uuid,
-                          newPricing: values.pricing,
+                          newPricing: values.pricings,
                         });
                         setShowForm(false);
                       }}
@@ -106,7 +106,7 @@ const PricingCell: React.FC<{
   const {
     mutation: { editProduct },
   } = useProducts();
-  const pricing = row.original.pricing;
+  const pricing = row.original.pricings;
 
   return (
     <>
@@ -125,7 +125,7 @@ const PricingCell: React.FC<{
                 const numValue = Math.max(0, Number(value));
                 editProduct({
                   ...row.original,
-                  pricing: pricing.map((item) =>
+                  pricings: pricing.map((item) =>
                     item.uuid === p.uuid ? { ...item, value: numValue } : item,
                   ),
                 });
@@ -145,7 +145,7 @@ const StockCell: React.FC<{
   row: Row<ProductType>;
 }> = ({ row }) => {
   const { editMode } = useUIStore();
-  const pricing = row.original.pricing;
+  const pricing = row.original.pricings;
 
   return (
     <>
@@ -217,7 +217,7 @@ const ActionsCell: React.FC<{
   if (editMode) {
     return (
       <div className="-ml-4 flex flex-col whitespace-nowrap">
-        {row.original.pricing.map((pricing) => (
+        {row.original.pricings.map((pricing) => (
           <div
             key={pricing.uuid}
             className="border-b py-2 pl-4 transition-colors last:border-b-0"
@@ -286,7 +286,7 @@ const ActionsCell: React.FC<{
                 handleSubmit={(values) => {
                   editPricing({
                     productUuid: row.original.uuid,
-                    newPricing: values.pricing,
+                    newPricing: values.pricings,
                   });
                   setShowForm(false);
                 }}

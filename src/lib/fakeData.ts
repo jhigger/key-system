@@ -5,7 +5,7 @@ import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { type UserType } from "~/types/user";
 
-export const fakeOwnerId = "67dd6c56-29a6-46c7-a038-33f7e37fc72a";
+export const fakeOwnerId = "7c1d59b1-0cc5-437d-a419-543a65cf16ab";
 
 const fakeProductId1 = uuidv4();
 const fakeProductId2 = uuidv4();
@@ -53,7 +53,7 @@ export const fakeProducts: ProductType[] = [
     createdAt: new Date(2024, 10 - 1, 9).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 9).toISOString(),
     name: "Distortion",
-    pricing: [
+    pricings: [
       { uuid: fakePricingId1, duration: 1, value: 1.5, stock: 1 },
       { uuid: fakePricingId2, duration: 3, value: 3, stock: 0 },
       { uuid: fakePricingId3, duration: 7, value: 5, stock: 0 },
@@ -66,14 +66,14 @@ export const fakeProducts: ProductType[] = [
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 8).toISOString(),
     name: "Densho",
-    pricing: DEFAULT_PRICING,
+    pricings: DEFAULT_PRICING,
   },
   {
     uuid: fakeProductId3,
     createdAt: new Date(2024, 10 - 1, 4).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 4).toISOString(),
     name: "Unlock All",
-    pricing: DEFAULT_PRICING,
+    pricings: DEFAULT_PRICING,
   },
 ];
 
@@ -161,35 +161,55 @@ export const fakeOrders: OrderType[] = [
   {
     uuid: fakeOrderId1,
     purchasedBy: fakeOwnerId,
-    productKey: fakeProductKeys[1]!,
+    productKeySnapshot: {
+      ...fakeProductKeys[1]!,
+      pricing: DEFAULT_PRICING[1]!,
+      productName: fakeProducts[1]?.name ?? "",
+    },
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 8).toISOString(),
   },
   {
     uuid: fakeOrderId2,
     purchasedBy: fakeOwnerId,
-    productKey: fakeProductKeys[2]!,
+    productKeySnapshot: {
+      ...fakeProductKeys[2]!,
+      pricing: DEFAULT_PRICING[2]!,
+      productName: fakeProducts[2]?.name ?? "",
+    },
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
     uuid: fakeOrderId3,
     purchasedBy: fakeOwnerId,
-    productKey: fakeProductKeys[3]!,
+    productKeySnapshot: {
+      ...fakeProductKeys[3]!,
+      pricing: DEFAULT_PRICING[3]!,
+      productName: fakeProducts[3]?.name ?? "",
+    },
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
     uuid: fakeOrderId4,
     purchasedBy: fakeOwnerId,
-    productKey: fakeProductKeys[4]!,
+    productKeySnapshot: {
+      ...fakeProductKeys[4]!,
+      pricing: DEFAULT_PRICING[4]!,
+      productName: fakeProducts[4]?.name ?? "",
+    },
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
   {
     uuid: fakeOrderId5,
     purchasedBy: fakeOwnerId,
-    productKey: fakeProductKeys[5]!,
+    productKeySnapshot: {
+      ...fakeProductKeys[5]!,
+      pricing: DEFAULT_PRICING[5]!,
+      productName: fakeProducts[5]?.name ?? "",
+    },
     invoiceLink: uuidv4(),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
   },
@@ -222,7 +242,7 @@ export const fakeUsers: UserType[] = [
     role: "user",
     username: "dev",
     email: "email_three@example.com",
-    orders: fakeOrders,
+    orders: fakeOrders.map((order) => order.uuid),
     createdAt: new Date(2024, 10 - 1, 7).toISOString(),
     updatedAt: new Date(2024, 10 - 1, 7).toISOString(),
   },

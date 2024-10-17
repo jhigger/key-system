@@ -78,7 +78,7 @@ export const getProductPricingDuration = (
   products: ProductType[],
 ): number => {
   for (const product of products) {
-    const pricing = product.pricing.find((p) => p.uuid === pricingId);
+    const pricing = product.pricings.find((p) => p.uuid === pricingId);
     if (pricing) {
       return pricing.duration ?? 0;
     }
@@ -93,8 +93,8 @@ export const sortByVariant = <T extends OrderType | ProductKeyType>(
 ): number => {
   const getVariantValue = (row: Row<T>): number => {
     const pricingId =
-      "productKey" in row.original
-        ? row.original.productKey.pricingId
+      "productKeySnapshot" in row.original
+        ? row.original.productKeySnapshot.pricing.uuid
         : row.original.pricingId;
 
     return pricingId ? getProductPricingDuration(pricingId, products) : 0;

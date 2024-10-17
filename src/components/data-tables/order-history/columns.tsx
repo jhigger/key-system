@@ -4,7 +4,6 @@ import {
   dateFilterFn,
   formatDuration,
   formatISOStringToDate,
-  getProductPricingDuration,
   sortByVariant,
 } from "~/lib/utils";
 import { type OrderType } from "~/types/order";
@@ -14,7 +13,7 @@ import { DataTableColumnHeader } from "../../data-table-column-header";
 const ProductCell: React.FC<{
   row: Row<OrderType>;
 }> = ({ row }) => {
-  const { productKey } = row.original;
+  const { productKeySnapshot: productKey } = row.original;
   const {
     query: { data: products },
   } = useProducts();
@@ -22,7 +21,7 @@ const ProductCell: React.FC<{
   if (!products) return null;
 
   const productName = products.find(
-    (p) => p.uuid === productKey.productId,
+    (p) => p.name === productKey.productName,
   )?.name;
 
   return productName;
@@ -31,14 +30,14 @@ const ProductCell: React.FC<{
 const VariantCell: React.FC<{
   row: Row<OrderType>;
 }> = ({ row }) => {
-  const { productKey } = row.original;
+  const { productKeySnapshot: productKey } = row.original;
   const {
     query: { data: products },
   } = useProducts();
 
   if (!products) return null;
 
-  const duration = getProductPricingDuration(productKey.pricingId, products);
+  const duration = productKey.pricing.duration;
   return formatDuration(duration);
 };
 
@@ -84,14 +83,9 @@ export const getColumns = ({
     ),
     cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string[]) => {
-      return value.includes(row.getValue(id));
+      return value.includes(row.original.productKeySnapshot.productName);
     },
-    accessorFn: (row) => {
-      const product = products?.find(
-        (p) => p.uuid === row.productKey.productId,
-      );
-      return product?.name ?? "";
-    },
+    accessorFn: (row) => row.productKeySnapshot.productName,
   },
   {
     accessorKey: "invoiceLink",
@@ -104,15 +98,14 @@ export const getColumns = ({
       <DataTableColumnHeader column={column} title="Variant" />
     ),
     cell: ({ row }) => <VariantCell row={row} />,
-    filterFn: (row, id, value: number[]) => {
-      const pricingId = row.original.productKey.pricingId;
-      const duration = getProductPricingDuration(pricingId, products ?? []);
-      return value.includes(duration);
+    filterFn: (row, id, value: OrderType["productKeySnapshot"]) => {
+      const duration = row.original.productKeySnapshot.pricing.duration;
+      console.log(value, duration);
+      return value.pricing.duration === duration;
     },
     sortingFn: (rowA, rowB) => sortByVariant(rowA, rowB, products ?? []),
     accessorFn: (row) => {
-      const pricingId = row.productKey.pricingId;
-      const duration = getProductPricingDuration(pricingId, products ?? []);
+      const duration = row.productKeySnapshot.pricing.duration;
       return duration;
     },
   },
