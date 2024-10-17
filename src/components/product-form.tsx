@@ -35,9 +35,14 @@ const formSchema = z.object({
         stock: z.number().min(0, "Stock cannot be negative"),
       }),
     )
-    .refine((pricing) => pricing.some((p) => p.duration > 0 && p.value > 0), {
-      message: "At least one valid pricing entry is required",
-    })
+    .refine(
+      (pricing) =>
+        pricing.length === 0 ||
+        pricing.some((p) => p.duration >= 0 && p.value > 0),
+      {
+        message: "At least one valid pricing entry is required",
+      },
+    )
     .refine(
       (pricing) => {
         const durations = pricing.map((p) => p.duration);
