@@ -74,7 +74,6 @@ const VerificationForm = ({ values }: VerificationFormProps) => {
           username: values.username,
           email: values.email,
         });
-        window.location.href = "/";
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
