@@ -1,9 +1,15 @@
 import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { changeUserRole, getUsers } from "~/data-access/users";
+import { v4 as uuidv4 } from "uuid";
+import {
+  addUser,
+  changeUserRole,
+  getUserByClerkId,
+  getUsers,
+} from "~/data-access/users";
 import { useUserStore } from "~/state/user.store";
-import { type RoleType, type UserType } from "~/types/user";
+import { type UserType } from "~/types/user";
 
 const useUsers = () => {
   const { client, setActive } = useClerk();
@@ -50,22 +56,65 @@ const useUsers = () => {
     },
   });
 
-  const setClerkUser = async (sessionId: string | null) => {
+  const addUserMutation = useMutation({
+    mutationFn: addUser,
+    onSuccess: (newUser) => {
+      queryClient.setQueryData<UserType[]>(["users"], (old) => {
+        if (!old) return [newUser];
+        return [...old, newUser];
+      });
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
+  const setClerkUser = async (
+    sessionId: string | null,
+    values: { username: string; email: string } | undefined,
+  ) => {
     const user = client.activeSessions[0]?.user;
     if (!user) {
       toast.error("User not found");
       return;
     }
-    const userRole = (user.publicMetadata.role as RoleType) ?? "user";
+
+    const userByClerkId = await getUserByClerkId(user.id).catch(async () => {
+      if (!values?.username || !values?.email) {
+        toast.error("Username and email are required");
+        return;
+      }
+      const newUser = await addUser({
+        uuid: uuidv4(),
+        clerkId: user.id,
+        role: "user",
+        username: values.username,
+        email: values.email,
+        orders: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      toast.success("Registered successfully");
+      return newUser;
+    });
+
+    if (!userByClerkId) {
+      toast.error("Something went wrong");
+      return;
+    }
+
     const payload: UserType = {
-      uuid: user.id,
+      uuid: userByClerkId?.uuid,
       clerkId: user.id,
-      role: userRole,
-      username: user.username ?? "dev",
-      email: user.emailAddresses[0]?.emailAddress ?? "",
-      orders: [],
-      createdAt: user.createdAt?.toISOString() ?? new Date().toISOString(),
-      updatedAt: user.updatedAt?.toISOString() ?? new Date().toISOString(),
+      role: userByClerkId.role,
+      username: userByClerkId.username,
+      email: userByClerkId.email,
+      orders: userByClerkId.orders,
+      createdAt: userByClerkId.createdAt,
+      updatedAt: userByClerkId.updatedAt,
     };
 
     setUser(payload);
@@ -74,7 +123,10 @@ const useUsers = () => {
 
   return {
     query,
-    mutation: { changeRole: changeRoleMutation.mutate },
+    mutation: {
+      changeRole: changeRoleMutation.mutate,
+      addUser: addUserMutation.mutate,
+    },
     setClerkUser,
   };
 };

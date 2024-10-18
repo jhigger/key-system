@@ -74,7 +74,7 @@ export function RegisterForm() {
         password,
       });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      toast.success("A verification code has been sent to your email");
+      toast.success(`A verification code has been sent to ${emailAddress}`);
       setIsVerifyStep(true);
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
