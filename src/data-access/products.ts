@@ -2,8 +2,15 @@ import { supabase } from "~/lib/initSupabase";
 import { type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 
-export const getProducts = async (): Promise<ProductType[]> => {
-  const { data: products, error: productError } = await supabase
+export const getProducts = async (
+  getToken: () => Promise<string | null>,
+): Promise<ProductType[]> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data: products, error: productError } = await supabase(token)
     .from("products")
     .select("*")
     .order("created_at", { ascending: false });
@@ -13,7 +20,7 @@ export const getProducts = async (): Promise<ProductType[]> => {
   }
 
   const productIds = products.map((product) => product.pricings).flat();
-  const { data: pricings, error: pricingError } = await supabase
+  const { data: pricings, error: pricingError } = await supabase(token)
     .from("pricings")
     .select("*")
     .in("uuid", productIds);
@@ -48,10 +55,16 @@ export const getProducts = async (): Promise<ProductType[]> => {
 };
 
 export const editProduct = async (
+  getToken: () => Promise<string | null>,
   productUuid: string,
   product: ProductType,
 ): Promise<ProductType> => {
-  const { data: productData, error: productError } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data: productData, error: productError } = await supabase(token)
     .from("products")
     .update({
       name: product.name,
@@ -65,7 +78,7 @@ export const editProduct = async (
     throw new Error("Failed to update product");
   }
 
-  const { data: pricings, error: pricingError } = await supabase
+  const { data: pricings, error: pricingError } = await supabase(token)
     .from("pricings")
     .upsert(product.pricings)
     .in(
@@ -90,9 +103,15 @@ export const editProduct = async (
 };
 
 export const addProduct = async (
+  getToken: () => Promise<string | null>,
   product: ProductType,
 ): Promise<ProductType> => {
-  const { error: productError } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { error: productError } = await supabase(token)
     .from("products")
     .insert({
       name: product.name,
@@ -104,14 +123,16 @@ export const addProduct = async (
     throw new Error("Failed to add product");
   }
 
-  const { error: pricingError } = await supabase.from("pricings").insert(
-    product.pricings.map((p) => ({
-      uuid: p.uuid,
-      duration: p.duration,
-      value: p.value,
-      stock: p.stock,
-    })),
-  );
+  const { error: pricingError } = await supabase(token)
+    .from("pricings")
+    .insert(
+      product.pricings.map((p) => ({
+        uuid: p.uuid,
+        duration: p.duration,
+        value: p.value,
+        stock: p.stock,
+      })),
+    );
 
   if (pricingError) {
     throw new Error("Failed to add pricings");
@@ -120,9 +141,17 @@ export const addProduct = async (
   return product;
 };
 
-export const deleteProduct = async (uuid: string) => {
+export const deleteProduct = async (
+  getToken: () => Promise<string | null>,
+  uuid: string,
+) => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
   // Delete associated product keys
-  const { error: deleteKeysError } = await supabase
+  const { error: deleteKeysError } = await supabase(token)
     .from("product_keys")
     .delete()
     .eq("product_id", uuid);
@@ -132,7 +161,7 @@ export const deleteProduct = async (uuid: string) => {
   }
 
   // Delete the product from the database
-  const { data: productData, error: deleteError } = await supabase
+  const { data: productData, error: deleteError } = await supabase(token)
     .from("products")
     .delete()
     .eq("uuid", uuid)
@@ -144,7 +173,7 @@ export const deleteProduct = async (uuid: string) => {
   }
 
   // Delete associated pricings
-  const { error: deletePricingsError } = await supabase
+  const { error: deletePricingsError } = await supabase(token)
     .from("pricings")
     .delete()
     .in("uuid", productData?.pricings);
@@ -155,10 +184,16 @@ export const deleteProduct = async (uuid: string) => {
 };
 
 export const editPricing = async (
+  getToken: () => Promise<string | null>,
   pricingUuid: string,
   newPricing: PricingType,
 ) => {
-  const { error: pricingError } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { error: pricingError } = await supabase(token)
     .from("pricings")
     .update({
       duration: newPricing.duration,
@@ -175,11 +210,17 @@ export const editPricing = async (
 };
 
 export const deletePricing = async (
+  getToken: () => Promise<string | null>,
   productUuid: string,
   pricingUuid: string,
 ) => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
   // Delete associated product keys
-  const { error: deleteKeysError } = await supabase
+  const { error: deleteKeysError } = await supabase(token)
     .from("product_keys")
     .delete()
     .eq("pricing_id", pricingUuid);
@@ -189,7 +230,7 @@ export const deletePricing = async (
   }
 
   // Delete the pricing
-  const { error: deletePricingError } = await supabase
+  const { error: deletePricingError } = await supabase(token)
     .from("pricings")
     .delete()
     .eq("uuid", pricingUuid);
@@ -198,7 +239,7 @@ export const deletePricing = async (
     throw new Error("Failed to delete pricing");
   }
 
-  const pricings = await getProducts().then((products) =>
+  const pricings = await getProducts(getToken).then((products) =>
     products
       .find((p) => p.uuid === productUuid)
       ?.pricings.filter((p) => p.uuid !== pricingUuid)
@@ -206,11 +247,11 @@ export const deletePricing = async (
   );
 
   if (pricings && pricings.length === 0) {
-    return await deleteProduct(productUuid);
+    return await deleteProduct(getToken, productUuid);
   }
 
   // Update the product's pricings array
-  const { error: updateProductError } = await supabase
+  const { error: updateProductError } = await supabase(token)
     .from("products")
     .update({
       pricings,
@@ -223,16 +264,22 @@ export const deletePricing = async (
 };
 
 export const updateProductStock = async (
+  getToken: () => Promise<string | null>,
   productUuid: string,
   pricingUuid: string,
   change: number,
 ) => {
-  const products = await getProducts();
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const products = await getProducts(getToken);
   const product = findProductById(products, productUuid);
   const pricing = findPricingById(product.pricings, pricingUuid);
   const updatedPricing = updatePricingStock(pricing, change);
   // Update the pricing in the database
-  const { error } = await supabase
+  const { error } = await supabase(token)
     .from("pricings")
     .update({ stock: updatedPricing.stock })
     .eq("uuid", pricingUuid);

@@ -3,8 +3,18 @@ import { type OrderType } from "~/types/order";
 import { type ProductKeyType } from "~/types/productKey";
 import { getProductKeys } from "./productKeys";
 
-export const getKeys = async (userUUID?: string): Promise<ProductKeyType[]> => {
-  const { data, error } = await supabase.from("product_keys").select("*");
+export const getKeys = async (
+  getToken: () => Promise<string | null>,
+  userUUID?: string,
+): Promise<ProductKeyType[]> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
+    .from("product_keys")
+    .select("*");
 
   if (error) {
     throw new Error(error.message);
@@ -27,17 +37,26 @@ export const getKeys = async (userUUID?: string): Promise<ProductKeyType[]> => {
     : mappedData;
 };
 
-export const addKey = async (key: ProductKeyType) => {
-  const productKeys = await getProductKeys();
+export const addKey = async (
+  getToken: () => Promise<string | null>,
+  key: ProductKeyType,
+) => {
+  const productKeys = await getProductKeys(getToken);
 
   productKeys.push(key);
   return productKeys;
 };
 
 export const resetHardwareId = async (
+  getToken: () => Promise<string | null>,
   hardwareId: string,
 ): Promise<OrderType> => {
-  const { data, error } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("orders")
     .update({ hardware_id: null })
     .eq("hardware_id", hardwareId)
@@ -68,10 +87,16 @@ export const resetHardwareId = async (
 };
 
 export const editMyKeysHardwareId = async (
+  getToken: () => Promise<string | null>,
   orderUuid: string,
   newHardwareId: string,
 ) => {
-  const { data, error } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("orders")
     .update({ hardware_id: newHardwareId })
     .eq("uuid", orderUuid)

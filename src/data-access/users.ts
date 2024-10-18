@@ -1,8 +1,15 @@
 import { supabase } from "~/lib/initSupabase";
 import { type RoleType, type UserType } from "~/types/user";
 
-export const getUsers = async (): Promise<UserType[]> => {
-  const { data, error } = await supabase
+export const getUsers = async (
+  getToken: () => Promise<string | null>,
+): Promise<UserType[]> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("users")
     .select("*")
     .order("created_at", { ascending: false });
@@ -26,9 +33,15 @@ export const getUsers = async (): Promise<UserType[]> => {
 };
 
 export const getUserByClerkId = async (
+  getToken: () => Promise<string | null>,
   clerkId: string,
 ): Promise<UserType | null> => {
-  const { data, error } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("users")
     .select("*")
     .eq("clerk_id", clerkId)
@@ -52,8 +65,16 @@ export const getUserByClerkId = async (
   return user;
 };
 
-export const addUser = async (user: UserType): Promise<UserType> => {
-  const { data, error } = await supabase
+export const addUser = async (
+  getToken: () => Promise<string | null>,
+  user: UserType,
+): Promise<UserType> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("users")
     .insert({
       clerk_id: user.clerkId,
@@ -85,8 +106,16 @@ export const addUser = async (user: UserType): Promise<UserType> => {
   return newUser;
 };
 
-export const changeUserRole = async (user: UserType): Promise<UserType> => {
-  const { data, error } = await supabase
+export const changeUserRole = async (
+  getToken: () => Promise<string | null>,
+  user: UserType,
+): Promise<UserType> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("users")
     .update({ role: user.role })
     .eq("uuid", user.uuid)

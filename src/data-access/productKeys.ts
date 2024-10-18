@@ -2,8 +2,15 @@ import { updateProductStock } from "~/data-access/products";
 import { supabase } from "~/lib/initSupabase";
 import { type ProductKeyType } from "~/types/productKey";
 
-export const getProductKeys = async (): Promise<ProductKeyType[]> => {
-  const { data, error } = await supabase
+export const getProductKeys = async (
+  getToken: () => Promise<string | null>,
+): Promise<ProductKeyType[]> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("product_keys")
     .select("*") // Ensure that product_id, pricing_id, and hardware_id are included
     .order("created_at", { ascending: false });
@@ -27,17 +34,25 @@ export const getProductKeys = async (): Promise<ProductKeyType[]> => {
   return productKeys;
 };
 
-export const getAvailableProductKeys = async (): Promise<ProductKeyType[]> => {
-  const productKeys = await getProductKeys();
+export const getAvailableProductKeys = async (
+  getToken: () => Promise<string | null>,
+): Promise<ProductKeyType[]> => {
+  const productKeys = await getProductKeys(getToken);
   return productKeys.filter((key) => key.owner === null);
 };
 
 export const editProductKey = async (
+  getToken: () => Promise<string | null>,
   productKeyUuid: string,
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const oldProductKey = await getProductKeyById(productKeyUuid);
-  const { data: productKeyData, error: productKeyError } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const oldProductKey = await getProductKeyById(getToken, productKeyUuid);
+  const { data: productKeyData, error: productKeyError } = await supabase(token)
     .from("product_keys")
     .update({
       product_id: productKey.productId,
@@ -59,11 +74,17 @@ export const editProductKey = async (
   // Always update stock for both old and new pricings
   if (oldProductKey.pricingId !== productKey.pricingId) {
     await updateProductStock(
+      getToken,
       oldProductKey.productId,
       oldProductKey.pricingId,
       -1,
     );
-    await updateProductStock(productKey.productId, productKey.pricingId, 1);
+    await updateProductStock(
+      getToken,
+      productKey.productId,
+      productKey.pricingId,
+      1,
+    );
   }
 
   return {
@@ -80,9 +101,15 @@ export const editProductKey = async (
 };
 
 export const addProductKey = async (
+  getToken: () => Promise<string | null>,
   productKey: ProductKeyType,
 ): Promise<ProductKeyType> => {
-  const { data, error } = await supabase
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
     .from("product_keys")
     .insert({
       product_id: productKey.productId,
@@ -99,7 +126,12 @@ export const addProductKey = async (
     throw new Error("Failed to add product key");
   }
 
-  await updateProductStock(productKey.productId, productKey.pricingId, 1);
+  await updateProductStock(
+    getToken,
+    productKey.productId,
+    productKey.pricingId,
+    1,
+  );
 
   return {
     uuid: data.uuid,
@@ -114,10 +146,18 @@ export const addProductKey = async (
   };
 };
 
-export const deleteProductKey = async (uuid: string): Promise<void> => {
-  const productKey = await getProductKeyById(uuid);
+export const deleteProductKey = async (
+  getToken: () => Promise<string | null>,
+  uuid: string,
+): Promise<void> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
 
-  const { error } = await supabase
+  const productKey = await getProductKeyById(getToken, uuid);
+
+  const { error } = await supabase(token)
     .from("product_keys")
     .delete()
     .eq("uuid", uuid);
@@ -126,11 +166,19 @@ export const deleteProductKey = async (uuid: string): Promise<void> => {
     throw new Error("Failed to delete product key");
   }
 
-  await updateProductStock(productKey.productId, productKey.pricingId, -1);
+  await updateProductStock(
+    getToken,
+    productKey.productId,
+    productKey.pricingId,
+    -1,
+  );
 };
 
-const getProductKeyById = async (uuid: string): Promise<ProductKeyType> => {
-  const productKeys = await getProductKeys();
+const getProductKeyById = async (
+  getToken: () => Promise<string | null>,
+  uuid: string,
+): Promise<ProductKeyType> => {
+  const productKeys = await getProductKeys(getToken);
   const productKey = productKeys.find((key) => key.uuid === uuid);
   if (!productKey) {
     throw new Error(`Key ${uuid} not found`);

@@ -1,8 +1,16 @@
 import { supabase } from "~/lib/initSupabase";
 import { type OrderType } from "~/types/order";
 
-export const getOrders = async (userUUID?: string): Promise<OrderType[]> => {
-  let query = supabase
+export const getOrders = async (
+  getToken: () => Promise<string | null>,
+  userUUID?: string,
+): Promise<OrderType[]> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  let query = supabase(token)
     .from("orders")
     .select("*")
     .order("created_at", { ascending: false });
@@ -33,8 +41,16 @@ export const getOrders = async (userUUID?: string): Promise<OrderType[]> => {
   return orders;
 };
 
-export const addOrder = async (order: OrderType) => {
-  const { error: orderError } = await supabase
+export const addOrder = async (
+  getToken: () => Promise<string | null>,
+  order: OrderType,
+) => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { error: orderError } = await supabase(token)
     .from("orders")
     .insert({
       purchased_by: order.purchasedBy,
@@ -51,7 +67,7 @@ export const addOrder = async (order: OrderType) => {
     throw new Error(orderError.message);
   }
 
-  const { error: productKeyError } = await supabase
+  const { error: productKeyError } = await supabase(token)
     .from("product_keys")
     .update({
       expiry: order.productKeySnapshot.expiry,

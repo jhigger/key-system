@@ -7,17 +7,20 @@ import {
   getAvailableProductKeys,
 } from "~/data-access/productKeys";
 import { type ProductKeyType } from "~/types/productKey";
+import useAuthToken from "./useAuthToken";
 
 const useProductKeys = () => {
+  const getToken = useAuthToken();
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["productKeys"],
-    queryFn: () => getAvailableProductKeys(),
+    queryFn: () => getAvailableProductKeys(getToken),
   });
 
   const addProductKeyMutation = useMutation({
-    mutationFn: addProductKey,
+    mutationFn: (productKey: ProductKeyType) =>
+      addProductKey(getToken, productKey),
     onMutate: async () => {
       // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
@@ -51,7 +54,7 @@ const useProductKeys = () => {
 
   const editProductKeyMutation = useMutation({
     mutationFn: (productKey: ProductKeyType) =>
-      editProductKey(productKey.uuid, productKey),
+      editProductKey(getToken, productKey.uuid, productKey),
     onMutate: async (productKey: ProductKeyType) => {
       const { uuid, ...updatedProductKey } = productKey;
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
@@ -84,7 +87,8 @@ const useProductKeys = () => {
   });
 
   const deleteProductKeyMutation = useMutation({
-    mutationFn: deleteProductKey,
+    mutationFn: (deletedUuid: string) =>
+      deleteProductKey(getToken, deletedUuid),
     onMutate: async (deletedUuid) => {
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
       const previousProductKeys = queryClient.getQueryData<ProductKeyType[]>([

@@ -2,18 +2,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { addOrder, getOrders } from "~/data-access/orders";
 import { type OrderType } from "~/types/order";
+import useAuthToken from "./useAuthToken";
 
 const useOrders = (userUUID?: string) => {
+  const getToken = useAuthToken();
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["orders", userUUID],
-    queryFn: () => getOrders(userUUID),
+    queryFn: () => getOrders(getToken, userUUID),
     enabled: !!userUUID,
   });
 
   const addOrderMutation = useMutation({
-    mutationFn: (order: OrderType) => addOrder(order),
+    mutationFn: (order: OrderType) => addOrder(getToken, order),
     onMutate: async () => {
       // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: ["orders"] });

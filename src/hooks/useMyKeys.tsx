@@ -4,18 +4,20 @@ import { resetHardwareId } from "~/data-access/keys";
 import { getOrders } from "~/data-access/orders";
 import { type OrderType } from "~/types/order";
 import { type ProductKeyType } from "~/types/productKey";
+import useAuthToken from "./useAuthToken";
 
 const useMyKeys = (userUUID?: string) => {
+  const getToken = useAuthToken();
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["keys", userUUID],
-    queryFn: () => getOrders(userUUID),
+    queryFn: () => getOrders(getToken, userUUID),
     enabled: !!userUUID,
   });
 
   const resetHardwareIdMutation = useMutation({
-    mutationFn: resetHardwareId,
+    mutationFn: (hardwareId: string) => resetHardwareId(getToken, hardwareId),
     onMutate: async (hardwareId) => {
       await queryClient.cancelQueries({ queryKey: ["keys", userUUID] });
       const previousKeys = queryClient.getQueryData<ProductKeyType[]>([

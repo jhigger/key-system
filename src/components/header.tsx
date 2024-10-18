@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import useAuthToken from "~/hooks/useAuthToken";
 import { supabase } from "~/lib/initSupabase";
 import { ACCOUNT_TABS } from "~/pages/account";
 import { ADMIN_TABS } from "~/pages/admin";
@@ -26,6 +27,7 @@ const BREAKPOINT = 768; // Adjust this breakpoint as needed
 
 // TODO: remove on production
 const DevRoleSwitch = () => {
+  const getToken = useAuthToken();
   const { user: clerkUser, isLoaded } = useUser();
   const { user, setUser } = useUserStore();
   const [isEnabled, setIsEnabled] = useState(user?.role === "admin");
@@ -36,12 +38,13 @@ const DevRoleSwitch = () => {
   }, [user?.role]);
 
   const handleChangeRole = async (checked: boolean) => {
-    if (!user) return;
+    const token = await getToken();
+    if (!user || !token) return;
     const newRole = checked ? "admin" : "user";
     setIsLoading(true);
     try {
       await axios.post("/api/role", { userId: clerkUser?.id, role: newRole });
-      await supabase
+      await supabase(token)
         .from("users")
         .update({ role: newRole })
         .eq("uuid", user.uuid);

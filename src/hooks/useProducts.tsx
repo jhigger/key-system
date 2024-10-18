@@ -11,16 +11,19 @@ import {
 import { type PricingType } from "~/types/pricing";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
+import useAuthToken from "./useAuthToken";
+
 const useProducts = () => {
+  const getToken = useAuthToken();
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["products"],
-    queryFn: getProducts,
+    queryFn: () => getProducts(getToken),
   });
 
   const addProductMutation = useMutation({
-    mutationFn: addProduct,
+    mutationFn: (product: ProductType) => addProduct(getToken, product),
     onMutate: async () => {
       // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: ["products"] });
@@ -54,7 +57,7 @@ const useProducts = () => {
 
   const editMutation = useMutation({
     mutationFn: async (product: ProductType) => {
-      return editProduct(product.uuid, product);
+      return editProduct(getToken, product.uuid, product);
     },
     onMutate: async (product) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -92,7 +95,7 @@ const useProducts = () => {
 
   const deleteProductMutation = useMutation({
     mutationFn: async (deletedUuid: string) => {
-      const result = deleteProduct(deletedUuid);
+      const result = deleteProduct(getToken, deletedUuid);
       return result;
     },
     onMutate: async (deletedUuid) => {
@@ -147,7 +150,7 @@ const useProducts = () => {
       productUuid: string;
       pricingUuid: string;
     }) => {
-      return deletePricing(productUuid, pricingUuid);
+      return deletePricing(getToken, productUuid, pricingUuid);
     },
     onMutate: async ({ productUuid, pricingUuid }) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
@@ -203,7 +206,7 @@ const useProducts = () => {
       pricingUuid: string;
       newPricing: PricingType;
     }) => {
-      return editPricing(pricingUuid, newPricing);
+      return editPricing(getToken, pricingUuid, newPricing);
     },
     onMutate: async ({ pricingUuid, newPricing }) => {
       await queryClient.cancelQueries({ queryKey: ["products"] });

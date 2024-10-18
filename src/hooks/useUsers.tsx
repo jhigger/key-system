@@ -10,20 +10,22 @@ import {
 } from "~/data-access/users";
 import { useUserStore } from "~/state/user.store";
 import { type UserType } from "~/types/user";
+import useAuthToken from "./useAuthToken";
 
 const useUsers = () => {
+  const getToken = useAuthToken();
   const { client, setActive, signOut } = useClerk();
   const { setUser } = useUserStore();
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: ["users"],
-    queryFn: getUsers,
+    queryFn: () => getUsers(getToken),
   });
 
   const changeRoleMutation = useMutation({
     mutationFn: async (user: UserType) => {
-      return changeUserRole(user);
+      return changeUserRole(getToken, user);
     },
     onMutate: async () => {
       // Cancel any outgoing refetches
@@ -57,7 +59,7 @@ const useUsers = () => {
   });
 
   const addUserMutation = useMutation({
-    mutationFn: addUser,
+    mutationFn: (user: UserType) => addUser(getToken, user),
     onSuccess: (newUser) => {
       queryClient.setQueryData<UserType[]>(["users"], (old) => {
         if (!old) return [newUser];
@@ -82,24 +84,26 @@ const useUsers = () => {
       return;
     }
 
-    const userByClerkId = await getUserByClerkId(user.id).catch(async () => {
-      if (!values?.username || !values?.email) {
-        toast.error("Username and email are required");
-        return;
-      }
-      const newUser = await addUser({
-        uuid: uuidv4(),
-        clerkId: user.id,
-        role: "user",
-        username: values.username,
-        email: values.email,
-        orders: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      toast.success("Registered successfully");
-      return newUser;
-    });
+    const userByClerkId = await getUserByClerkId(getToken, user.id).catch(
+      async () => {
+        if (!values?.username || !values?.email) {
+          toast.error("Username and email are required");
+          return;
+        }
+        const newUser = await addUser(getToken, {
+          uuid: uuidv4(),
+          clerkId: user.id,
+          role: "user",
+          username: values.username,
+          email: values.email,
+          orders: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        toast.success("Registered successfully");
+        return newUser;
+      },
+    );
 
     if (!userByClerkId) {
       toast.error("Something went wrong");
