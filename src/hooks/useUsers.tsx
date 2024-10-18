@@ -12,7 +12,7 @@ import { useUserStore } from "~/state/user.store";
 import { type UserType } from "~/types/user";
 
 const useUsers = () => {
-  const { client, setActive } = useClerk();
+  const { client, setActive, signOut } = useClerk();
   const { setUser } = useUserStore();
   const queryClient = useQueryClient();
 
@@ -103,6 +103,7 @@ const useUsers = () => {
 
     if (!userByClerkId) {
       toast.error("Something went wrong");
+      await signOut();
       return;
     }
 
@@ -119,6 +120,7 @@ const useUsers = () => {
 
     setUser(payload);
     await setActive({ session: sessionId });
+    window.location.href = "/";
   };
 
   return {

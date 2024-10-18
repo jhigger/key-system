@@ -58,7 +58,6 @@ export function LoginForm() {
       }
       if (completeSignIn.status === "complete") {
         await setClerkUser(signIn.createdSessionId, undefined);
-        window.location.href = "/";
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
