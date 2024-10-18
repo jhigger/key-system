@@ -57,7 +57,7 @@ export function LoginForm() {
         toast.error(completeSignIn.status);
       }
       if (completeSignIn.status === "complete") {
-        await setClerkUser(signIn.createdSessionId, undefined);
+        await setClerkUser(completeSignIn.createdSessionId, undefined);
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
