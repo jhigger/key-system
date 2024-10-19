@@ -139,6 +139,14 @@ const ProductList = () => {
     return <PleaseLoginToView />;
   }
 
+  if (products?.length === 0) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        No keys available
+      </div>
+    );
+  }
+
   return (
     <Card className="mx-auto w-full max-w-3xl">
       <CardHeader>
