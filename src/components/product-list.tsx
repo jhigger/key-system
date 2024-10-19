@@ -68,13 +68,14 @@ const ProductList = () => {
   });
 
   useEffect(() => {
-    const formattedProducts = products?.map((product) => ({
-      keys: [],
-      productName: product.name,
-    }));
-
-    replace(formattedProducts ?? []); // Set the initial products once
-  }, [replace, products]);
+    if (products && productFields.length === 0) {
+      const formattedProducts = products.map((product) => ({
+        keys: [],
+        productName: product.name,
+      }));
+      replace(formattedProducts);
+    }
+  }, [replace, products, productFields.length]);
 
   const onSubmit = (data: ProductFormValues) => {
     const filteredData = data.products.filter(
