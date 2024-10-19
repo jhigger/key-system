@@ -31,7 +31,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   } else {
     if (isAccountRoute(req)) {
-      return NextResponse.redirect(new URL("/admin", req.url));
+      return NextResponse.redirect(new URL("/account", req.url));
     }
   }
 
