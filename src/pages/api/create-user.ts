@@ -64,7 +64,6 @@ export default async function handler(
         .json({ error: error.message, details: error.details });
     }
 
-    console.log("User created successfully:", data);
     return res.status(200).json({ message: "User created successfully", data });
   } catch (error) {
     console.error("Unexpected error:", error);

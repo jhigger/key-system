@@ -45,8 +45,6 @@ export const getUserByClerkId = async (
     return null;
   }
 
-  console.log("Getting user by clerk ID", clerkId);
-
   const { data, error } = await supabase(token)
     .from("users")
     .select("*")
@@ -54,12 +52,10 @@ export const getUserByClerkId = async (
     .maybeSingle();
 
   if (error) {
-    console.log("Error getting user by clerk ID", error);
     throw new Error(`Failed to get user by clerk ID: ${error.message}`);
   }
 
   if (!data) {
-    console.log("No user found for clerk ID", clerkId);
     return null;
   }
 

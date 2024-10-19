@@ -9,9 +9,6 @@ export default async function handler(
   if (req.method === "POST") {
     const { clerkId, role } = req.body as { clerkId: string; role: RoleType };
 
-    console.log("clerkId", clerkId);
-    console.log("role", role);
-
     const { publicMetadata } = await clerkClient().users.updateUserMetadata(
       clerkId,
       {
