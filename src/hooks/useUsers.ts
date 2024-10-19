@@ -1,6 +1,5 @@
 import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/router";
 import { toast } from "sonner";
 import {
   addUser,
@@ -15,7 +14,6 @@ const useUsers = () => {
   const getToken = useAuthToken();
   const { setActive } = useClerk();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const query = useQuery({
     queryKey: ["users"],
@@ -75,7 +73,6 @@ const useUsers = () => {
 
   const setSession = async (sessionId: string | null) => {
     await setActive({ session: sessionId });
-    await router.push("/");
   };
 
   const fetchUser = async (clerkId: string) => {
