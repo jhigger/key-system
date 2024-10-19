@@ -1,6 +1,7 @@
 import { useSignUp } from "@clerk/nextjs";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios, { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -70,7 +71,25 @@ const VerificationForm = ({ values }: VerificationFormProps) => {
         toast.error(completeSignUp.status);
       }
       if (completeSignUp.status === "complete") {
-        await setSession(signUp.createdSessionId);
+        if (!completeSignUp.createdUserId) {
+          console.error("No created user id", completeSignUp.createdUserId);
+          throw new Error();
+        }
+        await setSession(completeSignUp.createdSessionId);
+        await axios
+          .post("/api/create-user", {
+            clerkUserId: completeSignUp.createdUserId,
+            email: values.email,
+            username: values.username,
+          })
+          .catch((err) => {
+            if (err instanceof AxiosError) {
+              console.error(
+                "API Error creating user",
+                JSON.stringify(err.response),
+              );
+            }
+          });
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
@@ -95,7 +114,7 @@ const VerificationForm = ({ values }: VerificationFormProps) => {
         password: values.password,
       });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      toast.success("A verification code has been sent to your email");
+      toast.success(`A verification code has been sent to ${values.email}`);
       setResendTimer(60); // Set a 60-second cooldown
     } catch (err) {
       if (isClerkAPIResponseError(err)) {
