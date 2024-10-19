@@ -41,6 +41,10 @@ export const getUserByClerkId = async (
     throw new Error("No token provided");
   }
 
+  if (!clerkId) {
+    return null;
+  }
+
   const { data, error } = await supabase(token)
     .from("users")
     .select("*")

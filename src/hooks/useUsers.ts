@@ -1,12 +1,7 @@
 import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  addUser,
-  changeUserRole,
-  getUserByClerkId,
-  getUsers,
-} from "~/data-access/users";
+import { addUser, changeUserRole, getUsers } from "~/data-access/users";
 import { type UserType } from "~/types/user";
 import useAuthToken from "./useAuthToken";
 
@@ -75,14 +70,6 @@ const useUsers = () => {
     await setActive({ session: sessionId });
   };
 
-  const fetchUser = async (clerkId: string) => {
-    const user = await getUserByClerkId(getToken, clerkId);
-    if (user) {
-      queryClient.setQueryData(["user", clerkId], user);
-    }
-    return user;
-  };
-
   return {
     query,
     mutation: {
@@ -90,7 +77,6 @@ const useUsers = () => {
       addUser: addUserMutation.mutate,
     },
     setSession,
-    fetchUser,
   };
 };
 

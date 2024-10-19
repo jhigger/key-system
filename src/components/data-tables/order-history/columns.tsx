@@ -90,7 +90,6 @@ export const getColumns = ({
     cell: ({ row }) => <VariantCell row={row} />,
     filterFn: (row, id, value: OrderType["productKeySnapshot"]) => {
       const duration = row.original.productKeySnapshot.pricing.duration;
-      console.log(value, duration);
       return value.pricing.duration === duration;
     },
     sortingFn: (rowA, rowB) => sortByVariant(rowA, rowB, products ?? []),

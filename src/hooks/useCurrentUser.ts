@@ -1,39 +1,32 @@
 import { useUser } from "@clerk/nextjs";
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { getUserByClerkId } from "~/data-access/users";
 import { useUserStore } from "~/state/user.store";
-import useUsers from "./useUsers";
+import useAuthToken from "./useAuthToken";
 
 export const useCurrentUser = () => {
+  const getToken = useAuthToken();
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
-  const { fetchUser } = useUsers();
-  const { user, setUser } = useUserStore();
-  const [isLoading, setIsLoading] = useState(!user);
-
-  const fetchUserData = useCallback(async () => {
-    if (clerkUser && !user) {
-      try {
-        console.log("Fetching user data");
-        setIsLoading(true);
-        const fetchedUser = await fetchUser(clerkUser.id);
-        if (fetchedUser) {
-          console.log("User data fetched", fetchedUser);
-          setUser(fetchedUser);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    } else if (clerkUser && user) {
-      setIsLoading(false);
-    }
-  }, [user, clerkUser, fetchUser, setUser]);
+  const { setUser } = useUserStore();
+  const [clerkId, setClerkId] = useState("");
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user", clerkId],
+    queryFn: () => getUserByClerkId(getToken, clerkId),
+    enabled: !!clerkId,
+  });
 
   useEffect(() => {
-    if (isClerkLoaded) {
-      void fetchUserData();
+    if (clerkUser) {
+      setClerkId(clerkUser.id);
     }
-  }, [isClerkLoaded, fetchUserData]);
+  }, [clerkUser]);
+
+  useEffect(() => {
+    if (user) {
+      setUser(user);
+    }
+  }, [user, setUser]);
 
   return { user, isLoading: isLoading || !isClerkLoaded };
 };

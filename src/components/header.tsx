@@ -22,7 +22,7 @@ const BREAKPOINT = 768; // Adjust this breakpoint as needed
 
 const NavigationItems = () => {
   const queryClient = useQueryClient();
-  const { signOut } = useClerk();
+  const { user: clerkUser, signOut } = useClerk();
   const { user, logout } = useUserStore();
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -33,11 +33,13 @@ const NavigationItems = () => {
   };
 
   const handleLogout = async () => {
-    if (!user) {
+    if (!clerkUser) {
       return;
     }
     await signOut({ redirectUrl: "/login" });
-    await queryClient.invalidateQueries({ queryKey: ["user", user.clerkId] });
+    await queryClient.invalidateQueries({
+      queryKey: ["user", clerkUser.id],
+    });
     logout();
   };
 
