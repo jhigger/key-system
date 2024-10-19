@@ -1,5 +1,6 @@
 import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { toast } from "sonner";
 import { addUser, changeUserRole, getUsers } from "~/data-access/users";
 import { type UserType } from "~/types/user";
@@ -16,7 +17,11 @@ const useUsers = () => {
   });
 
   const changeRoleMutation = useMutation({
-    mutationFn: async (user: UserType) => {
+    mutationFn: async (user: Pick<UserType, "uuid" | "clerkId" | "role">) => {
+      await axios.post("/api/role", {
+        clerkId: user.clerkId,
+        role: user.role,
+      });
       return changeUserRole(getToken, user);
     },
     onMutate: async () => {

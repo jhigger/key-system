@@ -112,7 +112,7 @@ export const addUser = async (
 
 export const changeUserRole = async (
   getToken: () => Promise<string | null>,
-  user: UserType,
+  user: Pick<UserType, "uuid" | "role">,
 ): Promise<UserType> => {
   const token = await getToken();
   if (!token) {

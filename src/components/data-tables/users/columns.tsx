@@ -28,7 +28,12 @@ const RoleCell: React.FC<{
       <Select
         value={row.original.role}
         onValueChange={(newRole) => {
-          changeRole({ ...row.original, role: newRole as RoleType });
+          console.log("row", row.original);
+          changeRole({
+            uuid: row.original.uuid,
+            clerkId: row.original.clerkId,
+            role: newRole as RoleType,
+          });
         }}
         disabled={currentUser?.uuid === row.original.uuid}
       >

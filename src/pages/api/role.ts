@@ -7,12 +7,23 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   if (req.method === "POST") {
-    const { userId, role } = req.body as { userId: string; role: RoleType };
+    const { clerkId, role } = req.body as { clerkId: string; role: RoleType };
 
-    await clerkClient().users.updateUserMetadata(userId, {
-      publicMetadata: { role },
-    });
-    res.status(200).json({ name: "John Doe" });
+    console.log("clerkId", clerkId);
+    console.log("role", role);
+
+    const { publicMetadata } = await clerkClient().users.updateUserMetadata(
+      clerkId,
+      {
+        publicMetadata: { role },
+      },
+    );
+
+    if (!publicMetadata.role) {
+      res.status(500).json({ message: "Failed to change role" });
+    }
+
+    res.status(200).json({ message: "Changed role successfully" });
   } else {
     res.status(405).json({ message: "Method not allowed" });
   }
