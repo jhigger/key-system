@@ -6,6 +6,7 @@ import Users from "~/components/data-tables/users";
 import RootLayout from "~/components/layouts/root-layout";
 import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
 import Loader from "~/components/loader";
+import PleaseLoginToView from "~/components/please-login-to-view";
 import { useCurrentUser } from "~/hooks/useCurrentUser";
 
 export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
@@ -30,7 +31,7 @@ export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
 ] as const;
 
 const Admin = () => {
-  const { isLoading } = useCurrentUser();
+  const { isLoading, user } = useCurrentUser();
 
   if (isLoading) {
     return (
@@ -38,6 +39,10 @@ const Admin = () => {
         <Loader />
       </RootLayout>
     );
+  }
+
+  if (!user) {
+    return <PleaseLoginToView />;
   }
 
   return (

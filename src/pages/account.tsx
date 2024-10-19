@@ -5,6 +5,7 @@ import OrderHistory from "~/components/data-tables/order-history";
 import RootLayout from "~/components/layouts/root-layout";
 import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
 import Loader from "~/components/loader";
+import PleaseLoginToView from "~/components/please-login-to-view";
 import { useCurrentUser } from "~/hooks/useCurrentUser";
 
 export const ACCOUNT_TABS: TabType[] = [
@@ -23,7 +24,7 @@ export const ACCOUNT_TABS: TabType[] = [
 ] as const;
 
 const Account = () => {
-  const { isLoading } = useCurrentUser();
+  const { isLoading, user } = useCurrentUser();
 
   if (isLoading) {
     return (
@@ -31,6 +32,10 @@ const Account = () => {
         <Loader />
       </RootLayout>
     );
+  }
+
+  if (!user) {
+    return <PleaseLoginToView />;
   }
 
   return (
