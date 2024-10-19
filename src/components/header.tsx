@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ACCOUNT_TABS } from "~/pages/account";
 import { ADMIN_TABS } from "~/pages/admin";
+import { RESELLER_TABS } from "~/pages/reseller";
 import { useUserStore } from "~/state/user.store";
 import { Button } from "./ui/button";
 import {
@@ -86,7 +87,7 @@ const NavigationItems = () => {
           <DropdownMenuTrigger asChild>
             <Button
               variant={
-                ["/account", "/admin"].includes(pathname)
+                ["/account", "/admin", "/reseller"].includes(pathname)
                   ? "secondary"
                   : "ghost"
               }
@@ -109,6 +110,20 @@ const NavigationItems = () => {
                     asChild
                   >
                     <Link href={`/admin#${tab.value}`}>
+                      {tab.label} {tab.icon}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </>
+            ) : user?.role === "reseller" ? (
+              <>
+                {RESELLER_TABS.map((tab) => (
+                  <DropdownMenuItem
+                    key={tab.value}
+                    className="flex justify-between gap-4"
+                    asChild
+                  >
+                    <Link href={`/reseller#${tab.value}`}>
                       {tab.label} {tab.icon}
                     </Link>
                   </DropdownMenuItem>

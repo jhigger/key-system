@@ -8,8 +8,13 @@ import { type RoleType } from "./types/user";
 
 const isAuthRoute = createRouteMatcher(["/login(.*)", "/register(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isResellerRoute = createRouteMatcher(["/reseller(.*)"]);
 const isAccountRoute = createRouteMatcher(["/account(.*)"]);
-const isProtectedRoute = createRouteMatcher(["/admin(.*)", "/account(.*)"]);
+const isProtectedRoute = createRouteMatcher([
+  "/admin(.*)",
+  "/reseller(.*)",
+  "/account(.*)",
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = auth();
@@ -25,14 +30,17 @@ export default clerkMiddleware(async (auth, req) => {
   const user = await clerkClient().users.getUser(userId);
   const userRole = (user.publicMetadata.role as RoleType) ?? "user";
 
-  if (userRole !== "admin") {
-    if (isAdminRoute(req)) {
-      return NextResponse.redirect(new URL("/", req.url));
+  if (userRole !== "reseller" && isResellerRoute(req)) {
+    return NextResponse.redirect(new URL("/", req.url));
+  } else if (userRole !== "admin" && isAdminRoute(req)) {
+    return NextResponse.redirect(new URL("/", req.url));
+  } else if (userRole !== "user" && isAccountRoute(req)) {
+    if (userRole === "admin") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    } else if (userRole === "reseller") {
+      return NextResponse.redirect(new URL("/reseller", req.url));
     }
-  } else {
-    if (isAccountRoute(req)) {
-      return NextResponse.redirect(new URL("/account", req.url));
-    }
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   if (isAuthRoute(req)) {
