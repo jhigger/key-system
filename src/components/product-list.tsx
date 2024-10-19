@@ -315,10 +315,21 @@ const KeyRow = ({
     },
     newValue: number,
   ) => {
-    const maxAllowedQuantity =
-      remainingStock[currentPricingUuid] ?? 0 + field.value;
-    const validValue = Math.min(Math.max(1, newValue), maxAllowedQuantity);
-    field.onChange(validValue);
+    const currentStock = remainingStock[currentPricingUuid] ?? 0;
+    const maxAllowedQuantity = currentStock + field.value;
+
+    // Check if we're increasing the value
+    if (newValue > field.value) {
+      // Only allow increase if there's remaining stock
+      if (currentStock > 0) {
+        const validValue = Math.min(newValue, maxAllowedQuantity);
+        field.onChange(validValue);
+      }
+    } else {
+      // For decreasing or setting to the same value, use the original logic
+      const validValue = Math.max(1, newValue);
+      field.onChange(validValue);
+    }
   };
 
   const handleRemove = () => {
