@@ -1,4 +1,3 @@
-import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { useEffect } from "react";
@@ -11,6 +10,7 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useCurrentUser } from "~/hooks/useCurrentUser";
 import useProducts from "~/hooks/useProducts";
 import { formatDuration, formatPrice } from "~/lib/utils";
 import { type ProductType } from "~/types/product";
@@ -47,10 +47,10 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
-  const { user, isLoaded } = useUser();
+  const { user, isLoading: isUserLoading } = useCurrentUser();
 
   const {
-    query: { data: products, isLoading },
+    query: { data: products, isLoading: isProductsLoading },
     query: { data: productsData },
   } = useProducts();
 
@@ -130,7 +130,7 @@ const ProductList = () => {
     }, 0);
   };
 
-  if (isLoading || !isLoaded) {
+  if (isUserLoading || isProductsLoading) {
     return <Loader />;
   }
 
