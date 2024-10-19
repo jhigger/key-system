@@ -1,17 +1,12 @@
-import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/nextjs";
-import axios from "axios";
+import { SignedIn, SignedOut, useClerk } from "@clerk/nextjs";
 import { CircleUser, LogOut, Moon, Store, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import useAuthToken from "~/hooks/useAuthToken";
-import { supabase } from "~/lib/initSupabase";
 import { ACCOUNT_TABS } from "~/pages/account";
 import { ADMIN_TABS } from "~/pages/admin";
 import { useUserStore } from "~/state/user.store";
-import Loader from "./loader";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -21,52 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Switch } from "./ui/switch";
 
 const BREAKPOINT = 768; // Adjust this breakpoint as needed
-
-// TODO: remove on production
-const DevRoleSwitch = () => {
-  const getToken = useAuthToken();
-  const { user: clerkUser, isLoaded } = useUser();
-  const { user, setUser } = useUserStore();
-  const [isEnabled, setIsEnabled] = useState(user?.role === "admin");
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    setIsEnabled(user?.role === "admin");
-  }, [user?.role]);
-
-  const handleChangeRole = async (checked: boolean) => {
-    const token = await getToken();
-    if (!user || !token) return;
-    const newRole = checked ? "admin" : "user";
-    setIsLoading(true);
-    try {
-      await axios.post("/api/role", { userId: clerkUser?.id, role: newRole });
-      await supabase(token)
-        .from("users")
-        .update({ role: newRole })
-        .eq("uuid", user.uuid);
-      setIsEnabled(checked);
-      setUser({ ...user, role: newRole });
-      toast.success(
-        `Role updated to ${newRole.charAt(0).toUpperCase() + newRole.slice(1)}`,
-      );
-    } catch (error) {
-      toast.error("Failed to update role", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!isLoaded || !user) return null;
-  if (isLoading) return <Loader />;
-
-  return <Switch checked={isEnabled} onCheckedChange={handleChangeRole} />;
-};
 
 const NavigationItems = () => {
   const { signOut } = useClerk();
@@ -201,7 +152,6 @@ const Header = () => {
           </div>
           <h1 className="ml-3 text-xl">CTX</h1>
         </Link>
-        <DevRoleSwitch />
         <nav className="flex flex-wrap items-center justify-center gap-2 md:ml-auto">
           <NavigationItems />
         </nav>

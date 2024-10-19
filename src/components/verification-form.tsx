@@ -42,7 +42,7 @@ type VerificationFormProps = {
 
 const VerificationForm = ({ values }: VerificationFormProps) => {
   const { isLoaded, signUp } = useSignUp();
-  const { setClerkUser } = useUsers();
+  const { setSession } = useUsers();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -70,10 +70,7 @@ const VerificationForm = ({ values }: VerificationFormProps) => {
         toast.error(completeSignUp.status);
       }
       if (completeSignUp.status === "complete") {
-        await setClerkUser(signUp.createdSessionId, {
-          username: values.username,
-          email: values.email,
-        });
+        await setSession(signUp.createdSessionId);
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {

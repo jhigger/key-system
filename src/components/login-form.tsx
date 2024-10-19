@@ -32,7 +32,7 @@ const formSchema = z.object({
 
 export function LoginForm() {
   const { signIn, isLoaded: isSignInLoaded } = useSignIn();
-  const { setClerkUser } = useUsers();
+  const { setSession } = useUsers();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,7 +57,7 @@ export function LoginForm() {
         toast.error(completeSignIn.status);
       }
       if (completeSignIn.status === "complete") {
-        await setClerkUser(completeSignIn.createdSessionId, undefined);
+        await setSession(completeSignIn.createdSessionId);
       }
     } catch (err) {
       if (isClerkAPIResponseError(err)) {

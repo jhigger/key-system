@@ -1,17 +1,15 @@
-import { useUser } from "@clerk/nextjs";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import RootLayout from "~/components/layouts/root-layout";
 import Loader from "~/components/loader";
 import ProductList from "~/components/product-list";
-import { useUserStore } from "~/state/user.store";
+import { Button } from "~/components/ui/button";
+import { useCurrentUser } from "~/hooks/useCurrentUser";
 
 export default function Home() {
-  const { user: clerkUser, isLoaded } = useUser();
-  const { user } = useUserStore();
-  const router = useRouter();
+  const { user, isLoading } = useCurrentUser();
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <RootLayout>
         <Loader />
@@ -19,17 +17,12 @@ export default function Home() {
     );
   }
 
-  if (!clerkUser) {
-    router.push("/login");
-    return null;
-  }
-
-  // TODO: remove on production
   if (user?.role === "admin") {
-    router.push("/admin");
     return (
       <RootLayout>
-        <Loader />
+        <Button variant={"link"} className="underline" asChild>
+          <Link href="/admin">Go to tables</Link>
+        </Button>
       </RootLayout>
     );
   }

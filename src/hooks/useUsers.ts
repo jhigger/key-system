@@ -1,22 +1,21 @@
 import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/router";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
 import {
   addUser,
   changeUserRole,
   getUserByClerkId,
   getUsers,
 } from "~/data-access/users";
-import { useUserStore } from "~/state/user.store";
 import { type UserType } from "~/types/user";
 import useAuthToken from "./useAuthToken";
 
 const useUsers = () => {
   const getToken = useAuthToken();
-  const { client, setActive, signOut } = useClerk();
-  const { setUser } = useUserStore();
+  const { setActive } = useClerk();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const query = useQuery({
     queryKey: ["users"],
@@ -74,57 +73,17 @@ const useUsers = () => {
     },
   });
 
-  const setClerkUser = async (
-    sessionId: string | null,
-    values: { username: string; email: string } | undefined,
-  ) => {
-    const user = client.activeSessions[0]?.user;
-    if (!user) {
-      toast.error("User not found");
-      return;
-    }
-
-    const userByClerkId = await getUserByClerkId(getToken, user.id).catch(
-      async () => {
-        if (!values?.username || !values?.email) {
-          toast.error("Username and email are required");
-          return;
-        }
-        const newUser = await addUser(getToken, {
-          uuid: uuidv4(),
-          clerkId: user.id,
-          role: "user",
-          username: values.username,
-          email: values.email,
-          orders: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-        toast.success("Registered successfully");
-        return newUser;
-      },
-    );
-
-    if (!userByClerkId) {
-      toast.error("Something went wrong");
-      await signOut();
-      return;
-    }
-
-    const payload: UserType = {
-      uuid: userByClerkId?.uuid,
-      clerkId: user.id,
-      role: userByClerkId.role,
-      username: userByClerkId.username,
-      email: userByClerkId.email,
-      orders: userByClerkId.orders,
-      createdAt: userByClerkId.createdAt,
-      updatedAt: userByClerkId.updatedAt,
-    };
-
-    setUser(payload);
+  const setSession = async (sessionId: string | null) => {
     await setActive({ session: sessionId });
-    window.location.href = "/";
+    await router.push("/");
+  };
+
+  const fetchUser = async (clerkId: string) => {
+    const user = await getUserByClerkId(getToken, clerkId);
+    if (user) {
+      queryClient.setQueryData(["user", clerkId], user);
+    }
+    return user;
   };
 
   return {
@@ -133,7 +92,8 @@ const useUsers = () => {
       changeRole: changeRoleMutation.mutate,
       addUser: addUserMutation.mutate,
     },
-    setClerkUser,
+    setSession,
+    fetchUser,
   };
 };
 

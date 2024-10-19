@@ -3,11 +3,7 @@ import Footer from "../footer";
 import Header from "../header";
 import GridPattern from "../ui/grid-pattern";
 
-type RootLayoutProps = {
-  children: React.ReactNode;
-};
-
-const RootLayout = ({ children }: RootLayoutProps) => {
+const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="relative flex h-full min-h-screen flex-col items-center bg-background text-foreground [&>*]:w-full">
       <Header />

@@ -1,14 +1,12 @@
-import { useUser } from "@clerk/nextjs";
 import { KeyRound, PackageSearch, UserSearch } from "lucide-react";
 import Head from "next/head";
-import { useRouter } from "next/navigation";
 import ProductKeys from "~/components/data-tables/product-keys";
 import Products from "~/components/data-tables/products";
 import Users from "~/components/data-tables/users";
 import RootLayout from "~/components/layouts/root-layout";
 import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
 import Loader from "~/components/loader";
-import { useUserStore } from "~/state/user.store";
+import { useCurrentUser } from "~/hooks/useCurrentUser";
 
 export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
   {
@@ -32,25 +30,9 @@ export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
 ] as const;
 
 const Admin = () => {
-  const { user: clerkUser, isLoaded } = useUser();
-  const { user } = useUserStore();
-  const router = useRouter();
+  const { isLoading } = useCurrentUser();
 
-  if (!isLoaded) {
-    return (
-      <RootLayout>
-        <Loader />
-      </RootLayout>
-    );
-  }
-
-  if (!clerkUser) {
-    return null;
-  }
-
-  // TODO: remove on production
-  if (user?.role !== "admin") {
-    router.push("/");
+  if (isLoading) {
     return (
       <RootLayout>
         <Loader />
