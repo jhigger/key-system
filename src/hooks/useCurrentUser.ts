@@ -24,7 +24,7 @@ export const useCurrentUser = () => {
       } finally {
         setIsLoading(false);
       }
-    } else if (clerkUser &&   user) {
+    } else if (clerkUser && user) {
       setIsLoading(false);
     }
   }, [user, clerkUser, fetchUser, setUser]);
