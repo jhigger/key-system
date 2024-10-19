@@ -1,4 +1,5 @@
 import { SignedIn, SignedOut, useClerk } from "@clerk/nextjs";
+import { useQueryClient } from "@tanstack/react-query";
 import { CircleUser, LogOut, Moon, Store, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -20,6 +21,7 @@ import {
 const BREAKPOINT = 768; // Adjust this breakpoint as needed
 
 const NavigationItems = () => {
+  const queryClient = useQueryClient();
   const { signOut } = useClerk();
   const { user, logout } = useUserStore();
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -31,7 +33,11 @@ const NavigationItems = () => {
   };
 
   const handleLogout = async () => {
+    if (!user) {
+      return;
+    }
     await signOut({ redirectUrl: "/login" });
+    await queryClient.invalidateQueries({ queryKey: ["user", user.clerkId] });
     logout();
   };
 
