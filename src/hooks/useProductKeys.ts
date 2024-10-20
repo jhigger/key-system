@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  addProductKey,
+  addProductKeys,
   deleteProductKey,
   editProductKey,
   getAvailableProductKeys,
@@ -18,9 +18,9 @@ const useProductKeys = () => {
     queryFn: () => getAvailableProductKeys(getToken),
   });
 
-  const addProductKeyMutation = useMutation({
-    mutationFn: (productKey: ProductKeyType) =>
-      addProductKey(getToken, productKey),
+  const addProductKeysMutation = useMutation({
+    mutationFn: (productKeys: ProductKeyType[]) =>
+      addProductKeys(getToken, productKeys),
     onMutate: async () => {
       // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({ queryKey: ["productKeys"] });
@@ -37,15 +37,15 @@ const useProductKeys = () => {
       if (context?.previousProductKeys) {
         queryClient.setQueryData(["productKeys"], context?.previousProductKeys);
       }
-      toast.error(`Failed to add product key: ${error.message}`);
+      toast.error(`Failed to add product key(s): ${error.message}`);
     },
     onSuccess: (newProductKey) => {
       // Optimistically update to the new value
       queryClient.setQueryData<ProductKeyType[]>(["productKeys"], (old) => {
-        if (!old) return [newProductKey];
-        return [...old, newProductKey];
+        if (!old) return newProductKey;
+        return [...old, ...newProductKey];
       });
-      toast.success("Product key added successfully");
+      toast.success("Product key(s) added successfully");
     },
     onSettled: async () => {
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
@@ -113,7 +113,7 @@ const useProductKeys = () => {
   return {
     query,
     mutation: {
-      addProductKey: addProductKeyMutation.mutate,
+      addProductKeys: addProductKeysMutation.mutate,
       editProductKey: (productKey: ProductKeyType) => {
         const currentKeys = queryClient.getQueryData<ProductKeyType[]>([
           "productKeys",

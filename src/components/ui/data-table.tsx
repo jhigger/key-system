@@ -33,7 +33,7 @@ import DataTableToolBar from "../data-table-tool-bar";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  handleAdd?: (newRow: ProductType | ProductKeyType) => Promise<void>;
+  handleAdd?: (newRow: ProductType | ProductKeyType[]) => Promise<void>;
 }
 
 declare module "@tanstack/react-table" {

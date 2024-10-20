@@ -100,50 +100,55 @@ export const editProductKey = async (
   };
 };
 
-export const addProductKey = async (
+export const addProductKeys = async (
   getToken: () => Promise<string | null>,
-  productKey: ProductKeyType,
-): Promise<ProductKeyType> => {
+  productKeys: ProductKeyType[],
+): Promise<ProductKeyType[]> => {
   const token = await getToken();
   if (!token) {
     throw new Error("No token provided");
   }
 
+  if (productKeys.length === 0 || !productKeys[0]) {
+    throw new Error("No product key(s) provided");
+  }
+
   const { data, error } = await supabase(token)
     .from("product_keys")
-    .insert({
-      product_id: productKey.productId,
-      key: productKey.key,
-      expiry: productKey.expiry,
-      hardware_id: productKey.hardwareId,
-      owner: productKey.owner,
-      pricing_id: productKey.pricingId,
-    })
-    .select()
-    .single();
+    .insert(
+      productKeys.map((productKey) => ({
+        product_id: productKey.productId,
+        key: productKey.key,
+        expiry: productKey.expiry,
+        hardware_id: productKey.hardwareId,
+        owner: productKey.owner,
+        pricing_id: productKey.pricingId,
+      })),
+    )
+    .select();
 
   if (error) {
-    throw new Error("Failed to add product key");
+    throw new Error("Failed to add product key(s)");
   }
 
   await updateProductStock(
     getToken,
-    productKey.productId,
-    productKey.pricingId,
-    1,
+    productKeys[0].productId,
+    productKeys[0].pricingId,
+    productKeys.length,
   );
 
-  return {
-    uuid: data.uuid,
-    productId: data.product_id,
-    key: data.key,
-    expiry: data.expiry,
-    hardwareId: data.hardware_id,
-    owner: data.owner,
-    pricingId: data.pricing_id,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-  };
+  return data.map((productKey) => ({
+    uuid: productKey.uuid,
+    productId: productKey.product_id,
+    key: productKey.key,
+    expiry: productKey.expiry,
+    hardwareId: productKey.hardware_id,
+    owner: productKey.owner,
+    pricingId: productKey.pricing_id,
+    createdAt: productKey.created_at,
+    updatedAt: productKey.updated_at,
+  }));
 };
 
 export const deleteProductKey = async (

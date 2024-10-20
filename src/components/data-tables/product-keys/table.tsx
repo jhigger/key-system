@@ -8,7 +8,7 @@ import { getColumns } from "./columns";
 const ProductKeysTable = () => {
   const {
     query: { data: productKeys },
-    mutation: { addProductKey },
+    mutation: { addProductKeys },
   } = useProductKeys();
   const {
     query: { data: products },
@@ -20,7 +20,7 @@ const ProductKeysTable = () => {
     <DataTable
       columns={columns}
       data={productKeys ?? []}
-      handleAdd={async (newRow) => addProductKey(newRow as ProductKeyType)}
+      handleAdd={async (newRow) => addProductKeys(newRow as ProductKeyType[])}
     />
   );
 };

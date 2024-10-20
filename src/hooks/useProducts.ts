@@ -138,7 +138,9 @@ const useProducts = () => {
       await queryClient.invalidateQueries({ queryKey: ["productKeys"] });
     },
     onSuccess: () => {
-      toast.success("Product deleted successfully");
+      toast.success("Product deleted successfully", {
+        description: "Associated product keys are deleted as well",
+      });
     },
   });
 

@@ -30,7 +30,7 @@ import { Switch } from "./ui/switch";
 
 type DataTableToolBarProps<TData> = {
   table: TableType<TData>;
-  handleAdd?: (newRow: ProductType | ProductKeyType) => Promise<void>;
+  handleAdd?: (newRow: ProductType | ProductKeyType[]) => Promise<void>;
 };
 
 const DataTableToolBar = <TData,>({
