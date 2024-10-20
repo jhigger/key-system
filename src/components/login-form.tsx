@@ -100,7 +100,7 @@ export function LoginForm() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="extinct@example.com"
+                      placeholder="email@example.com"
                       {...field}
                     />
                   </FormControl>

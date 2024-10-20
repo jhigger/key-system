@@ -123,7 +123,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="extinct" {...field} />
+                    <Input placeholder="username" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -138,7 +138,7 @@ export function RegisterForm() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="extinct@example.com"
+                      placeholder="email@example.com"
                       {...field}
                     />
                   </FormControl>
