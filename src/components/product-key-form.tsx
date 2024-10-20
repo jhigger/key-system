@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle, useRef, useCallback } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import * as z from "zod";
@@ -81,7 +81,49 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
       name: "keys",
     });
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
+    const validateProductKey = useCallback(
+      async (key: string, index: number) => {
+        // Check if the key already exists in the form
+        const existingKeys = form.getValues("keys").map((k) => k.key.trim());
+        if (
+          existingKeys.filter((k, i) => i !== index && k === key).length > 0
+        ) {
+          return "This key already exists in the form";
+        }
+
+        // Check if the key already exists in the database
+        const existingDbKeys = productKeys?.map((k) => k.key) ?? [];
+        if (existingDbKeys.includes(key)) {
+          return "This key already exists in the database";
+        }
+
+        return true;
+      },
+      [form, productKeys],
+    );
+
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+      // Validate all keys before submission
+      const keyValidationPromises = values.keys.map((keyObj, index) =>
+        validateProductKey(keyObj.key, index),
+      );
+      const keyValidationResults = await Promise.all(keyValidationPromises);
+
+      const hasInvalidKeys = keyValidationResults.some(
+        (result) => result !== true,
+      );
+      if (hasInvalidKeys) {
+        keyValidationResults.forEach((result, index) => {
+          if (result !== true) {
+            form.setError(`keys.${index}.key`, {
+              type: "manual",
+              message: result,
+            });
+          }
+        });
+        return;
+      }
+
       const product = products?.find((p) => p.name === values.product);
 
       if (product === undefined) return;
@@ -266,25 +308,19 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
                               {...field}
                               className="w-full"
                               onPaste={(e) => handlePaste(e, index)}
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                 field.onChange(e);
                                 const currentKey = e.target.value;
-                                const existingKeys = new Set(
-                                  form
-                                    .getValues("keys")
-                                    .map((k, i) =>
-                                      i !== index ? k.key.trim() : "",
-                                    ),
-                                );
-                                const existingDbKeys = new Set(
-                                  productKeys?.map((k) => k.key) ?? [],
-                                );
-                                validateKey(
-                                  index,
-                                  currentKey,
-                                  existingKeys,
-                                  existingDbKeys,
-                                );
+                                const validationResult =
+                                  await validateProductKey(currentKey, index);
+                                if (validationResult !== true) {
+                                  form.setError(`keys.${index}.key`, {
+                                    type: "manual",
+                                    message: validationResult,
+                                  });
+                                } else {
+                                  form.clearErrors(`keys.${index}.key`);
+                                }
                               }}
                             />
                           </div>

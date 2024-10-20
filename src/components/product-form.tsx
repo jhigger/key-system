@@ -171,8 +171,9 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
                     {...field}
                     ref={firstInputRef}
                     disabled={isEditing}
-                    onBlur={async () => {
-                      const result = await validateProductName(field.value);
+                    onChange={async (e) => {
+                      field.onChange(e);
+                      const result = await validateProductName(e.target.value);
                       if (result !== true) {
                         form.setError("name", {
                           type: "manual",
