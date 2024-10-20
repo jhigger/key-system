@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 type UIState = {
   editMode: boolean;
+  setEditMode: (mode: boolean) => void;
   toggleEditMode: () => void;
   pageSize: number;
   setPageSize: (size: number) => void;
@@ -12,6 +13,7 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       editMode: false,
+      setEditMode: (mode: boolean) => set({ editMode: mode }),
       toggleEditMode: () => set((state) => ({ editMode: !state.editMode })),
       pageSize: 10,
       setPageSize: (size: number) => set({ pageSize: size }),
