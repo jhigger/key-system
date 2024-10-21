@@ -37,5 +37,6 @@ const config = {
     ],
     "@next/next/no-img-element": "off",
   },
+  ignorePatterns: ["database.types.ts"],
 };
 module.exports = config;
