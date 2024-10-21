@@ -12,19 +12,15 @@ const ProductsTable = () => {
   } = useProducts();
   const { user } = useCurrentUser();
 
-  const columns = useMemo(() => {
-    if (!user) return null;
-    const columns = getColumns();
-    return user.role !== "admin"
-      ? columns.slice(0, columns.length - 1)
-      : columns;
-  }, [user]);
+  const columns = useMemo(() => getColumns(), []);
 
-  if (!columns) return null;
+  if (!user) return null;
 
   return (
     <DataTable
-      columns={columns}
+      columns={
+        user.role !== "admin" ? columns.slice(0, columns.length - 1) : columns
+      }
       data={products ?? []}
       handleAdd={async (newRow) => addProduct(newRow as ProductType)}
     />

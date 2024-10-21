@@ -12,18 +12,15 @@ const CategoriesTable = () => {
   } = useCategories();
   const { user } = useCurrentUser();
 
-  const columns = useMemo(() => {
-    if (!user) return null;
-    return user.role !== "admin"
-      ? getColumns().slice(0, getColumns().length - 1)
-      : getColumns();
-  }, [user]);
+  const columns = useMemo(() => getColumns(), []);
 
-  if (!columns) return null;
+  if (!user) return null;
 
   return (
     <DataTable
-      columns={columns}
+      columns={
+        user.role !== "admin" ? columns.slice(0, columns.length - 1) : columns
+      }
       data={categories ?? []}
       handleAdd={async (newRow) => addCategory(newRow as CategoryType)}
     />

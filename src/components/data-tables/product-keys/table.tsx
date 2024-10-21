@@ -16,19 +16,15 @@ const ProductKeysTable = () => {
   } = useProducts();
   const { user } = useCurrentUser();
 
-  const columns = useMemo(() => {
-    if (!user) return null;
-    const columns = getColumns({ products });
-    return user.role !== "admin"
-      ? columns.slice(0, columns.length - 1)
-      : columns;
-  }, [user, products]);
+  const columns = useMemo(() => getColumns({ products }), [products]);
 
-  if (!columns) return null;
+  if (!user) return null;
 
   return (
     <DataTable
-      columns={columns}
+      columns={
+        user.role !== "admin" ? columns.slice(0, columns.length - 1) : columns
+      }
       data={productKeys ?? []}
       handleAdd={async (newRow) => addProductKeys(newRow as ProductKeyType[])}
     />
