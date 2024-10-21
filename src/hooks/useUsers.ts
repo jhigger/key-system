@@ -2,7 +2,12 @@ import { useClerk } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
-import { addUser, changeUserRole, getUsers } from "~/data-access/users";
+import {
+  addUser,
+  approveUser,
+  changeUserRole,
+  getUsers,
+} from "~/data-access/users";
 import { type UserType } from "~/types/user";
 import useAuthToken from "./useAuthToken";
 
@@ -71,6 +76,25 @@ const useUsers = () => {
     },
   });
 
+  const approveUserMutation = useMutation({
+    mutationFn: ({
+      uuid,
+      approvedBy,
+    }: {
+      uuid: string;
+      approvedBy: string | null;
+    }) => approveUser(getToken, uuid, approvedBy),
+    onSuccess: () => {
+      toast.success("User approved successfully");
+    },
+    onError: () => {
+      toast.error("Something went wrong");
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
   const setSession = async (sessionId: string | null) => {
     await setActive({ session: sessionId });
   };
@@ -80,6 +104,7 @@ const useUsers = () => {
     mutation: {
       changeRole: changeRoleMutation.mutate,
       addUser: addUserMutation.mutate,
+      approveUser: approveUserMutation.mutate,
     },
     setSession,
   };

@@ -26,6 +26,7 @@ export const getUsers = async (
       username: user.username,
       email: user.email,
       orders: user.orders ?? [], // Ensure orders is an array
+      approvedBy: user.approved_by,
       createdAt: user.created_at,
       updatedAt: user.updated_at,
     }),
@@ -66,6 +67,7 @@ export const getUserByClerkId = async (
     username: data.username,
     email: data.email,
     orders: data.orders ?? [],
+    approvedBy: data.approved_by,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
@@ -107,6 +109,7 @@ export const addUser = async (
     username: data.username,
     email: data.email,
     orders: data.orders ?? [],
+    approvedBy: data.approved_by,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
@@ -145,7 +148,28 @@ export const changeUserRole = async (
     username: data.username,
     email: data.email,
     orders: data.orders ?? [],
+    approvedBy: data.approved_by,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
+};
+
+export const approveUser = async (
+  getToken: () => Promise<string | null>,
+  uuid: string,
+  approvedBy: string | null,
+) => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { error } = await supabase(token)
+    .from("users")
+    .update({ approved_by: approvedBy })
+    .eq("uuid", uuid);
+
+  if (error) {
+    throw new Error(`Failed to approve user: ${error.message}`);
+  }
 };

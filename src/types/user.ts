@@ -9,6 +9,7 @@ export type UserType = {
   username: string;
   email: string;
   orders: string[] | null;
+  approvedBy: string | null;
   createdAt: string;
   updatedAt: string;
 };

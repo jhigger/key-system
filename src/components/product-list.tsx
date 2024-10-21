@@ -16,6 +16,7 @@ import { formatDuration, formatPrice } from "~/lib/utils";
 import { type ProductType } from "~/types/product";
 import DottedLine from "./dotted-line";
 import Loader from "./loader";
+import PendingApproval from "./pending-approval";
 import PleaseLoginToView from "./please-login-to-view";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
@@ -137,6 +138,10 @@ const ProductList = () => {
 
   if (!user) {
     return <PleaseLoginToView />;
+  }
+
+  if (user.approvedBy === null) {
+    return <PendingApproval />;
   }
 
   if (products?.length === 0) {

@@ -81,6 +81,9 @@ const DataTableToolBar = <TData,>({
   const roleColumn = table
     .getAllColumns()
     .find((column) => column.id === "role");
+  const approvalColumn = table
+    .getAllColumns()
+    .find((column) => column.id === "approvedBy");
 
   return (
     <div className="flex flex-col gap-2">
@@ -222,6 +225,16 @@ const DataTableToolBar = <TData,>({
               label: role,
               value: role,
             }))}
+          />
+        )}
+        {approvalColumn && (
+          <DataTableFacetedFilter
+            column={approvalColumn}
+            title="Status"
+            options={[
+              { label: "Approved", value: "approved" },
+              { label: "Pending", value: "pending" },
+            ]}
           />
         )}
         {table.getState().columnFilters.length > 0 && (
