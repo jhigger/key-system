@@ -40,11 +40,11 @@ const fakeUserId6 = uuidv4();
 const fakeUserId7 = uuidv4();
 
 export const DEFAULT_PRICING: PricingType[] = [
-  { uuid: fakePricingId1, duration: 1, value: 1.5, stock: 0 },
-  { uuid: fakePricingId2, duration: 3, value: 3, stock: 0 },
-  { uuid: fakePricingId3, duration: 7, value: 5, stock: 0 },
-  { uuid: fakePricingId4, duration: 30, value: 13, stock: 0 },
-  { uuid: fakePricingId5, duration: 0, value: 150, stock: 0 },
+  { uuid: fakePricingId1, duration: 1, value: 1.5 },
+  { uuid: fakePricingId2, duration: 3, value: 3 },
+  { uuid: fakePricingId3, duration: 7, value: 5 },
+  { uuid: fakePricingId4, duration: 30, value: 13 },
+  { uuid: fakePricingId5, duration: 0, value: 150 },
 ];
 
 export const fakeProducts: ProductType[] = [
@@ -55,11 +55,11 @@ export const fakeProducts: ProductType[] = [
     name: "Distortion",
     category: null,
     pricings: [
-      { uuid: fakePricingId1, duration: 1, value: 1.5, stock: 1 },
-      { uuid: fakePricingId2, duration: 3, value: 3, stock: 0 },
-      { uuid: fakePricingId3, duration: 7, value: 5, stock: 0 },
-      { uuid: fakePricingId4, duration: 30, value: 13, stock: 0 },
-      { uuid: fakePricingId5, duration: 0, value: 150, stock: 1 },
+      { uuid: fakePricingId1, duration: 1, value: 1.5 },
+      { uuid: fakePricingId2, duration: 3, value: 3 },
+      { uuid: fakePricingId3, duration: 7, value: 5 },
+      { uuid: fakePricingId4, duration: 30, value: 13 },
+      { uuid: fakePricingId5, duration: 0, value: 150 },
     ],
   },
   {

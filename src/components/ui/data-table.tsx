@@ -25,6 +25,7 @@ import {
 } from "~/components/ui/table";
 import { cn } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
+import { type CategoryType } from "~/types/category";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import DataTablePagination from "../data-table-pagination";
@@ -33,7 +34,9 @@ import DataTableToolBar from "../data-table-tool-bar";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  handleAdd?: (newRow: ProductType | ProductKeyType[]) => Promise<void>;
+  handleAdd?: (
+    newRow: ProductType | ProductKeyType[] | CategoryType,
+  ) => Promise<void>;
 }
 
 declare module "@tanstack/react-table" {

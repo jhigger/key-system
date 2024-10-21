@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import useCategories from "~/hooks/useCategories";
+import useProductKeys from "~/hooks/useProductKeys";
 import useProducts from "~/hooks/useProducts";
 import {
   dateFilterFn,
@@ -157,9 +158,11 @@ const PricingCell: React.FC<{
 const StockCell: React.FC<{
   row: Row<ProductType>;
 }> = ({ row }) => {
-  const pricing = row.original.pricings;
+  const {
+    query: { data: productKeys },
+  } = useProductKeys();
 
-  return pricing.reduce((acc, curr) => acc + curr.stock, 0);
+  return productKeys?.filter((pk) => pk.productId === row.original.uuid).length;
 };
 
 const ProductCell: React.FC<{

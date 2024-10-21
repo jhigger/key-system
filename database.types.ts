@@ -72,7 +72,6 @@ export type Database = {
         Row: {
           created_at: string
           duration: number
-          stock: number
           updated_at: string
           uuid: string
           value: number
@@ -80,7 +79,6 @@ export type Database = {
         Insert: {
           created_at?: string
           duration: number
-          stock: number
           updated_at?: string
           uuid: string
           value: number
@@ -88,7 +86,6 @@ export type Database = {
         Update: {
           created_at?: string
           duration?: number
-          stock?: number
           updated_at?: string
           uuid?: string
           value?: number

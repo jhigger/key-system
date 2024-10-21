@@ -1,4 +1,3 @@
-import { updateProductStock } from "~/data-access/products";
 import { supabase } from "~/lib/initSupabase";
 import { type ProductKeyType } from "~/types/productKey";
 
@@ -51,7 +50,6 @@ export const editProductKey = async (
     throw new Error("No token provided");
   }
 
-  const oldProductKey = await getProductKeyById(getToken, productKeyUuid);
   const { data: productKeyData, error: productKeyError } = await supabase(token)
     .from("product_keys")
     .update({
@@ -69,22 +67,6 @@ export const editProductKey = async (
 
   if (productKeyError) {
     throw new Error("Failed to update product key");
-  }
-
-  // Always update stock for both old and new pricings
-  if (oldProductKey.pricingId !== productKey.pricingId) {
-    await updateProductStock(
-      getToken,
-      oldProductKey.productId,
-      oldProductKey.pricingId,
-      -1,
-    );
-    await updateProductStock(
-      getToken,
-      productKey.productId,
-      productKey.pricingId,
-      1,
-    );
   }
 
   return {
@@ -131,13 +113,6 @@ export const addProductKeys = async (
     throw new Error("Failed to add product key(s)");
   }
 
-  await updateProductStock(
-    getToken,
-    productKeys[0].productId,
-    productKeys[0].pricingId,
-    productKeys.length,
-  );
-
   return data.map((productKey) => ({
     uuid: productKey.uuid,
     productId: productKey.product_id,
@@ -160,8 +135,6 @@ export const deleteProductKey = async (
     throw new Error("No token provided");
   }
 
-  const productKey = await getProductKeyById(getToken, uuid);
-
   const { error } = await supabase(token)
     .from("product_keys")
     .delete()
@@ -170,23 +143,4 @@ export const deleteProductKey = async (
   if (error) {
     throw new Error("Failed to delete product key");
   }
-
-  await updateProductStock(
-    getToken,
-    productKey.productId,
-    productKey.pricingId,
-    -1,
-  );
-};
-
-const getProductKeyById = async (
-  getToken: () => Promise<string | null>,
-  uuid: string,
-): Promise<ProductKeyType> => {
-  const productKeys = await getProductKeys(getToken);
-  const productKey = productKeys.find((key) => key.uuid === uuid);
-  if (!productKey) {
-    throw new Error(`Key ${uuid} not found`);
-  }
-  return productKey;
 };

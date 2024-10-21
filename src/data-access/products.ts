@@ -134,7 +134,6 @@ export const addProduct = async (
         uuid: p.uuid,
         duration: p.duration,
         value: p.value,
-        stock: p.stock,
       })),
     );
 
@@ -202,7 +201,6 @@ export const editPricing = async (
     .update({
       duration: newPricing.duration,
       value: newPricing.value,
-      stock: newPricing.stock,
     })
     .eq("uuid", pricingUuid)
     .select()
@@ -266,53 +264,3 @@ export const deletePricing = async (
     throw new Error("Failed to update product");
   }
 };
-
-export const updateProductStock = async (
-  getToken: () => Promise<string | null>,
-  productUuid: string,
-  pricingUuid: string,
-  change: number,
-) => {
-  const token = await getToken();
-  if (!token) {
-    throw new Error("No token provided");
-  }
-
-  const products = await getProducts(getToken);
-  const product = findProductById(products, productUuid);
-  const pricing = findPricingById(product.pricings, pricingUuid);
-  const updatedPricing = updatePricingStock(pricing, change);
-  // Update the pricing in the database
-  const { error } = await supabase(token)
-    .from("pricings")
-    .update({ stock: updatedPricing.stock })
-    .eq("uuid", pricingUuid);
-
-  if (error) {
-    throw new Error(`Failed to update pricing stock: ${error.message}`);
-  }
-};
-
-// Helper functions
-const findProductById = (
-  products: ProductType[],
-  uuid: string,
-): ProductType => {
-  const product = products.find((p) => p.uuid === uuid);
-  if (!product) throw new Error(`Product ${uuid} not found`);
-  return product;
-};
-
-const findPricingById = (pricing: PricingType[], uuid: string): PricingType => {
-  const pricingItem = pricing.find((p) => p.uuid === uuid);
-  if (!pricingItem) throw new Error(`Pricing ${uuid} not found`);
-  return pricingItem;
-};
-
-const updatePricingStock = (
-  pricing: PricingType,
-  change: number,
-): PricingType => ({
-  ...pricing,
-  stock: Math.max(0, (pricing.stock || 0) + change),
-});
