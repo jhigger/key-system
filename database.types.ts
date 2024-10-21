@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          name: string
+          updated_at: string
+          uuid: string
+        }
+        Insert: {
+          created_at?: string
+          name?: string
+          updated_at?: string
+          uuid?: string
+        }
+        Update: {
+          created_at?: string
+          name?: string
+          updated_at?: string
+          uuid?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -134,6 +155,7 @@ export type Database = {
       }
       products: {
         Row: {
+          category: string | null
           created_at: string
           name: string
           pricings: string[]
@@ -141,6 +163,7 @@ export type Database = {
           uuid: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           name: string
           pricings: string[]
@@ -148,16 +171,26 @@ export type Database = {
           uuid?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           name?: string
           pricings?: string[]
           updated_at?: string
           uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
       users: {
         Row: {
+          approved_by: string | null
           clerk_id: string
           created_at: string
           email: string
@@ -168,6 +201,7 @@ export type Database = {
           uuid: string
         }
         Insert: {
+          approved_by?: string | null
           clerk_id: string
           created_at?: string
           email: string
@@ -178,6 +212,7 @@ export type Database = {
           uuid?: string
         }
         Update: {
+          approved_by?: string | null
           clerk_id?: string
           created_at?: string
           email?: string
@@ -187,14 +222,25 @@ export type Database = {
           username?: string
           uuid?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uuid"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      verify_clerk_jwt: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
