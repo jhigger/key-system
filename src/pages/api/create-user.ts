@@ -1,4 +1,4 @@
-import { getAuth } from "@clerk/nextjs/server";
+import { clerkClient, getAuth } from "@clerk/nextjs/server";
 import { createClient } from "@supabase/supabase-js";
 import { type Database } from "database.types";
 import { type NextApiRequest, type NextApiResponse } from "next";
@@ -30,6 +30,12 @@ export default async function handler(
     if (userId !== clerkUserId) {
       return res.status(403).json({ error: "Forbidden" });
     }
+
+    await clerkClient.users.updateUserMetadata(clerkUserId, {
+      publicMetadata: {
+        role: "user",
+      },
+    });
 
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
