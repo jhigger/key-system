@@ -50,7 +50,7 @@ const useCategories = () => {
     onSuccess: () => {
       toast.success("Category deleted successfully", {
         description:
-          "All product's category using this category are set to None",
+          "All products using this category are set to None",
       });
     },
     onError: () => {
