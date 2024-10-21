@@ -91,7 +91,7 @@ const ProductCell: React.FC<{
     );
   }
 
-  return currentProductName;
+  return <div className="capitalize">{currentProductName}</div>;
 };
 
 const DurationCell: React.FC<{

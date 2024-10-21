@@ -184,7 +184,7 @@ const ProductCell: React.FC<{
     );
   }
 
-  return row.original.name;
+  return <div className="capitalize">{row.original.name}</div>;
 };
 
 const ActionsCell: React.FC<{
@@ -335,7 +335,7 @@ const CategoryCell: React.FC<{
     );
   }
 
-  return category?.name ?? "None";
+  return <div className="capitalize">{category?.name ?? "None"}</div>;
 };
 
 export const getColumns = (): ColumnDef<ProductType>[] => [

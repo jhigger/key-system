@@ -34,7 +34,7 @@ const CategoryNameCell: React.FC<{
     );
   }
 
-  return row.original.name;
+  return <div className="capitalize">{row.original.name}</div>;
 };
 
 const CategoryActionsCell: React.FC<{
