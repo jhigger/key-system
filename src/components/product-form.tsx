@@ -18,13 +18,22 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import useCategories from "~/hooks/useCategories";
 import useProducts from "~/hooks/useProducts";
 import { cn } from "~/lib/utils";
 import { type ProductType } from "~/types/product";
 import Loader from "./loader";
 import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 const formSchema = z.object({
+  category: z.string().nullable(),
   name: z.string().min(1, "Product name is required"),
   pricing: z
     .array(
@@ -78,6 +87,10 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
       mutation: { deletePricing },
     } = useProducts();
 
+    const {
+      query: { data: categories },
+    } = useCategories();
+
     const validateProductName = useCallback(
       async (name: string) => {
         if (name === initialValues?.name) return true;
@@ -98,6 +111,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
             stock: 0,
           },
         ],
+        category: initialValues?.category ?? "null",
       },
     });
 
@@ -115,10 +129,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
       const nameValidationResult = await validateProductName(values.name);
       if (nameValidationResult !== true) {
-        form.setError("name", {
-          type: "manual",
-          message: nameValidationResult,
-        });
+        form.setError("name", { message: nameValidationResult });
         return;
       }
 
@@ -126,6 +137,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
         uuid: initialValues?.uuid ?? uuidv4(),
         createdAt: initialValues?.createdAt ?? new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        category: values.category === "null" ? null : (values.category ?? null),
         name: values.name,
         pricings: values.pricing.map((p) => ({
           ...p,
@@ -160,6 +172,34 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
           className="space-y-4 p-4 pb-0"
           noValidate
         >
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value ?? undefined}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="null">None</SelectItem>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.uuid} value={category.uuid}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="name"

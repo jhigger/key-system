@@ -72,7 +72,7 @@ export function LoginForm() {
     await handleLogin(values);
   };
 
-  if (!isSignInLoaded) {
+  if (!isSignInLoaded || form.formState.isSubmitSuccessful) {
     return <Loader />;
   }
 

@@ -36,7 +36,7 @@ const TabsLayout = ({ tabs }: TabLayoutProps) => {
       className="w-full max-w-screen-lg grow"
       value={activeTab}
     >
-      <TabsList className="flex w-full">
+      <TabsList className="flex h-fit w-full flex-wrap">
         {tabs.map(({ label, value, icon }) => (
           <TabsTrigger
             key={value}

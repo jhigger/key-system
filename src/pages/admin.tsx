@@ -1,5 +1,6 @@
-import { KeyRound, PackageSearch, UserSearch } from "lucide-react";
+import { Folder, KeyRound, PackageSearch, UserSearch } from "lucide-react";
 import Head from "next/head";
+import Categories from "~/components/data-tables/categories";
 import ProductKeys from "~/components/data-tables/product-keys";
 import Products from "~/components/data-tables/products";
 import Users from "~/components/data-tables/users";
@@ -10,6 +11,12 @@ import PleaseLoginToView from "~/components/please-login-to-view";
 import { useCurrentUser } from "~/hooks/useCurrentUser";
 
 export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
+  {
+    label: "Categories",
+    value: "categories",
+    content: <Categories />,
+    icon: <Folder size={16} />,
+  },
   {
     label: "Products",
     value: "products",

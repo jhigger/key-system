@@ -39,6 +39,7 @@ export const getProducts = async (
       createdAt: product.created_at,
       updatedAt: product.updated_at,
       name: product.name,
+      category: product.category,
       pricings: pricings
         .filter((pricing) => product?.pricings?.includes(pricing.uuid))
         .sort((a, b) => {
@@ -69,6 +70,7 @@ export const editProduct = async (
     .update({
       name: product.name,
       pricings: product.pricings.map((p) => p.uuid),
+      category: product.category,
     })
     .eq("uuid", productUuid)
     .select()
@@ -95,6 +97,7 @@ export const editProduct = async (
     uuid: productData.uuid,
     createdAt: productData.created_at,
     updatedAt: new Date().toISOString(),
+    category: productData.category,
     name: productData.name,
     pricings: pricings,
   };
@@ -116,6 +119,7 @@ export const addProduct = async (
     .insert({
       name: product.name,
       pricings: product.pricings.map((p) => p.uuid),
+      category: product.category,
     })
     .single();
 

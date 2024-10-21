@@ -6,9 +6,11 @@ import useProducts from "~/hooks/useProducts";
 import { formatDuration } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
 import { useUserStore } from "~/state/user.store";
+import { type CategoryType } from "~/types/category";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 import { roles } from "~/types/user";
+import CategoryForm, { type CategoryFormRef } from "./category-form";
 import DatePicker from "./date-picker";
 import DebouncedInput from "./debounced-input";
 import ProductForm, { type ProductFormRef } from "./product-form";
@@ -30,7 +32,9 @@ import { Switch } from "./ui/switch";
 
 type DataTableToolBarProps<TData> = {
   table: TableType<TData>;
-  handleAdd?: (newRow: ProductType | ProductKeyType[]) => Promise<void>;
+  handleAdd?: (
+    newRow: ProductType | ProductKeyType[] | CategoryType,
+  ) => Promise<void>;
 };
 
 const DataTableToolBar = <TData,>({
@@ -45,8 +49,10 @@ const DataTableToolBar = <TData,>({
   const isProductsPage =
     isAdminPage || asPath.split("?")[0] === "/admin#products";
   const isProductKeysPage = asPath.split("?")[0] === "/admin#product-keys";
+  const isCategoriesPage = asPath.split("?")[0] === "/admin#categories";
   const productFormRef = useRef<ProductFormRef>(null);
   const productKeyFormRef = useRef<ProductKeyFormRef>(null);
+  const categoryFormRef = useRef<CategoryFormRef>(null);
   const {
     query: { data: products },
   } = useProducts();
@@ -102,7 +108,10 @@ const DataTableToolBar = <TData,>({
           />
         </div>
         {user?.role === "admin" &&
-          (isAdminPage || isProductsPage || isProductKeysPage) && (
+          (isAdminPage ||
+            isProductsPage ||
+            isProductKeysPage ||
+            isCategoriesPage) && (
             <Drawer open={showForm} onOpenChange={setShowForm}>
               <DrawerTrigger asChild>
                 <Button variant={"outline"} size={"sm"} className="gap-2 px-2">
@@ -114,7 +123,12 @@ const DataTableToolBar = <TData,>({
                   <div className="mx-auto w-full max-w-screen-sm">
                     <DrawerHeader>
                       <DrawerTitle>
-                        Add a new {isProductsPage ? "product" : "product key"}
+                        Add a new{" "}
+                        {isProductsPage
+                          ? "product"
+                          : isProductKeysPage
+                            ? "product key"
+                            : "category"}
                       </DrawerTitle>
                       <DrawerDescription>
                         Click submit when you&apos;re done or cancel to discard
@@ -140,6 +154,16 @@ const DataTableToolBar = <TData,>({
                           });
                         }}
                         setShowForm={setShowForm}
+                      />
+                    )}
+                    {isCategoriesPage && (
+                      <CategoryForm
+                        ref={categoryFormRef}
+                        handleSubmit={async (values) => {
+                          await handleAdd?.(values).finally(() => {
+                            setShowForm(false);
+                          });
+                        }}
                       />
                     )}
                     <DrawerFooter>

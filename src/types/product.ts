@@ -1,3 +1,4 @@
+import { type CategoryType } from "./category";
 import { type PricingType } from "./pricing";
 
 export type ProductType = {
@@ -5,5 +6,6 @@ export type ProductType = {
   createdAt: string;
   updatedAt: string;
   name: string;
+  category: CategoryType["uuid"] | null;
   pricings: PricingType[];
 };

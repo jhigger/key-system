@@ -20,6 +20,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import useCategories from "~/hooks/useCategories";
 import useProducts from "~/hooks/useProducts";
 import {
   dateFilterFn,
@@ -73,6 +81,8 @@ const DurationCell: React.FC<{
                     <ProductForm
                       ref={productKeyFormRef}
                       handleSubmit={(values) => {
+                        console.log("row.original", row.original);
+                        console.log("values", values);
                         editProduct({
                           ...row.original,
                           ...values,
@@ -147,33 +157,9 @@ const PricingCell: React.FC<{
 const StockCell: React.FC<{
   row: Row<ProductType>;
 }> = ({ row }) => {
-  const { editMode } = useUIStore();
   const pricing = row.original.pricings;
 
-  return (
-    <>
-      {pricing.map((p) => (
-        <div
-          key={p.uuid}
-          className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
-        >
-          {editMode ? (
-            <DebouncedInput
-              type="number"
-              min="0"
-              step="1"
-              value={p.stock ?? 0}
-              onChange={() => undefined}
-              className="w-20"
-              disabled
-            />
-          ) : (
-            (p.stock ?? 0)
-          )}
-        </div>
-      ))}
-    </>
-  );
+  return pricing.reduce((acc, curr) => acc + curr.stock, 0);
 };
 
 const ProductCell: React.FC<{
@@ -308,6 +294,47 @@ const ActionsCell: React.FC<{
   );
 };
 
+const CategoryCell: React.FC<{
+  row: Row<ProductType>;
+}> = ({ row }) => {
+  const {
+    query: { data: categories },
+  } = useCategories();
+  const category = categories?.find((c) => c.uuid === row.original.category);
+  const { editMode } = useUIStore();
+  const {
+    mutation: { editProduct },
+  } = useProducts();
+
+  if (editMode) {
+    return (
+      <Select
+        value={category?.uuid}
+        onValueChange={(value) =>
+          editProduct({
+            ...row.original,
+            category: value === "null" ? null : value,
+          })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="None" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="null">None</SelectItem>
+          {categories?.map((c) => (
+            <SelectItem key={c.uuid} value={c.uuid}>
+              {c.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  return category?.name ?? "None";
+};
+
 export const getColumns = (): ColumnDef<ProductType>[] => [
   {
     accessorKey: "createdAt",
@@ -337,6 +364,13 @@ export const getColumns = (): ColumnDef<ProductType>[] => [
       formatISOStringToDate(row.createdAt).formattedDate +
       " " +
       formatISOStringToDate(row.createdAt).formattedTime,
+  },
+  {
+    accessorKey: "category",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Category" />
+    ),
+    cell: ({ row }) => <CategoryCell row={row} />,
   },
   {
     accessorKey: "name",
