@@ -104,7 +104,7 @@ export const getColumns = (): ColumnDef<CategoryType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date Joined" />
+      <DataTableColumnHeader column={column} title="Date Added" />
     ),
     cell: ({ row }) => {
       const { createdAt } = row.original;
