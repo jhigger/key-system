@@ -374,6 +374,10 @@ export const getColumns = (): ColumnDef<ProductType>[] => [
       <DataTableColumnHeader column={column} title="Category" />
     ),
     cell: ({ row }) => <CategoryCell row={row} />,
+    filterFn: (row, id, value: string) => {
+      return value.includes(row.getValue(id));
+    },
+    accessorFn: (row) => row.category ?? "none",
   },
   {
     accessorKey: "name",

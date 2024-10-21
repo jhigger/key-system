@@ -2,6 +2,7 @@ import { type Table as TableType } from "@tanstack/react-table";
 import { Ban, Eye, FilePenLine, PackagePlus, Search } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
+import useCategories from "~/hooks/useCategories";
 import useProducts from "~/hooks/useProducts";
 import { formatDuration } from "~/lib/utils";
 import { useUIStore } from "~/state/ui.store";
@@ -56,6 +57,9 @@ const DataTableToolBar = <TData,>({
   const {
     query: { data: products },
   } = useProducts();
+  const {
+    query: { data: categories },
+  } = useCategories();
 
   useEffect(() => {
     if (showForm) {
@@ -90,6 +94,9 @@ const DataTableToolBar = <TData,>({
   const approvalColumn = table
     .getAllColumns()
     .find((column) => column.id === "approvedBy");
+  const categoryColumn = table
+    .getAllColumns()
+    .find((column) => column.id === "category");
 
   return (
     <div className="flex flex-col gap-2">
@@ -259,6 +266,20 @@ const DataTableToolBar = <TData,>({
               { label: "Approved", value: "approved" },
               { label: "Pending", value: "pending" },
             ]}
+          />
+        )}
+        {categoryColumn && (
+          <DataTableFacetedFilter
+            column={categoryColumn}
+            title="Category"
+            options={
+              categories
+                ?.map((category) => ({
+                  label: category.name,
+                  value: category.uuid,
+                }))
+                .concat({ label: "None", value: "none" }) ?? []
+            }
           />
         )}
         {table.getState().columnFilters.length > 0 && (
