@@ -17,13 +17,11 @@ export default function Home() {
     );
   }
 
-  if (user?.role !== "user" && user?.role !== undefined) {
+  if (user?.role === "admin") {
     return (
       <RootLayout>
         <Button variant={"link"} className="underline" asChild>
-          <Link href={user?.role === "admin" ? "/admin" : "/reseller"}>
-            Go to tables
-          </Link>
+          <Link href="/admin">Go to tables</Link>
         </Button>
       </RootLayout>
     );

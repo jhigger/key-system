@@ -154,12 +154,16 @@ const ProductList = () => {
 
   return (
     <Card className="mx-auto w-full max-w-3xl">
-      <CardHeader>
-        <div className="w-full rounded-md bg-green-500/80 p-4 text-sm text-green-50">
-          <b>Note:</b> You can now proceed to checkout! Spend over $1200 to
-          receive a $200 discount.
-        </div>
-      </CardHeader>
+      {user.role === "user" ? (
+        <CardHeader>
+          <div className="w-full rounded-md bg-green-500/80 p-4 text-sm text-green-50">
+            <b>Note:</b> You can now proceed to checkout! Spend over $1200 to
+            receive a $200 discount.
+          </div>
+        </CardHeader>
+      ) : (
+        <div className="p-3"></div>
+      )}
       <CardContent className="space-y-6">
         <FormProvider {...form}>
           <form
@@ -187,16 +191,18 @@ const ProductList = () => {
               </span>
             </div>
 
-            <Button
-              className="w-full"
-              type="submit"
-              disabled={
-                form.formState.isSubmitting ||
-                calculateTotal(form.watch("products")) <= 0
-              }
-            >
-              Proceed to checkout
-            </Button>
+            {user.role === "user" && (
+              <Button
+                className="w-full"
+                type="submit"
+                disabled={
+                  form.formState.isSubmitting ||
+                  calculateTotal(form.watch("products")) <= 0
+                }
+              >
+                Proceed to checkout
+              </Button>
+            )}
           </form>
         </FormProvider>
       </CardContent>

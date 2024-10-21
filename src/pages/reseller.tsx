@@ -1,6 +1,6 @@
-import { KeyRound, PackageSearch } from "lucide-react";
+import { Folder, PackageSearch } from "lucide-react";
 import Head from "next/head";
-import ProductKeys from "~/components/data-tables/product-keys";
+import Categories from "~/components/data-tables/categories";
 import Products from "~/components/data-tables/products";
 import RootLayout from "~/components/layouts/root-layout";
 import TabsLayout, { type TabType } from "~/components/layouts/tabs-layout";
@@ -10,16 +10,16 @@ import { useCurrentUser } from "~/hooks/useCurrentUser";
 
 export const RESELLER_TABS: (TabType & { icon: React.ReactNode })[] = [
   {
+    label: "Categories",
+    value: "categories",
+    content: <Categories />,
+    icon: <Folder size={16} />,
+  },
+  {
     label: "Products",
     value: "products",
     content: <Products />,
     icon: <PackageSearch size={16} />,
-  },
-  {
-    label: "Product Keys",
-    value: "product-keys",
-    content: <ProductKeys />,
-    icon: <KeyRound size={16} />,
   },
 ] as const;
 
