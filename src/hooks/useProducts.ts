@@ -228,6 +228,7 @@ const useProducts = () => {
                   ...p,
                   duration: newPricing.duration,
                   value: Number(newPricing.value.toFixed(2)),
+                  stock: newPricing.stock,
                 };
               }
               return p;

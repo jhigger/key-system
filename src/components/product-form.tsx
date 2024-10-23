@@ -41,6 +41,7 @@ const formSchema = z.object({
         uuid: z.string().optional(),
         duration: z.number().min(0, "Duration must be a non-negative number"),
         value: z.number().min(0.01, "Price must be greater than 0"),
+        stock: z.number().min(0, "Stock cannot be negative"),
       }),
     )
     .refine(
@@ -107,6 +108,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
           {
             duration: 0,
             value: 1,
+            stock: 0,
           },
         ],
         category: initialValues?.category ?? "null",
@@ -119,7 +121,7 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
     });
 
     const addPricingVariant = async () => {
-      append({ duration: 0, value: 1 });
+      append({ duration: 0, value: 1, stock: 0 });
       // Trigger validation after adding a new variant
       await form.trigger("pricing");
     };
