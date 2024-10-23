@@ -200,7 +200,11 @@ const ProductList = () => {
                   calculateTotal(form.watch("products")) <= 0
                 }
               >
-                Proceed to checkout
+                {form.formState.isSubmitting ? (
+                  <Loader />
+                ) : (
+                  "Proceed to checkout"
+                )}
               </Button>
             )}
           </form>
@@ -216,10 +220,6 @@ type ProductCardProps = {
 };
 
 const ProductCard = ({ product, productIndex }: ProductCardProps) => {
-  const {
-    query: { data: products },
-  } = useProducts();
-
   const { control, watch } = useFormContext<ProductFormValues>();
 
   const { fields, append, remove } = useFieldArray({
@@ -243,10 +243,7 @@ const ProductCard = ({ product, productIndex }: ProductCardProps) => {
         }
         return sum;
       }, 0);
-      const stock = products?.filter(
-        (product) => product.uuid === product.uuid,
-      ).length;
-      acc[price.uuid] = (stock ?? 0) - totalQuantity;
+      acc[price.uuid] = price.stock - totalQuantity;
       return acc;
     },
     {} as Record<string, number>,
@@ -320,10 +317,6 @@ const KeyRow = ({
   onRemove,
 }: KeyRowProps) => {
   const {
-    query: { data: products },
-  } = useProducts();
-
-  const {
     control,
     formState: { errors },
     watch,
@@ -366,10 +359,6 @@ const KeyRow = ({
   const handleRemove = () => {
     onRemove();
   };
-
-  const currentPricingStock = products?.filter(
-    (product) => product.uuid === product.uuid,
-  ).length;
 
   return (
     <div className="flex flex-col gap-2 rounded-md border !border-b border-muted bg-transparent p-3 first:mt-6">
@@ -446,7 +435,7 @@ const KeyRow = ({
                 placeholder="Quantity"
                 type="number"
                 min={1}
-                max={currentPricingStock ?? 0}
+                max={currentPricingOption?.stock ?? 0}
                 onChange={(e) => {
                   const numericValue =
                     e.target.value === "" ? 1 : Number(e.target.value);

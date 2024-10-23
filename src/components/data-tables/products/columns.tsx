@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import useCategories from "~/hooks/useCategories";
-import useProductKeys from "~/hooks/useProductKeys";
 import useProducts from "~/hooks/useProducts";
 import {
   dateFilterFn,
@@ -158,11 +157,33 @@ const PricingCell: React.FC<{
 const StockCell: React.FC<{
   row: Row<ProductType>;
 }> = ({ row }) => {
-  const {
-    query: { data: productKeys },
-  } = useProductKeys();
+  const { editMode } = useUIStore();
+  const pricing = row.original.pricings;
 
-  return productKeys?.filter((pk) => pk.productId === row.original.uuid).length;
+  return (
+    <>
+      {pricing.map((p) => (
+        <div
+          key={p.uuid}
+          className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
+        >
+          {editMode ? (
+            <DebouncedInput
+              type="number"
+              min="0"
+              step="1"
+              value={p.stock ?? 0}
+              onChange={() => undefined}
+              className="w-20"
+              disabled
+            />
+          ) : (
+            (p.stock ?? 0)
+          )}
+        </div>
+      ))}
+    </>
+  );
 };
 
 const ProductCell: React.FC<{
