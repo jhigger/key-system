@@ -35,8 +35,9 @@ export type Database = {
           created_at: string
           hardware_id: string | null
           invoice_link: string
-          product_key_snapshot: Json
+          product_keys_snapshot: Json
           purchased_by: string
+          status: Database["public"]["Enums"]["order_status"]
           updated_at: string
           uuid: string
         }
@@ -44,8 +45,9 @@ export type Database = {
           created_at?: string
           hardware_id?: string | null
           invoice_link: string
-          product_key_snapshot: Json
+          product_keys_snapshot: Json
           purchased_by: string
+          status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           uuid?: string
         }
@@ -53,8 +55,9 @@ export type Database = {
           created_at?: string
           hardware_id?: string | null
           invoice_link?: string
-          product_key_snapshot?: Json
+          product_keys_snapshot?: Json
           purchased_by?: string
+          status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           uuid?: string
         }
@@ -80,7 +83,7 @@ export type Database = {
         Insert: {
           created_at?: string
           duration: number
-          stock: number
+          stock?: number
           updated_at?: string
           uuid: string
           value: number
@@ -243,7 +246,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      order_status: "pending" | "success" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
