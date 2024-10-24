@@ -156,16 +156,6 @@ export const getColumns = (): ColumnDef<UserType>[] => [
     },
   },
   {
-    accessorKey: "orders",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Keys" />
-    ),
-    cell: ({ row }) => {
-      const { orders } = row.original;
-      return orders ? orders.length : 0;
-    },
-  },
-  {
     accessorKey: "approvedBy",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />

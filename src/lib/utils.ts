@@ -2,7 +2,6 @@ import { type Row } from "@tanstack/react-table";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { validate as uuidValidate, version as uuidVersion } from "uuid";
-import { type OrderType } from "~/types/order";
 import { type ProductType } from "~/types/product";
 import { type ProductKeyType } from "~/types/productKey";
 
@@ -86,17 +85,13 @@ export const getProductPricingDuration = (
   return 0;
 };
 
-export const sortByVariant = <T extends OrderType | ProductKeyType>(
+export const sortByVariant = <T extends ProductKeyType>(
   rowA: Row<T>,
   rowB: Row<T>,
   products: ProductType[],
 ): number => {
   const getVariantValue = (row: Row<T>): number => {
-    const pricingId =
-      "productKeySnapshot" in row.original
-        ? row.original.productKeySnapshot.pricing.uuid
-        : row.original.pricingId;
-
+    const pricingId = row.original.pricingId;
     return pricingId ? getProductPricingDuration(pricingId, products) : 0;
   };
 

@@ -12,7 +12,7 @@ export const getProductKeys = async (
 
   const { data, error } = await supabase(token)
     .from("product_keys")
-    .select("*") // Ensure that product_id, pricing_id, and hardware_id are included
+    .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -23,12 +23,11 @@ export const getProductKeys = async (
     uuid: productKey.uuid,
     productId: productKey.product_id,
     key: productKey.key,
-    expiry: productKey.expiry,
-    hardwareId: productKey.hardware_id,
     owner: productKey.owner,
     pricingId: productKey.pricing_id,
     createdAt: productKey.created_at,
     updatedAt: productKey.updated_at,
+    reserved: productKey.reserved,
   }));
 
   return productKeys;
@@ -37,8 +36,31 @@ export const getProductKeys = async (
 export const getAvailableProductKeys = async (
   getToken: () => Promise<string | null>,
 ): Promise<ProductKeyType[]> => {
-  const productKeys = await getProductKeys(getToken);
-  return productKeys.filter((key) => key.owner === null);
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data, error } = await supabase(token)
+    .from("product_keys")
+    .select("*")
+    .eq("reserved", false)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Error fetching available product keys: ${error.message}`);
+  }
+
+  return data.map((productKey) => ({
+    uuid: productKey.uuid,
+    productId: productKey.product_id,
+    key: productKey.key,
+    owner: productKey.owner,
+    pricingId: productKey.pricing_id,
+    createdAt: productKey.created_at,
+    updatedAt: productKey.updated_at,
+    reserved: productKey.reserved,
+  }));
 };
 
 export const editProductKey = async (
@@ -57,7 +79,6 @@ export const editProductKey = async (
     .update({
       product_id: productKey.productId,
       key: productKey.key,
-      hardware_id: productKey.hardwareId,
       owner: productKey.owner,
       pricing_id: productKey.pricingId,
       expiry: productKey.expiry,
@@ -91,12 +112,11 @@ export const editProductKey = async (
     uuid: productKeyUuid,
     productId: productKeyData.product_id,
     key: productKeyData.key,
-    expiry: productKeyData.expiry,
-    hardwareId: productKeyData.hardware_id,
     owner: productKeyData.owner,
     pricingId: productKeyData.pricing_id,
     createdAt: productKeyData.created_at,
     updatedAt: productKeyData.updated_at,
+    reserved: productKeyData.reserved,
   };
 };
 
@@ -120,7 +140,6 @@ export const addProductKeys = async (
         product_id: productKey.productId,
         key: productKey.key,
         expiry: productKey.expiry,
-        hardware_id: productKey.hardwareId,
         owner: productKey.owner,
         pricing_id: productKey.pricingId,
       })),
@@ -142,12 +161,11 @@ export const addProductKeys = async (
     uuid: productKey.uuid,
     productId: productKey.product_id,
     key: productKey.key,
-    expiry: productKey.expiry,
-    hardwareId: productKey.hardware_id,
     owner: productKey.owner,
     pricingId: productKey.pricing_id,
     createdAt: productKey.created_at,
     updatedAt: productKey.updated_at,
+    reserved: productKey.reserved,
   }));
 };
 

@@ -137,6 +137,7 @@ const ProductKeyForm = forwardRef<ProductKeyFormRef, ProductKeyFormProps>(
         updatedAt: new Date().toISOString(),
         hardwareId: null,
         owner: null,
+        reserved: false,
       }));
 
       handleSubmit(productKeys);

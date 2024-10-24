@@ -1,6 +1,7 @@
 import { supabase } from "~/lib/initSupabase";
-import { type OrderType } from "~/types/order";
+import { type PricingType } from "~/types/pricing";
 import { type ProductKeyType } from "~/types/productKey";
+import { type ProductKeySnapshotType } from "~/types/productKeySnapshot";
 import { getProductKeys } from "./productKeys";
 
 export const getKeys = async (
@@ -24,12 +25,11 @@ export const getKeys = async (
     uuid: key.uuid,
     key: key.key,
     productId: key.product_id,
-    hardwareId: key.hardware_id,
     pricingId: key.pricing_id,
     owner: key.owner,
-    expiry: key.expiry,
     createdAt: key.created_at,
     updatedAt: key.updated_at,
+    reserved: key.reserved,
   }));
 
   return userUUID
@@ -50,14 +50,14 @@ export const addKey = async (
 export const resetHardwareId = async (
   getToken: () => Promise<string | null>,
   hardwareId: string,
-): Promise<OrderType> => {
+): Promise<ProductKeySnapshotType> => {
   const token = await getToken();
   if (!token) {
     throw new Error("No token provided");
   }
 
   const { data, error } = await supabase(token)
-    .from("orders")
+    .from("product_keys_snapshots")
     .update({ hardware_id: null })
     .eq("hardware_id", hardwareId)
     .select()
@@ -71,19 +71,19 @@ export const resetHardwareId = async (
     throw new Error(`Key with hardwareId ${hardwareId} not found`);
   }
 
-  const productKeySnapshot = data.product_key_snapshot as OrderType;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { hardwareId: _, ...rest } = productKeySnapshot;
-
-  return {
+  const snapshot: ProductKeySnapshotType = {
     uuid: data.uuid,
-    productKeySnapshot: rest.productKeySnapshot,
     hardwareId: data.hardware_id,
-    purchasedBy: data.purchased_by,
-    invoiceLink: data.invoice_link,
+    key: data.key,
+    owner: data.owner,
+    expiry: data.expiry,
+    pricing: data.pricing as PricingType,
+    productName: data.product_name,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
+
+  return snapshot;
 };
 
 export const editMyKeysHardwareId = async (
@@ -97,7 +97,7 @@ export const editMyKeysHardwareId = async (
   }
 
   const { data, error } = await supabase(token)
-    .from("orders")
+    .from("product_keys_snapshots")
     .update({ hardware_id: newHardwareId })
     .eq("uuid", orderUuid)
     .select();

@@ -6,9 +6,9 @@ export type ProductKeyType = {
   productId: ProductType["uuid"];
   key: string;
   expiry?: string | null;
-  hardwareId: string | null;
   owner: string | null;
   pricingId: PricingType["uuid"];
   createdAt: string;
   updatedAt: string;
+  reserved: boolean;
 };

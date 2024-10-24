@@ -8,7 +8,7 @@ const MyKeysTable = () => {
   const { user } = useUserStore();
   const {
     query: { data: keys },
-  } = useMyKeys(user?.uuid);
+  } = useMyKeys(user?.uuid ?? "");
 
   const columns = useMemo(() => getColumns(), []);
 

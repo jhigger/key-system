@@ -33,9 +33,7 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
-          hardware_id: string | null
           invoice_link: string
-          product_keys_snapshot: Json
           purchased_by: string
           status: Database["public"]["Enums"]["order_status"]
           updated_at: string
@@ -43,9 +41,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          hardware_id?: string | null
           invoice_link: string
-          product_keys_snapshot: Json
           purchased_by: string
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
@@ -53,9 +49,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          hardware_id?: string | null
           invoice_link?: string
-          product_keys_snapshot?: Json
           purchased_by?: string
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
@@ -101,34 +95,31 @@ export type Database = {
       product_keys: {
         Row: {
           created_at: string
-          expiry: string | null
-          hardware_id: string | null
           key: string
           owner: string | null
           pricing_id: string
           product_id: string
+          reserved: boolean
           updated_at: string
           uuid: string
         }
         Insert: {
           created_at?: string
-          expiry?: string | null
-          hardware_id?: string | null
           key: string
           owner?: string | null
           pricing_id: string
           product_id: string
+          reserved?: boolean
           updated_at?: string
           uuid?: string
         }
         Update: {
           created_at?: string
-          expiry?: string | null
-          hardware_id?: string | null
           key?: string
           owner?: string | null
           pricing_id?: string
           product_id?: string
+          reserved?: boolean
           updated_at?: string
           uuid?: string
         }
@@ -152,6 +143,60 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["uuid"]
+          },
+        ]
+      }
+      product_keys_snapshots: {
+        Row: {
+          created_at: string
+          expiry: string | null
+          hardware_id: string | null
+          key: string
+          order_id: string
+          owner: string
+          pricing: Json
+          product_name: string
+          updated_at: string
+          uuid: string
+        }
+        Insert: {
+          created_at?: string
+          expiry?: string | null
+          hardware_id?: string | null
+          key: string
+          order_id: string
+          owner: string
+          pricing: Json
+          product_name: string
+          updated_at?: string
+          uuid?: string
+        }
+        Update: {
+          created_at?: string
+          expiry?: string | null
+          hardware_id?: string | null
+          key?: string
+          order_id?: string
+          owner?: string
+          pricing?: Json
+          product_name?: string
+          updated_at?: string
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_keys_snapshot_owner_fkey"
+            columns: ["owner"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["uuid"]
+          },
+          {
+            foreignKeyName: "product_keys_snapshots_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["uuid"]
           },
         ]
@@ -197,7 +242,6 @@ export type Database = {
           clerk_id: string
           created_at: string
           email: string
-          orders: string[] | null
           role: string
           updated_at: string
           username: string
@@ -208,7 +252,6 @@ export type Database = {
           clerk_id: string
           created_at?: string
           email: string
-          orders?: string[] | null
           role?: string
           updated_at?: string
           username: string
@@ -219,7 +262,6 @@ export type Database = {
           clerk_id?: string
           created_at?: string
           email?: string
-          orders?: string[] | null
           role?: string
           updated_at?: string
           username?: string
@@ -240,13 +282,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_stock: {
+        Args: {
+          pricing_uuid: string
+          amount: number
+        }
+        Returns: number
+      }
+      increment_stock: {
+        Args: {
+          pricing_uuid: string
+          amount: number
+        }
+        Returns: number
+      }
       verify_clerk_jwt: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
     }
     Enums: {
-      order_status: "pending" | "success" | "failed"
+      order_status: "paid" | "unpaid" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never

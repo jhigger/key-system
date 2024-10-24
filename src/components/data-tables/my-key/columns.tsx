@@ -17,23 +17,21 @@ import {
   getStatus,
 } from "~/lib/utils";
 import { useUserStore } from "~/state/user.store";
-import { type OrderType } from "~/types/order";
+import { type ProductKeySnapshotType } from "~/types/productKeySnapshot";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 import { Badge } from "../../ui/badge";
 
 const ActionsCell: React.FC<{
-  row: Row<OrderType>;
+  row: Row<ProductKeySnapshotType>;
 }> = ({ row }) => {
   const { user } = useUserStore();
   const {
     mutation: { resetHardwareId },
-  } = useMyKeys(user?.uuid);
-  const { productKeySnapshot, hardwareId } = row.original;
-  const isExpired = productKeySnapshot.expiry
-    ? new Date(productKeySnapshot.expiry) < new Date()
+  } = useMyKeys(user?.uuid ?? "");
+  const { hardwareId } = row.original;
+  const isExpired = row.original.expiry
+    ? new Date(row.original.expiry) < new Date()
     : false;
-
-  if (!hardwareId) return null;
 
   return (
     <DropdownMenu>
@@ -50,7 +48,7 @@ const ActionsCell: React.FC<{
           <Button
             variant={"destructive"}
             size={"sm"}
-            onClick={() => resetHardwareId(hardwareId)}
+            onClick={() => resetHardwareId(hardwareId ?? "")}
             disabled={!hardwareId || isExpired}
           >
             Reset HWID <Trash size={16} />
@@ -62,26 +60,25 @@ const ActionsCell: React.FC<{
 };
 
 const ProductCell: React.FC<{
-  row: Row<OrderType>;
+  row: Row<ProductKeySnapshotType>;
 }> = ({ row }) => {
-  const { productKeySnapshot } = row.original;
-  return productKeySnapshot.productName;
+  const { productName } = row.original;
+
+  return productName;
 };
 
-export const getColumns = (): ColumnDef<OrderType>[] => [
+export const getColumns = (): ColumnDef<ProductKeySnapshotType>[] => [
   {
     accessorKey: "expiry",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Expiry" />
     ),
     cell: ({ row }) => {
-      const { productKeySnapshot } = row.original;
+      const { expiry } = row.original;
 
-      if (!productKeySnapshot.expiry) return "No Expiry";
+      if (!expiry) return "No Expiry";
 
-      const { formattedDate, formattedTime } = formatISOStringToDate(
-        productKeySnapshot.expiry,
-      );
+      const { formattedDate, formattedTime } = formatISOStringToDate(expiry);
       return (
         <div className="flex flex-col gap-1 font-mono">
           <span>{formattedDate}</span>
@@ -90,8 +87,8 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
       );
     },
     sortingFn: (rowA, rowB) => {
-      const expiryA = rowA.original.productKeySnapshot.expiry;
-      const expiryB = rowB.original.productKeySnapshot.expiry;
+      const expiryA = rowA.original.expiry;
+      const expiryB = rowB.original.expiry;
 
       // If expiryA is undefined or null, treat it as the highest
       if (!expiryA) return 1; // rowA goes after rowB
@@ -115,11 +112,12 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
     header: () => null,
     cell: () => null,
     accessorFn: (row) => {
-      if (!row.productKeySnapshot.expiry) return "No Expiry";
+      const { expiry } = row;
+      if (!expiry) return "No Expiry";
       return (
-        formatISOStringToDate(row.productKeySnapshot.expiry).formattedDate +
+        formatISOStringToDate(expiry).formattedDate +
         " " +
-        formatISOStringToDate(row.productKeySnapshot.expiry).formattedTime
+        formatISOStringToDate(expiry).formattedTime
       );
     },
   },
@@ -129,9 +127,9 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const { productKeySnapshot } = row.original;
+      const { expiry } = row.original;
 
-      return getStatus(productKeySnapshot.expiry) === "expired" ? (
+      return getStatus(expiry) === "expired" ? (
         <Badge variant="destructive" className="shrink-0 justify-center">
           Expired
         </Badge>
@@ -142,10 +140,11 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
       );
     },
     filterFn: (row, _, filterValue: string[]) => {
-      const { productKeySnapshot } = row.original;
-      return filterValue.includes(getStatus(productKeySnapshot.expiry));
+      const { expiry } = row.original;
+      if (!expiry) return false;
+      return filterValue.includes(getStatus(expiry));
     },
-    accessorFn: (row) => getStatus(row.productKeySnapshot.expiry),
+    accessorFn: (row) => getStatus(row.expiry),
   },
   {
     accessorKey: "product",
@@ -154,13 +153,10 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
     ),
     cell: ({ row }) => <ProductCell row={row} />,
     filterFn: (row, id, value: string[]) => {
-      const { productKeySnapshot } = row.original;
-      return value.includes(productKeySnapshot.productName);
+      const { productName } = row.original;
+      return value.includes(productName);
     },
-    accessorFn: (row) => {
-      const { productKeySnapshot } = row;
-      return productKeySnapshot.productName;
-    },
+    accessorFn: (row) => row.productName,
   },
   {
     accessorKey: "key",
@@ -168,9 +164,9 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
       <DataTableColumnHeader column={column} title="Key" />
     ),
     cell: ({ row }) => {
-      const { productKeySnapshot } = row.original;
+      const { key } = row.original;
 
-      if (!productKeySnapshot.key) return null;
+      if (!key) return null;
 
       return (
         <Button
@@ -178,16 +174,14 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
           size={"sm"}
           className="-ml-3 min-w-full max-w-40 gap-2"
           onClick={() =>
-            copyToClipboard(productKeySnapshot.key)
+            copyToClipboard(key)
               .then(() => toast.success("Key copied to clipboard"))
               .catch(() => toast.error("Failed to copy key"))
           }
           title={"Click to copy full key"}
         >
-          <span className="truncate">{censorUUID(productKeySnapshot.key)}</span>
-          {productKeySnapshot.key && (
-            <Copy size={16} className="shrink-0 text-gray-500" />
-          )}
+          <span className="truncate">{censorUUID(key)}</span>
+          {key && <Copy size={16} className="shrink-0 text-gray-500" />}
         </Button>
       );
     },

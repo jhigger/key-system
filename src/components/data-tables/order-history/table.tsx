@@ -1,21 +1,18 @@
 import { useMemo } from "react";
-import useProducts from "~/hooks/useProducts";
-import { type OrderType } from "~/types/order";
+import { useCurrentUser } from "~/hooks/useCurrentUser";
+import useOrders from "~/hooks/useOrders";
 import { DataTable } from "../../ui/data-table";
 import { getColumns } from "./columns";
 
-type OrderHistoryTableProps = {
-  orders: OrderType[];
-};
-
-const OrderHistoryTable = ({ orders }: OrderHistoryTableProps) => {
+const OrderHistoryTable = () => {
+  const { user } = useCurrentUser();
   const {
-    query: { data: products },
-  } = useProducts();
+    query: { data: orders },
+  } = useOrders(user?.uuid ?? "");
 
-  const columns = useMemo(() => getColumns({ products }), [products]);
+  const columns = useMemo(() => getColumns(), []);
 
-  return <DataTable columns={columns} data={orders} />;
+  return <DataTable columns={columns} data={orders ?? []} />;
 };
 
 export default OrderHistoryTable;

@@ -1,41 +1,66 @@
 import { type ColumnDef, type Row } from "@tanstack/react-table";
-import useProducts from "~/hooks/useProducts";
+import { useCurrentUser } from "~/hooks/useCurrentUser";
+import useMyKeys from "~/hooks/useMyKeys";
 import {
   dateFilterFn,
   formatDuration,
   formatISOStringToDate,
-  sortByVariant,
 } from "~/lib/utils";
 import { type OrderType } from "~/types/order";
-import { type ProductType } from "~/types/product";
 import { DataTableColumnHeader } from "../../data-table-column-header";
 
 const ProductCell: React.FC<{
   row: Row<OrderType>;
 }> = ({ row }) => {
-  const { productKeySnapshot } = row.original;
-  return productKeySnapshot.productName;
+  const { user } = useCurrentUser();
+  const { uuid: orderUUID } = row.original;
+  const {
+    productKeySnapshotsByOrderQuery
+  } = useMyKeys(user?.uuid ?? "", orderUUID);
+
+  if (!productKeySnapshotsByOrderQuery.data) return null;
+
+  return (
+    <>
+      {productKeySnapshotsByOrderQuery.data.map((productKey) => (
+        <div
+          key={productKey.uuid}
+          className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
+        >
+          {productKey.productName}
+        </div>
+      ))}
+    </>
+  );
 };
 
 const VariantCell: React.FC<{
   row: Row<OrderType>;
 }> = ({ row }) => {
-  const { productKeySnapshot: productKey } = row.original;
-  const {
-    query: { data: products },
-  } = useProducts();
+  const { user } = useCurrentUser();
+  const { uuid: orderUUID } = row.original;
+  const { productKeySnapshotsByOrderQuery } = useMyKeys(
+    user?.uuid ?? "",
+    orderUUID,
+  );
 
-  if (!products) return null;
+  if (!productKeySnapshotsByOrderQuery.data) return null;
 
-  const duration = productKey.pricing.duration;
-  return formatDuration(duration);
+  return (
+    <>
+      {productKeySnapshotsByOrderQuery.data.map((productKey) => (
+        <div
+          key={productKey.uuid}
+          className="-mr-4 -translate-x-4 border-b py-2 pl-4 last:border-b-0"
+        >
+          {formatDuration(productKey.pricing.duration)}
+        </div>
+      ))}
+    </>
+  );
 };
 
-export const getColumns = ({
-  products,
-}: {
-  products?: ProductType[];
-}): ColumnDef<OrderType>[] => [
+export const getColumns = (): ColumnDef<OrderType>[] => [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
@@ -67,35 +92,22 @@ export const getColumns = ({
       formatISOStringToDate(row.createdAt).formattedTime,
   },
   {
-    accessorKey: "product",
+    accessorKey: "productKeysSnapshot.productName",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product" />
     ),
     cell: ({ row }) => <ProductCell row={row} />,
-    filterFn: (row, id, value: string[]) => {
-      return value.includes(row.original.productKeySnapshot.productName);
-    },
-    accessorFn: (row) => row.productKeySnapshot.productName,
+  },
+  {
+    id: "productKeysSnapshot.pricing.duration",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Variant" />
+    ),
+    cell: ({ row }) => <VariantCell row={row} />,
   },
   {
     accessorKey: "invoiceLink",
     header: "Invoice Link",
     enableSorting: false,
-  },
-  {
-    id: "variant",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Variant" />
-    ),
-    cell: ({ row }) => <VariantCell row={row} />,
-    filterFn: (row, id, value: OrderType["productKeySnapshot"]) => {
-      const duration = row.original.productKeySnapshot.pricing.duration;
-      return value.pricing.duration === duration;
-    },
-    sortingFn: (rowA, rowB) => sortByVariant(rowA, rowB, products ?? []),
-    accessorFn: (row) => {
-      const duration = row.productKeySnapshot.pricing.duration;
-      return duration;
-    },
   },
 ];

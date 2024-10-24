@@ -1,5 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import { Trash2 } from "lucide-react";
+import { useRouter } from "next/router";
 import { useEffect } from "react";
 import {
   Controller,
@@ -48,6 +50,7 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
+  const router = useRouter();
   const { user, isLoading: isUserLoading } = useCurrentUser();
 
   const {
@@ -78,7 +81,9 @@ const ProductList = () => {
     }
   }, [replace, products, productFields.length]);
 
-  const onSubmit = (data: ProductFormValues) => {
+  const onSubmit = async (data: ProductFormValues) => {
+    if (!user) return;
+
     const filteredData = data.products.filter(
       (product) => product.keys.length > 0,
     );
@@ -96,7 +101,7 @@ const ProductList = () => {
       }, {});
 
       return {
-        name: product.productName,
+        productName: product.productName,
         keys: Object.values(priceGroups),
         totalPrice: Object.entries(priceGroups).reduce(
           (acc, [pricingUuid, { quantity }]) => {
@@ -110,12 +115,22 @@ const ProductList = () => {
       };
     });
 
-    toast.info("Submitted Data", {
-      description: JSON.stringify(cart, null, 2),
-      classNames: {
-        description: "whitespace-pre",
-      },
-    });
+    const res = await axios
+      .post("/api/create-invoice", {
+        amount: calculateTotal(form.watch("products")),
+        cart,
+        user_uuid: user.uuid,
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("An error occurred while creating the invoice");
+      });
+
+    const responseData = res?.data as { checkoutLink: string };
+
+    if (responseData) {
+      await router.push(responseData.checkoutLink);
+    }
   };
 
   const calculateTotal = (products: ProductFormValues["products"]) => {

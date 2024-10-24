@@ -81,8 +81,6 @@ const DurationCell: React.FC<{
                     <ProductForm
                       ref={productKeyFormRef}
                       handleSubmit={(values) => {
-                        console.log("row.original", row.original);
-                        console.log("values", values);
                         editProduct({
                           ...row.original,
                           ...values,
