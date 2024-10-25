@@ -49,7 +49,11 @@ const Admin = () => {
   }
 
   if (!user) {
-    return <PleaseLoginToView />;
+    return (
+      <RootLayout>
+        <PleaseLoginToView />
+      </RootLayout>
+    );
   }
 
   return (
