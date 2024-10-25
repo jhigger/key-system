@@ -115,7 +115,7 @@ export default async function handler(
             .status(200)
             .json({ message: "Order updated successfully", expiredData });
 
-        case "InvoiceSettled":
+        case "InvoicePaymentSettled":
           const { data: settledData, error: settledError } = await supabase
             .from("orders")
             .update({
