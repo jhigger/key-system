@@ -156,6 +156,9 @@ const ProductList = () => {
                 console.error(
                   `Not enough keys available for ${product.productName}`,
                 );
+                toast.error(
+                  `Not enough keys available for ${product.productName}`,
+                );
                 return [];
               }
 
