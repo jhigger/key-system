@@ -267,9 +267,21 @@ const ProductForm = forwardRef<ProductFormRef, ProductFormProps>(
                             min={0}
                             step="0.01"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
+                            onInput={(e) => {
+                              const input = e.target as HTMLInputElement;
+                              if (input.value.includes(".")) {
+                                const [whole, decimal] = input.value.split(".");
+                                if (decimal && decimal.length > 2) {
+                                  input.value = `${whole}.${decimal.slice(0, 2)}`;
+                                }
+                              }
+                            }}
+                            onChange={(e) => {
+                              const numValue = parseFloat(e.target.value);
+                              if (!isNaN(numValue)) {
+                                field.onChange(numValue);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />

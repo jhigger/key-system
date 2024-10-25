@@ -129,6 +129,15 @@ const PricingCell: React.FC<{
               min="0"
               step="0.01"
               value={p.value.toString()}
+              onInput={(e) => {
+                const input = e.target as HTMLInputElement;
+                if (input.value.includes(".")) {
+                  const [whole, decimal] = input.value.split(".");
+                  if (decimal && decimal.length > 2) {
+                    input.value = `${whole}.${decimal.slice(0, 2)}`;
+                  }
+                }
+              }}
               onChange={(value) => {
                 const numValue = Math.max(0, Number(value));
                 if (!isNaN(numValue) && numValue !== p.value) {
@@ -136,7 +145,7 @@ const PricingCell: React.FC<{
                     pricingUuid: p.uuid,
                     newPricing: {
                       ...p,
-                      value: numValue,
+                      value: parseFloat(numValue.toFixed(2)), // store value with 2 decimal places
                     },
                   });
                 }
