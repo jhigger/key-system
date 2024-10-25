@@ -24,7 +24,7 @@ const useProducts = () => {
   });
 
   const pricingsQuery = useQuery({
-    queryKey: ["products"],
+    queryKey: ["pricings"],
     queryFn: () => getPricings(getToken),
   });
 
