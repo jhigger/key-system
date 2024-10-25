@@ -6,6 +6,7 @@ import {
   deleteProduct,
   editPricing,
   editProduct,
+  getPricings,
   getProducts,
 } from "~/data-access/products";
 import { type PricingType } from "~/types/pricing";
@@ -20,6 +21,11 @@ const useProducts = () => {
   const query = useQuery({
     queryKey: ["products"],
     queryFn: () => getProducts(getToken),
+  });
+
+  const pricingsQuery = useQuery({
+    queryKey: ["products"],
+    queryFn: () => getPricings(getToken),
   });
 
   const addProductMutation = useMutation({
@@ -254,6 +260,7 @@ const useProducts = () => {
 
   return {
     query,
+    pricingsQuery,
     mutation: {
       addProduct: addProductMutation.mutate,
       editProduct: editMutation.mutate,

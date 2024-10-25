@@ -3,15 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 import axios, { AxiosError } from "axios";
 import { type Database } from "database.types";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { v4 as uuidv4 } from "uuid";
 
-type Data = {
+export type CreateInvoiceData = {
   amount: string;
-  cart: {
-    productName: string;
-    keys: { quantity: number; pricingUuid: string }[];
-    totalPrice: number;
-  }[];
+  order_uuid: string;
+  productKeySnapshots: Database["public"]["Tables"]["product_keys_snapshots"]["Insert"][];
   user_uuid: string;
 };
 
@@ -62,111 +58,8 @@ export default async function handler(
       process.env.SUPABASE_SERVICE_ROLE_KEY,
     );
 
-    const { amount, cart, user_uuid } = req.body as Data;
-    const orderUUID = uuidv4();
-
-    const { data: pricingData } = await supabase.from("pricings").select("*");
-    const { data: productKeys } = await supabase
-      .from("product_keys")
-      .select("*")
-      .is("owner", null);
-
-    const usedKeys = new Set<string>();
-
-    const productKeySnapshots: Database["public"]["Tables"]["product_keys_snapshots"]["Insert"][] =
-      cart.flatMap(
-        (
-          product,
-        ): Database["public"]["Tables"]["product_keys_snapshots"]["Insert"][] => {
-          return product.keys.flatMap(
-            (
-              keyRequest,
-            ): Database["public"]["Tables"]["product_keys_snapshots"]["Insert"][] => {
-              const pricing = pricingData?.find(
-                (p) => p.uuid === keyRequest.pricingUuid,
-              );
-              const availableKeys =
-                productKeys?.filter(
-                  (p) =>
-                    p.pricing_id === keyRequest.pricingUuid &&
-                    !usedKeys.has(p.key),
-                ) ?? [];
-
-              if (!pricing || availableKeys.length < keyRequest.quantity) {
-                console.error(
-                  `Not enough keys available for ${product.productName}`,
-                );
-                return [];
-              }
-
-              return Array.from({ length: keyRequest.quantity }, () => {
-                const productKey = availableKeys.pop();
-                if (!productKey) {
-                  console.error(
-                    `Unexpected: No key available for ${product.productName}`,
-                  );
-                  return null;
-                }
-                usedKeys.add(productKey.key);
-
-                return {
-                  uuid: uuidv4(),
-                  product_name: product.productName,
-                  key: productKey.key,
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                  owner: user_uuid,
-                  pricing: pricing,
-                  hardware_id: null,
-                  expiry: pricing.duration
-                    ? new Date(
-                        new Date().getTime() +
-                          pricing.duration * 24 * 60 * 60 * 1000,
-                      ).toISOString()
-                    : null,
-                  order_id: orderUUID,
-                };
-              }).filter(
-                (item): item is NonNullable<typeof item> => item !== null,
-              );
-            },
-          );
-        },
-      );
-
-    // Update stock for each pricing
-    for (const product of cart) {
-      for (const keyRequest of product.keys) {
-        const { error: updateStockError } = await supabase
-          .from("pricings")
-          .update({
-            stock:
-              (
-                await supabase.rpc("decrement_stock", {
-                  pricing_uuid: keyRequest.pricingUuid,
-                  amount: keyRequest.quantity,
-                })
-              ).data ?? 0,
-          })
-          .eq("uuid", keyRequest.pricingUuid);
-
-        if (updateStockError) {
-          console.error("Error updating stock:", updateStockError);
-          // Handle the error appropriately
-        }
-      }
-    }
-
-    for (const productKey of productKeySnapshots) {
-      const { error: updateReservedError } = await supabase
-        .from("product_keys")
-        .update({ reserved: true })
-        .eq("key", productKey.key);
-
-      if (updateReservedError) {
-        console.error("Error updating reserved:", updateReservedError);
-      }
-    }
+    const { amount, order_uuid, productKeySnapshots, user_uuid } =
+      req.body as CreateInvoiceData;
 
     const apiEndpoint = `${btcpayServerUrl}/api/v1/stores/${storeId}/invoices`;
 
@@ -180,12 +73,15 @@ export default async function handler(
       currency: "USD",
       metadata: {
         user_uuid: user_uuid,
-        order_uuid: orderUUID,
+        order_uuid: order_uuid,
         keys: productKeySnapshots.map((snapshot) => snapshot.key),
       },
       checkout: {
         speedPolicy: "HighSpeed",
         paymentMethods: ["BTC", "LTC"],
+        redirectURL: new URL(
+          process.env.NEXT_PUBLIC_FRONT_END_URL + "account#order-history",
+        ),
       },
     };
 
@@ -194,7 +90,7 @@ export default async function handler(
     const data = response.data as { checkoutLink: string };
 
     const { error: newOrderError } = await supabase.from("orders").insert({
-      uuid: orderUUID,
+      uuid: order_uuid,
       purchased_by: user_uuid,
       invoice_link: data.checkoutLink,
       created_at: new Date().toISOString(),

@@ -293,6 +293,25 @@ export const updateProductStock = async (
   }
 };
 
+export const getPricings = async (
+  getToken: () => Promise<string | null>,
+): Promise<PricingType[]> => {
+  const token = await getToken();
+  if (!token) {
+    throw new Error("No token provided");
+  }
+
+  const { data: pricings, error: pricingsError } = await supabase(token)
+    .from("pricings")
+    .select("*");
+
+  if (pricingsError) {
+    throw new Error(pricingsError.message);
+  }
+
+  return pricings;
+};
+
 // Helper functions
 const findProductById = (
   products: ProductType[],

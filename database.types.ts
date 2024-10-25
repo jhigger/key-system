@@ -282,6 +282,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      batch_operations: {
+        Args: {
+          operations: Json
+        }
+        Returns: undefined
+      }
       decrement_stock: {
         Args: {
           pricing_uuid: string

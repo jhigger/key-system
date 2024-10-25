@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
+import { type Database } from "database.types";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -11,10 +12,15 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+import useAuthToken from "~/hooks/useAuthToken";
 import { useCurrentUser } from "~/hooks/useCurrentUser";
+import useProductKeys from "~/hooks/useProductKeys";
 import useProducts from "~/hooks/useProducts";
+import { supabase } from "~/lib/initSupabase";
 import { formatDuration, formatPrice } from "~/lib/utils";
+import { type CreateInvoiceData } from "~/pages/api/create-invoice";
 import { type ProductType } from "~/types/product";
 import DottedLine from "./dotted-line";
 import Loader from "./loader";
@@ -50,13 +56,19 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
+  const getToken = useAuthToken();
   const router = useRouter();
   const { user, isLoading: isUserLoading } = useCurrentUser();
 
   const {
     query: { data: products, isLoading: isProductsLoading },
     query: { data: productsData },
+    pricingsQuery: { data: pricingsData, isLoading: isPricingsLoading },
   } = useProducts();
+
+  const {
+    query: { data: productKeys, isLoading: isProductKeysLoading },
+  } = useProductKeys();
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -83,6 +95,9 @@ const ProductList = () => {
 
   const onSubmit = async (data: ProductFormValues) => {
     if (!user) return;
+
+    const token = await getToken();
+    if (!token) return;
 
     const filteredData = data.products.filter(
       (product) => product.keys.length > 0,
@@ -115,16 +130,125 @@ const ProductList = () => {
       };
     });
 
-    const res = await axios
-      .post("/api/create-invoice", {
-        amount: calculateTotal(form.watch("products")),
-        cart,
-        user_uuid: user.uuid,
-      })
-      .catch((err) => {
-        console.error(err);
-        toast.error("An error occurred while creating the invoice");
+    const orderUUID = uuidv4();
+    const usedKeys = new Set<string>();
+
+    const productKeySnapshots: Database["public"]["Tables"]["product_keys_snapshots"]["Insert"][] =
+      cart.flatMap(
+        (
+          product,
+        ): Database["public"]["Tables"]["product_keys_snapshots"]["Insert"][] => {
+          return product.keys.flatMap(
+            (
+              keyRequest,
+            ): Database["public"]["Tables"]["product_keys_snapshots"]["Insert"][] => {
+              const pricing = pricingsData?.find(
+                (p) => p.uuid === keyRequest.pricingUuid,
+              );
+              const availableKeys =
+                productKeys?.filter(
+                  (p) =>
+                    p.pricingId === keyRequest.pricingUuid &&
+                    !usedKeys.has(p.key),
+                ) ?? [];
+
+              if (!pricing || availableKeys.length < keyRequest.quantity) {
+                console.error(
+                  `Not enough keys available for ${product.productName}`,
+                );
+                return [];
+              }
+
+              return Array.from({ length: keyRequest.quantity }, () => {
+                const productKey = availableKeys.pop();
+                if (!productKey) {
+                  console.error(
+                    `Unexpected: No key available for ${product.productName}`,
+                  );
+                  return null;
+                }
+                usedKeys.add(productKey.key);
+
+                return {
+                  uuid: uuidv4(),
+                  product_name: product.productName,
+                  key: productKey.key,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  owner: user.uuid,
+                  pricing: pricing,
+                  hardware_id: null,
+                  expiry: pricing.duration
+                    ? new Date(
+                        new Date().getTime() +
+                          pricing.duration * 24 * 60 * 60 * 1000,
+                      ).toISOString()
+                    : null,
+                  order_id: orderUUID,
+                };
+              }).filter(
+                (item): item is NonNullable<typeof item> => item !== null,
+              );
+            },
+          );
+        },
+      );
+
+    const operations: (
+      | {
+          type: "decrement_stock" | "increment_stock";
+          pricing_uuid: string;
+          amount: number;
+        }
+      | {
+          type: "update_reserved";
+          key: string;
+          reserved: boolean;
+        }
+    )[] = [];
+
+    // Update stock for each pricing
+    for (const product of cart) {
+      for (const keyRequest of product.keys) {
+        operations.push({
+          type: "decrement_stock",
+          pricing_uuid: keyRequest.pricingUuid,
+          amount: keyRequest.quantity,
+        });
+      }
+    }
+
+    // Update reserved for each key
+    for (const productKey of productKeySnapshots) {
+      operations.push({
+        type: "update_reserved",
+        key: productKey.key,
+        reserved: true,
       });
+    }
+
+    const { error: batchError } = await supabase(token).rpc(
+      "batch_operations",
+      {
+        operations,
+      },
+    );
+    if (batchError) {
+      console.error("Error during batch operations:", batchError);
+      return; // Exit if there's an error
+    }
+
+    const body: CreateInvoiceData = {
+      amount: calculateTotal(form.watch("products")).toString(),
+      order_uuid: orderUUID,
+      productKeySnapshots,
+      user_uuid: user.uuid,
+    };
+
+    const res = await axios.post("/api/create-invoice", body).catch((err) => {
+      console.error(err);
+      toast.error("An error occurred while creating the invoice");
+    });
 
     const responseData = res?.data as { checkoutLink: string };
 
@@ -147,7 +271,12 @@ const ProductList = () => {
     }, 0);
   };
 
-  if (isUserLoading || isProductsLoading) {
+  if (
+    isUserLoading ||
+    isProductsLoading ||
+    isPricingsLoading ||
+    isProductKeysLoading
+  ) {
     return <Loader />;
   }
 
