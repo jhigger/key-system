@@ -81,7 +81,6 @@ export const editProductKey = async (
       key: productKey.key,
       owner: productKey.owner,
       pricing_id: productKey.pricingId,
-      expiry: productKey.expiry,
       updated_at: new Date().toISOString(),
     })
     .eq("uuid", productKeyUuid)
@@ -139,7 +138,6 @@ export const addProductKeys = async (
       productKeys.map((productKey) => ({
         product_id: productKey.productId,
         key: productKey.key,
-        expiry: productKey.expiry,
         owner: productKey.owner,
         pricing_id: productKey.pricingId,
       })),
@@ -147,7 +145,7 @@ export const addProductKeys = async (
     .select();
 
   if (error) {
-    throw new Error("Failed to add product key(s)");
+    throw new Error(error.message);
   }
 
   await updateProductStock(
