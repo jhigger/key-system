@@ -40,8 +40,6 @@ export const getProductKeySnapshotsByOrder = async (
     }),
   );
 
-  console.log("productKeys", productKeys);
-
   return productKeys;
 };
 
@@ -64,8 +62,6 @@ export const getProductKeySnapshotsByUser = async (
     .eq("owner", userUUID)
     .eq("orders.status", "paid")
     .order("created_at", { ascending: false });
-
-  console.log("Raw data from query:", data);
 
   if (error) {
     throw new Error(`Error fetching product keys: ${error.message}`);
