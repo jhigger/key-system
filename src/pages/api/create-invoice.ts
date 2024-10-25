@@ -80,7 +80,7 @@ export default async function handler(
         speedPolicy: "HighSpeed",
         paymentMethods: ["BTC", "LTC"],
         redirectURL: new URL(
-          process.env.NEXT_PUBLIC_FRONT_END_URL + "account#order-history",
+          process.env.NEXT_PUBLIC_FRONT_END_URL + "/account#order-history",
         ),
       },
     };
