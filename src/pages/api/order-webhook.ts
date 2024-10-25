@@ -73,10 +73,11 @@ export default async function handler(
           }
 
           // Increase the stock of the keys' pricing on the pricing table
-          const { data: productKeysData, error: productKeysError } = await supabase
-            .from("product_keys")
-            .select("pricing_id")
-            .in("key", metadata.keys);
+          const { data: productKeysData, error: productKeysError } =
+            await supabase
+              .from("product_keys")
+              .select("pricing_id")
+              .in("key", metadata.keys);
 
           if (productKeysError) {
             console.error("Supabase error:", productKeysError);
@@ -87,14 +88,17 @@ export default async function handler(
           }
 
           const pricingIds = productKeysData
-            .map(item => item.pricing_id)
+            .map((item) => item.pricing_id)
             .filter((id): id is string => id !== null && id !== undefined);
 
           for (const pricingId of pricingIds) {
-            const { error: incrementStockError } = await supabase.rpc("increment_stock", {
-              pricing_uuid: pricingId,
-              amount: 1
-            });
+            const { error: incrementStockError } = await supabase.rpc(
+              "increment_stock",
+              {
+                pricing_uuid: pricingId,
+                amount: 1,
+              },
+            );
 
             if (incrementStockError) {
               console.error("Error incrementing stock:", incrementStockError);
@@ -104,6 +108,8 @@ export default async function handler(
               });
             }
           }
+
+          console.log("expiredData: ", expiredData);
 
           return res
             .status(200)
@@ -142,15 +148,19 @@ export default async function handler(
             });
           }
 
+          console.log("settledData: ", settledData);
+
           return res
             .status(200)
             .json({ message: "Order updated successfully", settledData });
       }
 
-      res.status(200).json({ received: true });
+      console.log("received: ", type);
+
+      return res.status(200).json({ received: true });
     } catch (error) {
       console.error("Webhook error:", error);
-      res.status(500).json({ error: "Webhook processing failed" });
+      return res.status(500).json({ error: "Webhook processing failed" });
     }
   } catch (error) {
     console.error("Unexpected error:", error);
