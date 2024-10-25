@@ -183,6 +183,10 @@ export default async function handler(
         order_uuid: orderUUID,
         keys: productKeySnapshots.map((snapshot) => snapshot.key),
       },
+      checkout: {
+        speedPolicy: "HighSpeed",
+        paymentMethods: ["BTC", "LTC"],
+      },
     };
 
     const response = await axios.post(apiEndpoint, payload, { headers });
