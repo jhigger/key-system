@@ -293,14 +293,14 @@ export type Database = {
           pricing_uuid: string
           amount: number
         }
-        Returns: number
+        Returns: undefined
       }
       increment_stock: {
         Args: {
           pricing_uuid: string
           amount: number
         }
-        Returns: number
+        Returns: undefined
       }
       verify_clerk_jwt: {
         Args: Record<PropertyKey, never>
