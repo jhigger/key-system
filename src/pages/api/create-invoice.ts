@@ -38,8 +38,8 @@ export default async function handler(
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    const btcpayServerUrl = process.env.NEXT_PUBLIC_BTCPAY_SERVER_URL;
-    const storeId = process.env.NEXT_PUBLIC_BTCPAY_STORE_ID;
+    const btcpayServerUrl = process.env.BTCPAY_SERVER_URL;
+    const storeId = process.env.BTCPAY_STORE_ID;
     const apiKey = process.env.BTCPAY_API_KEY;
 
     if (!btcpayServerUrl || !storeId || !apiKey) {
@@ -50,7 +50,7 @@ export default async function handler(
 
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY
+      !process.env.SUPABASE_SERVICE_ROLE_KEY
     ) {
       return res
         .status(500)
@@ -59,7 +59,7 @@ export default async function handler(
 
     const supabase = createClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
     );
 
     const { amount, cart, user_uuid } = req.body as Data;

@@ -23,7 +23,7 @@ export default async function handler(
 
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY
+      !process.env.SUPABASE_SERVICE_ROLE_KEY
     ) {
       return res
         .status(500)
@@ -34,7 +34,7 @@ export default async function handler(
 
     const supabase = createClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
     );
 
     try {
