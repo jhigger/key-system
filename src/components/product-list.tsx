@@ -196,7 +196,7 @@ const ProductList = () => {
 
     const operations: (
       | {
-          type: "decrement_stock" | "increment_stock";
+          type: "decrement_stock";
           pricing_uuid: string;
           amount: number;
         }
@@ -245,10 +245,56 @@ const ProductList = () => {
       user_uuid: user.uuid,
     };
 
-    const res = await axios.post("/api/create-invoice", body).catch((err) => {
-      console.error(err);
-      toast.error("An error occurred while creating the invoice");
-    });
+    const res = await axios
+      .post("/api/create-invoice", body)
+      .catch(async (err) => {
+        const operationsOnError: (
+          | {
+              type: "increment_stock";
+              pricing_uuid: string;
+              amount: number;
+            }
+          | {
+              type: "update_reserved";
+              key: string;
+              reserved: boolean;
+            }
+        )[] = [];
+
+        // Update stock for each pricing
+        for (const product of cart) {
+          for (const keyRequest of product.keys) {
+            operationsOnError.push({
+              type: "increment_stock",
+              pricing_uuid: keyRequest.pricingUuid,
+              amount: keyRequest.quantity,
+            });
+          }
+        }
+
+        // Update reserved for each key
+        for (const productKey of productKeySnapshots) {
+          operationsOnError.push({
+            type: "update_reserved",
+            key: productKey.key,
+            reserved: false,
+          });
+        }
+
+        const { error: batchError } = await supabase(token).rpc(
+          "batch_operations",
+          {
+            operations,
+          },
+        );
+        if (batchError) {
+          console.error("Error during batch operations:", batchError);
+          return; // Exit if there's an error
+        }
+
+        console.error(err);
+        toast.error("An error occurred while creating the invoice");
+      });
 
     const responseData = res?.data as { checkoutLink: string };
 
