@@ -37,6 +37,8 @@ export default async function handler(
       process.env.SUPABASE_SERVICE_ROLE_KEY,
     );
 
+    console.log("Type: ", type);
+
     try {
       switch (type) {
         case "InvoiceExpired":
@@ -154,8 +156,6 @@ export default async function handler(
             .status(200)
             .json({ message: "Order updated successfully", settledData });
       }
-
-      console.log("received: ", type);
 
       return res.status(200).json({ received: true });
     } catch (error) {
