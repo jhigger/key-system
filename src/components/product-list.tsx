@@ -238,6 +238,7 @@ const ProductList = () => {
     );
     if (batchError) {
       console.error("Error during batch operations:", batchError);
+      toast.error("Something went wrong");
       return; // Exit if there's an error
     }
 
