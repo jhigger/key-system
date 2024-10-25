@@ -3,7 +3,7 @@ import axios from "axios";
 import { type Database } from "database.types";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Controller,
   FormProvider,
@@ -56,6 +56,7 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
+  const [isCheckout, setIsCheckout] = useState(false);
   const getToken = useAuthToken();
   const router = useRouter();
   const { user, isLoading: isUserLoading } = useCurrentUser();
@@ -230,7 +231,7 @@ const ProductList = () => {
       });
     }
 
-    const { error: batchError } = await supabase(token).rpc(
+    const { data: batchData, error: batchError } = await supabase(token).rpc(
       "batch_operations",
       {
         operations,
@@ -241,6 +242,8 @@ const ProductList = () => {
       toast.error("Something went wrong");
       return; // Exit if there's an error
     }
+
+    console.log("data: ", batchData);
 
     const body: CreateInvoiceData = {
       amount: calculateTotal(form.watch("products")).toString(),
@@ -303,6 +306,7 @@ const ProductList = () => {
     const responseData = res?.data as { checkoutLink: string };
 
     if (responseData) {
+      setIsCheckout(true);
       await router.push(responseData.checkoutLink);
     }
   };
@@ -325,7 +329,8 @@ const ProductList = () => {
     isUserLoading ||
     isProductsLoading ||
     isPricingsLoading ||
-    isProductKeysLoading
+    isProductKeysLoading ||
+    isCheckout
   ) {
     return <Loader />;
   }
