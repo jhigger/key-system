@@ -59,7 +59,6 @@ export default async function handler(
         email: email,
         username: username,
         role: "user",
-        orders: [],
       })
       .select();
 
