@@ -29,12 +29,12 @@ import {
 } from "./ui/select";
 
 const formSchema = z.object({
-  product: z.string().min(1, "Product is required"),
-  pricingUuid: z.string().min(1, "Pricing is required"),
+  product: z.string().trim().min(1, "Product is required"),
+  pricingUuid: z.string().trim().min(1, "Pricing is required"),
   keys: z
     .array(
       z.object({
-        key: z.string().min(1, "Key is required"),
+        key: z.string().trim().min(1, "Key is required"),
       }),
     )
     .min(1, "At least one key is required"),

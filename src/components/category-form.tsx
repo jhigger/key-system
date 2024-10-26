@@ -18,7 +18,7 @@ import Loader from "./loader";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Category name is required"),
+  name: z.string().trim().min(1, "Category name is required"),
 });
 
 export interface CategoryFormRef {

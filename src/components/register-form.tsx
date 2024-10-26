@@ -30,11 +30,15 @@ export const RegisterFormSchema = z
   .object({
     username: z
       .string()
+      .trim()
       .min(4, "Username must be at least 4 characters")
       .max(64, "Username must be at most 64 characters"),
-    email: z.string().email(),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string(),
+    email: z.string().email().trim(),
+    password: z
+      .string()
+      .trim()
+      .min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().trim(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords must match",

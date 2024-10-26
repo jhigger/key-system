@@ -26,8 +26,8 @@ import {
 } from "./ui/form";
 
 const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
+  email: z.string().trim().email(),
+  password: z.string().trim(),
 });
 
 export function LoginForm() {

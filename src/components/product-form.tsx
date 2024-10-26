@@ -33,12 +33,12 @@ import {
 } from "./ui/select";
 
 const formSchema = z.object({
-  category: z.string().nullable(),
-  name: z.string().min(1, "Product name is required"),
+  category: z.string().trim().nullable(),
+  name: z.string().trim().min(1, "Product name is required"),
   pricing: z
     .array(
       z.object({
-        uuid: z.string().optional(),
+        uuid: z.string().trim().optional(),
         duration: z.number().min(0, "Duration must be a non-negative number"),
         value: z.number().min(0.01, "Price must be greater than 0"),
         stock: z.number().min(0, "Stock cannot be negative"),
