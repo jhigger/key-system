@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import useAuthToken from "~/hooks/useAuthToken";
+import useCategories from "~/hooks/useCategories";
 import { useCurrentUser } from "~/hooks/useCurrentUser";
 import useProductKeys from "~/hooks/useProductKeys";
 import useProducts from "~/hooks/useProducts";
@@ -37,10 +38,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 const productSchema = z.object({
   products: z.array(
     z.object({
+      category: z.string().nullable(),
       productName: z.string(),
       keys: z.array(
         z.object({
@@ -57,10 +60,18 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
+  const [currentCategory, setCurrentCategory] = useState({
+    label: "All",
+    value: "all",
+  }); // State for the selected category
   const [isCheckout, setIsCheckout] = useState(false);
   const getToken = useAuthToken();
   const router = useRouter();
   const { user, isLoading: isUserLoading } = useCurrentUser();
+
+  const {
+    query: { data: categories, isLoading: isCategoriesLoading },
+  } = useCategories();
 
   const {
     query: { data: products, isLoading: isProductsLoading },
@@ -90,6 +101,7 @@ const ProductList = () => {
       const formattedProducts = products.map((product) => ({
         keys: [],
         productName: product.name,
+        category: product.category,
       }));
       replace(formattedProducts);
     }
@@ -326,8 +338,15 @@ const ProductList = () => {
     }, 0);
   };
 
+  const handleCategoryChange = (value: string) => {
+    const categoryName =
+      categories?.find((category) => category.uuid === value)?.name ?? "All";
+    setCurrentCategory({ label: categoryName, value });
+  };
+
   if (
     isUserLoading ||
+    isCategoriesLoading ||
     isProductsLoading ||
     isPricingsLoading ||
     isProductKeysLoading ||
@@ -361,60 +380,95 @@ const ProductList = () => {
   }
 
   return (
-    <Card className="mx-auto w-full max-w-3xl">
-      <CardHeader>
-        <div className="w-full rounded-md bg-green-500/80 p-4 text-sm text-green-50">
-          <b>Note:</b> You can now proceed to checkout! Spend over $1200 to
-          receive a $200 discount.
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <FormProvider {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-          >
-            {productFields.map((productField, productIndex) => {
-              const product = products?.[productIndex];
-              if (!product) return null;
-
-              return (
-                <ProductCard
-                  key={productField.id}
-                  product={product}
-                  productIndex={productIndex}
-                />
-              );
-            })}
-
-            <div className="flex w-full items-baseline justify-between">
-              <span>Total</span>
-              <DottedLine />
-              <span className="font-bold">
-                {formatPrice(calculateTotal(form.watch("products")))}
-              </span>
-            </div>
-
-            {user.role !== "admin" && (
-              <Button
-                className="w-full"
-                type="submit"
-                disabled={
-                  form.formState.isSubmitting ||
-                  calculateTotal(form.watch("products")) <= 0
-                }
+    <Tabs
+      defaultValue={"all"}
+      className="w-full max-w-screen-lg grow"
+      value={currentCategory.value}
+    >
+      {categories && (
+        <TabsList className="flex h-fit w-full flex-wrap">
+          {[{ uuid: "all", name: "All" }, ...categories].map(
+            ({ uuid, name }) => (
+              <TabsTrigger
+                key={uuid}
+                value={uuid}
+                className="flex flex-1 items-center justify-center gap-2"
+                onClick={() => {
+                  handleCategoryChange(uuid);
+                }}
               >
-                {form.formState.isSubmitting ? (
-                  <Loader />
-                ) : (
-                  "Proceed to checkout"
+                {name}
+              </TabsTrigger>
+            ),
+          )}
+        </TabsList>
+      )}
+      <TabsContent value={currentCategory.value}>
+        <Card className="mx-auto w-full max-w-screen-lg">
+          <CardHeader>
+            <div className="w-full rounded-md bg-green-500/80 p-4 text-sm text-green-50">
+              <b>Note:</b> You can now proceed to checkout! Spend over $1200 to
+              receive a $200 discount.
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <FormProvider {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col gap-4"
+              >
+                {productFields
+                  .filter((productField) => {
+                    if (currentCategory.value === "all") {
+                      return true;
+                    }
+                    return productField.category === currentCategory.value;
+                  })
+                  .map((productField, productIndex) => {
+                    const product = products?.find(
+                      (p) => p.name === productField.productName,
+                    );
+                    if (!product) return null;
+
+                    return (
+                      <ProductCard
+                        key={productField.id}
+                        product={product}
+                        productIndex={productIndex}
+                      />
+                    );
+                  })}
+
+                <div className="flex w-full items-baseline justify-between">
+                  <span>Total</span>
+                  <DottedLine />
+                  <span className="font-bold">
+                    {formatPrice(calculateTotal(form.watch("products")))}
+                  </span>
+                </div>
+
+                {user.role !== "admin" && (
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    disabled={
+                      form.formState.isSubmitting ||
+                      calculateTotal(form.watch("products")) <= 0
+                    }
+                  >
+                    {form.formState.isSubmitting ? (
+                      <Loader />
+                    ) : (
+                      "Proceed to checkout"
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
-          </form>
-        </FormProvider>
-      </CardContent>
-    </Card>
+              </form>
+            </FormProvider>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   );
 };
 
