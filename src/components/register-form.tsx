@@ -172,6 +172,7 @@ export function RegisterForm() {
                 </FormItem>
               )}
             />
+            <div id="clerk-captcha" />
             <Button
               type="submit"
               className="col-span-full"
