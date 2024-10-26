@@ -22,13 +22,17 @@ const TabsLayout = ({ tabs }: TabLayoutProps) => {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const hashId = asPath.split("#")[1];
-      setActiveTab(
+      const newActiveTab =
         hashId && tabs.some((tab) => tab.value === hashId)
           ? hashId
-          : (tabs[0]?.value ?? ""),
-      );
+          : (tabs[0]?.value ?? "");
+
+      // Only update state if it's different from current state
+      if (newActiveTab !== activeTab) {
+        setActiveTab(newActiveTab);
+      }
     }
-  }, [asPath, tabs]);
+  }, [asPath, tabs, activeTab]); // Added activeTab to dependencies
 
   return (
     <Tabs
