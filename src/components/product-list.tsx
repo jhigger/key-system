@@ -24,7 +24,6 @@ import { formatDuration, formatPrice } from "~/lib/utils";
 import { type CreateInvoiceData } from "~/pages/api/create-invoice";
 import { type ProductType } from "~/types/product";
 import DottedLine from "./dotted-line";
-import RootLayout from "./layouts/root-layout";
 import Loader from "./loader";
 import PendingApproval from "./pending-approval";
 import PleaseLoginToView from "./please-login-to-view";
@@ -356,19 +355,11 @@ const ProductList = () => {
   }
 
   if (!user) {
-    return (
-      <RootLayout>
-        <PleaseLoginToView />
-      </RootLayout>
-    );
+    return <PleaseLoginToView />;
   }
 
   if (user.approvedBy === null) {
-    return (
-      <RootLayout>
-        <PendingApproval />
-      </RootLayout>
-    );
+    return <PendingApproval />;
   }
 
   if (products?.length === 0) {
