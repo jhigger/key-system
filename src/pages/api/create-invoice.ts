@@ -68,8 +68,10 @@ export default async function handler(
       Authorization: "token " + apiKey,
     };
 
+    const finalAmount = Number(amount) > 1200 ? Number(amount) - 200 : amount;
+
     const payload = {
-      amount: amount,
+      amount: String(finalAmount),
       currency: "USD",
       metadata: {
         user_uuid: user_uuid,
