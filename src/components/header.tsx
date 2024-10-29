@@ -72,17 +72,15 @@ const NavigationItems = () => {
         </Button>
       </SignedOut>
       <SignedIn>
-        {user && user.role !== "admin" && (
-          <Button
-            variant={pathname === "/" ? "secondary" : "ghost"}
-            className="gap-2"
-            asChild
-          >
-            <Link href="/">
-              Buy <Store size={16} />
-            </Link>
-          </Button>
-        )}
+        <Button
+          variant={pathname === "/" ? "secondary" : "ghost"}
+          className="gap-2"
+          asChild
+        >
+          <Link href="/">
+            Buy <Store size={16} />
+          </Link>
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
