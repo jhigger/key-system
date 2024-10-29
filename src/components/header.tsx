@@ -131,17 +131,18 @@ const NavigationItems = () => {
               </>
             ) : (
               <>
-                {ACCOUNT_TABS.map((tab) => (
-                  <DropdownMenuItem
-                    key={tab.value}
-                    className="flex justify-between gap-4"
-                    asChild
-                  >
-                    <Link href={`/account#${tab.value}`}>
-                      {tab.label} {tab.icon}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
+                {user?.approvedBy &&
+                  ACCOUNT_TABS.map((tab) => (
+                    <DropdownMenuItem
+                      key={tab.value}
+                      className="flex justify-between gap-4"
+                      asChild
+                    >
+                      <Link href={`/account#${tab.value}`}>
+                        {tab.label} {tab.icon}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
               </>
             )}
             <DropdownMenuItem
