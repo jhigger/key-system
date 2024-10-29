@@ -143,15 +143,15 @@ const ProductList = () => {
       };
     });
 
-    // const totalCartPrice = cart.reduce(
-    //   (acc, product) => acc + product.totalPrice,
-    //   0,
-    // );
+    const totalCartPrice = cart.reduce(
+      (acc, product) => acc + product.totalPrice,
+      0,
+    );
 
-    // if (totalCartPrice < 100) {
-    //   toast.warning("Purchase total must be at least $100");
-    //   return;
-    // }
+    if (totalCartPrice < 100) {
+      toast.warning("Purchase total must be at least $100");
+      return;
+    }
 
     const orderUUID = uuidv4();
     const usedKeys = new Set<string>();
