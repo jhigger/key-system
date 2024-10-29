@@ -16,18 +16,25 @@ const queryClient = new QueryClient({
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-    >
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="dark">
-          <div className={GeistSans.className}>
-            <Component {...pageProps} />
-            <Toaster richColors />
-          </div>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
+    <>
+      <style jsx global>{`
+        html {
+          font-family: ${GeistSans.style.fontFamily};
+        }
+      `}</style>
+      <ClerkProvider
+        publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      >
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider attribute="class" defaultTheme="dark">
+            <div className={GeistSans.className}>
+              <Component {...pageProps} />
+              <Toaster richColors />
+            </div>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </ClerkProvider>
+    </>
   );
 };
 
