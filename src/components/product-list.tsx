@@ -60,8 +60,8 @@ type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductList = () => {
   const [currentCategory, setCurrentCategory] = useState({
-    label: "All",
-    value: "all",
+    label: "",
+    value: "",
   }); // State for the selected category
   const [isCheckout, setIsCheckout] = useState(false);
   const getToken = useAuthToken();
@@ -105,6 +105,15 @@ const ProductList = () => {
       replace(formattedProducts);
     }
   }, [replace, products, productFields.length]);
+
+  useEffect(() => {
+    if (categories && !isCategoriesLoading) {
+      setCurrentCategory({
+        label: categories[0]?.name ?? "",
+        value: categories[0]?.uuid ?? "",
+      });
+    }
+  }, [categories, isCategoriesLoading]);
 
   const onSubmit = async (data: ProductFormValues) => {
     if (!user) return;
@@ -382,26 +391,24 @@ const ProductList = () => {
 
   return (
     <Tabs
-      defaultValue={"all"}
+      defaultValue={categories?.[0]?.uuid}
       className="w-full max-w-screen-lg grow"
       value={currentCategory.value}
     >
       {categories && (
         <TabsList className="flex h-fit w-full flex-wrap">
-          {[{ uuid: "all", name: "All" }, ...categories].map(
-            ({ uuid, name }) => (
-              <TabsTrigger
-                key={uuid}
-                value={uuid}
-                className="flex flex-1 items-center justify-center gap-2"
-                onClick={() => {
-                  handleCategoryChange(uuid);
-                }}
-              >
-                {name}
-              </TabsTrigger>
-            ),
-          )}
+          {categories.map(({ uuid, name }) => (
+            <TabsTrigger
+              key={uuid}
+              value={uuid}
+              className="flex flex-1 items-center justify-center gap-2"
+              onClick={() => {
+                handleCategoryChange(uuid);
+              }}
+            >
+              {name}
+            </TabsTrigger>
+          ))}
         </TabsList>
       )}
       <TabsContent value={currentCategory.value}>
@@ -420,9 +427,6 @@ const ProductList = () => {
               >
                 {productFields
                   .filter((productField) => {
-                    if (currentCategory.value === "all") {
-                      return true;
-                    }
                     return productField.category === currentCategory.value;
                   })
                   .map((productField, productIndex) => {
