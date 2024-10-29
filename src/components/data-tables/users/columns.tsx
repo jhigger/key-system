@@ -176,7 +176,7 @@ export const getColumns = (): ColumnDef<UserType>[] => [
       );
     },
     filterFn: (row, id, value: string[]) => {
-      return value.includes(row.getValue(id) ? "approved" : "pending");
+      return value.includes(row.getValue(id));
     },
     accessorFn: (row) => (row.approvedBy ? "approved" : "pending"),
   },
