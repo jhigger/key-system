@@ -102,6 +102,11 @@ export function LoginForm() {
                       type="email"
                       placeholder="email@example.com"
                       {...field}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedData = e.clipboardData.getData("text");
+                        field.onChange(pastedData.trim());
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -115,7 +120,15 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedData = e.clipboardData.getData("text");
+                        field.onChange(pastedData.trim());
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

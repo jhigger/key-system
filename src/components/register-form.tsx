@@ -127,7 +127,15 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="username" {...field} />
+                    <Input
+                      placeholder="username"
+                      {...field}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedData = e.clipboardData.getData("text");
+                        field.onChange(pastedData.trim());
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -144,6 +152,11 @@ export function RegisterForm() {
                       type="email"
                       placeholder="email@example.com"
                       {...field}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedData = e.clipboardData.getData("text");
+                        field.onChange(pastedData.trim());
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -157,7 +170,15 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedData = e.clipboardData.getData("text");
+                        field.onChange(pastedData.trim());
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -170,7 +191,15 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pastedData = e.clipboardData.getData("text");
+                        field.onChange(pastedData.trim());
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
