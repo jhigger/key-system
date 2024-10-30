@@ -101,7 +101,7 @@ export function DataTable<TData, TValue>({
 
   useEffect(() => {
     setPageIndex(0);
-  }, [router.asPath, globalFilter]);
+  }, [router.asPath, globalFilter, pageSize]);
 
   const pagination = {
     pageIndex,
