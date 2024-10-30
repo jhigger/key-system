@@ -374,6 +374,9 @@ const ProductList = () => {
     const categoryName =
       categories?.find((category) => category.uuid === value)?.name ?? "All";
     setCurrentCategory({ label: categoryName, value });
+    productFields.forEach((_, index) => {
+      form.setValue(`products.${index}.keys`, []);
+    });
   };
 
   if (
