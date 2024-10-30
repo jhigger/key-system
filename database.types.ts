@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_options: {
+        Row: {
+          created_at: string
+          name: string
+          updated_at: string
+          uuid: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          name?: string
+          updated_at?: string
+          uuid?: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          name?: string
+          updated_at?: string
+          uuid?: string
+          value?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -286,7 +310,7 @@ export type Database = {
         Args: {
           operations: Json
         }
-        Returns: undefined
+        Returns: string
       }
       decrement_stock: {
         Args: {

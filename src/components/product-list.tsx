@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+import useAdminOptions from "~/hooks/useAdminOptions";
 import useAuthToken from "~/hooks/useAuthToken";
 import useCategories from "~/hooks/useCategories";
 import { useCurrentUser } from "~/hooks/useCurrentUser";
@@ -81,6 +82,10 @@ const ProductList = () => {
   const {
     query: { data: productKeys, isLoading: isProductKeysLoading },
   } = useProductKeys();
+
+  const {
+    query: { data: adminOptions, isLoading: isAdminOptionsLoading },
+  } = useAdminOptions();
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -157,8 +162,19 @@ const ProductList = () => {
       0,
     );
 
-    if (totalCartPrice < 100) {
-      toast.warning("Purchase total must be at least $100");
+    const minPurchase = adminOptions?.find(
+      (o) => o.name === "Minimum Purchase",
+    );
+
+    if (!minPurchase) {
+      toast.error("Minimum purchase not found in admin options");
+      return;
+    }
+
+    if (totalCartPrice < Number(minPurchase?.value)) {
+      toast.warning(
+        `Purchase total must be at least $${Number(minPurchase?.value)}`,
+      );
       return;
     }
 
@@ -368,6 +384,7 @@ const ProductList = () => {
     isProductsLoading ||
     isPricingsLoading ||
     isProductKeysLoading ||
+    isAdminOptionsLoading ||
     isCheckout
   ) {
     return <Loader />;

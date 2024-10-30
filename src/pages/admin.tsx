@@ -1,5 +1,12 @@
-import { Folder, KeyRound, PackageSearch, UserSearch } from "lucide-react";
+import {
+  Folder,
+  KeyRound,
+  PackageSearch,
+  UserSearch,
+  Wrench,
+} from "lucide-react";
 import Head from "next/head";
+import AdminOptions from "~/components/admin-options";
 import Categories from "~/components/data-tables/categories";
 import ProductKeys from "~/components/data-tables/product-keys";
 import Products from "~/components/data-tables/products";
@@ -34,6 +41,12 @@ export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
     value: "users",
     content: <Users />,
     icon: <UserSearch size={16} />,
+  },
+  {
+    label: "Options",
+    value: "option",
+    content: <AdminOptions />,
+    icon: <Wrench size={16} />,
   },
 ] as const;
 
