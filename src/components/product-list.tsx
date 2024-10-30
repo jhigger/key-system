@@ -102,14 +102,16 @@ const ProductList = () => {
 
   useEffect(() => {
     if (products && productFields.length === 0) {
-      const formattedProducts = products.map((product) => ({
-        keys: [],
-        productName: product.name,
-        category: product.category,
-      }));
+      const formattedProducts = products
+        .filter((product) => product.category === currentCategory.value)
+        .map((product) => ({
+          keys: [],
+          productName: product.name,
+          category: product.category,
+        }));
       replace(formattedProducts);
     }
-  }, [replace, products, productFields.length]);
+  }, [replace, products, productFields.length, currentCategory.value]);
 
   useEffect(() => {
     if (categories && !isCategoriesLoading) {
@@ -362,6 +364,7 @@ const ProductList = () => {
         total +
         product.keys.reduce((acc, key) => {
           const pricing = productsData
+            ?.filter((product) => product.category === currentCategory.value)
             ?.find((p) => p.name === product.productName)
             ?.pricings.find((p) => p.uuid === key.pricingUuid);
           return acc + (pricing?.value ?? 0) * key.quantity;
@@ -466,7 +469,16 @@ const ProductList = () => {
                   <span>Total</span>
                   <DottedLine />
                   <span className="font-bold">
-                    {formatPrice(calculateTotal(form.watch("products")))}
+                    {formatPrice(
+                      calculateTotal(
+                        form
+                          .watch("products")
+                          .filter(
+                            (product) =>
+                              product.category === currentCategory.value,
+                          ),
+                      ),
+                    )}
                   </span>
                 </div>
 
@@ -474,7 +486,17 @@ const ProductList = () => {
                   <Button
                     className="w-full"
                     type="submit"
-                    disabled={form.formState.isSubmitting}
+                    disabled={
+                      form.formState.isSubmitting ||
+                      calculateTotal(
+                        form
+                          .watch("products")
+                          .filter(
+                            (product) =>
+                              product.category === currentCategory.value,
+                          ),
+                      ) <= 0
+                    }
                   >
                     {form.formState.isSubmitting ? (
                       <Loader />
