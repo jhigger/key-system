@@ -278,7 +278,7 @@ const ProductList = () => {
       });
     }
 
-    const { data: batchData, error: batchError } = await supabase(token).rpc(
+    const { error: batchError } = await supabase(token).rpc(
       "batch_operations",
       {
         operations,
@@ -289,8 +289,6 @@ const ProductList = () => {
       toast.error("Something went wrong");
       return; // Exit if there's an error
     }
-
-    console.log("data: ", batchData);
 
     const body: CreateInvoiceData = {
       amount: calculateTotal(form.watch("products")).toString(),

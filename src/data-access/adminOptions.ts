@@ -15,8 +15,6 @@ export const getAdminOptions = async (getToken: () => Promise<string | null>): P
     throw new Error(adminOptionsError.message);
   }
 
-  console.log('adminOptions: ', adminOptions);
-
   return adminOptions.map((adminOption) => ({
     uuid: adminOption.uuid,
     name: adminOption.name,
