@@ -471,10 +471,7 @@ const ProductList = () => {
                   <Button
                     className="w-full"
                     type="submit"
-                    disabled={
-                      form.formState.isSubmitting ||
-                      calculateTotal(form.watch("products")) <= 0
-                    }
+                    disabled={form.formState.isSubmitting}
                   >
                     {form.formState.isSubmitting ? (
                       <Loader />
