@@ -28,6 +28,7 @@ import DottedLine from "./dotted-line";
 import Loader from "./loader";
 import PendingApproval from "./pending-approval";
 import PleaseLoginToView from "./please-login-to-view";
+import { AspectRatio } from "./ui/aspect-ratio";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Input } from "./ui/input";
@@ -410,6 +411,10 @@ const ProductList = () => {
     );
   }
 
+  const filteredProductFields = productFields.filter(
+    (productField) => productField.category === currentCategory.value,
+  );
+
   return (
     <Tabs
       defaultValue={categories?.[0]?.uuid}
@@ -446,11 +451,8 @@ const ProductList = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="flex flex-col gap-4"
               >
-                {productFields
-                  .filter((productField) => {
-                    return productField.category === currentCategory.value;
-                  })
-                  .map((productField, productIndex) => {
+                {filteredProductFields.length > 0 ? (
+                  filteredProductFields.map((productField, productIndex) => {
                     const product = products?.find(
                       (p) => p.name === productField.productName,
                     );
@@ -463,7 +465,20 @@ const ProductList = () => {
                         productIndex={productIndex}
                       />
                     );
-                  })}
+                  })
+                ) : (
+                  <AspectRatio
+                    ratio={16 / 9}
+                    className="flex items-center justify-center"
+                  >
+                    <video
+                      src="/empty-shelves-john-travolta.mp4"
+                      autoPlay
+                      loop
+                      muted
+                    ></video>
+                  </AspectRatio>
+                )}
 
                 <div className="flex w-full items-baseline justify-between">
                   <span>Total</span>
