@@ -97,7 +97,7 @@ export default async function handler(
         keys: productKeySnapshots.map((snapshot) => snapshot.key),
       },
       checkout: {
-        speedPolicy: "HighSpeed",
+        speedPolicy: "MediumSpeed",
         paymentMethods: ["BTC", "LTC"],
         redirectURL: new URL(
           process.env.NEXT_PUBLIC_FRONT_END_URL + "/account#order-history",
