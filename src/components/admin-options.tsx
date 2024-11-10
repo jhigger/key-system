@@ -54,7 +54,7 @@ const AdminOptions = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         {Array.isArray(adminOptions) &&
           adminOptions.map((adminOption) => (
             <div
@@ -66,7 +66,13 @@ const AdminOptions = () => {
                 <DebouncedInput
                   id={adminOption.uuid}
                   type={
-                    adminOption.name === "Minimum Purchase" ? "number" : "text"
+                    [
+                      "Minimum Purchase",
+                      "Minimum Spend Discounted",
+                      "Discount",
+                    ].includes(adminOption.name)
+                      ? "number"
+                      : "text"
                   }
                   value={String(adminOption.value)}
                   className="w-full max-w-[200px]"

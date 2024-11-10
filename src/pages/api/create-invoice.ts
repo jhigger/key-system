@@ -68,7 +68,25 @@ export default async function handler(
       Authorization: "token " + apiKey,
     };
 
-    const finalAmount = Number(amount) > 1200 ? Number(amount) - 200 : amount;
+    const { data: adminOptions } = await supabase.from("admin_options").select();
+
+    const minSpendDiscounted = adminOptions?.find(
+      (o) => o.name === "Minimum Spend Discounted",
+    );
+
+    if (!minSpendDiscounted) {
+      console.error("Minimum Spend Discounted not found in admin options");
+      return;
+    }
+
+    const discount = adminOptions?.find((o) => o.name === "Discount");
+
+    if (!discount) {
+      console.error("Discount not found in admin options");
+      return;
+    }
+
+    const finalAmount = Number(amount) > Number(minSpendDiscounted?.value) ? Number(amount) - Number(discount.value) : amount;
 
     const payload = {
       amount: String(finalAmount),

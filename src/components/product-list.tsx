@@ -416,6 +416,22 @@ const ProductList = () => {
     (productField) => productField.category === currentCategory.value,
   );
 
+  const minSpendDiscounted = adminOptions?.find(
+    (o) => o.name === "Minimum Spend Discounted",
+  );
+
+  if (!minSpendDiscounted) {
+    toast.error("Minimum Spend Discounted not found in admin options");
+    return;
+  }
+
+  const discount = adminOptions?.find((o) => o.name === "Discount");
+
+  if (!discount) {
+    toast.error("Discount not found in admin options");
+    return;
+  }
+
   return (
     <Tabs
       defaultValue={categories?.[0]?.uuid}
@@ -442,8 +458,9 @@ const ProductList = () => {
         <Card className="mx-auto w-full max-w-screen-lg">
           <CardHeader>
             <div className="w-full rounded-md bg-green-500/80 p-4 text-sm text-green-50">
-              <b>Note:</b> You can now proceed to checkout! Spend over $1200 to
-              receive a $200 discount.
+              <b>Note:</b> You can now proceed to checkout! Spend over $
+              {minSpendDiscounted.value} to receive a ${discount.value}{" "}
+              discount.
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
