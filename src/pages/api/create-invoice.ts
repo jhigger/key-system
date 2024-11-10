@@ -31,6 +31,7 @@ export default async function handler(
     const role = user.publicMetadata.role;
 
     if (["user", "reseller"].includes(role as string)) {
+      console.log('role', role);
       return res.status(403).json({ error: "Forbidden" });
     }
 
