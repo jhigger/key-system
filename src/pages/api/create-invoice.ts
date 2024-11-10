@@ -30,8 +30,7 @@ export default async function handler(
     const user = await clerkClient().users.getUser(userId);
     const role = user.publicMetadata.role;
 
-    if (["user", "reseller"].includes(role as string)) {
-      console.log('role', role);
+    if (!["user", "reseller"].includes(role as string)) {
       return res.status(403).json({ error: "Forbidden" });
     }
 

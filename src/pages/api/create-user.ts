@@ -31,7 +31,7 @@ export default async function handler(
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    await clerkClient.users.updateUserMetadata(clerkUserId, {
+    await clerkClient().users.updateUserMetadata(clerkUserId, {
       publicMetadata: {
         role: "user",
       },
