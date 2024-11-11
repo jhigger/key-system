@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getOrders } from "~/data-access/orders";
 import useAuthToken from "./useAuthToken";
 
-const useOrders = (userUUID: string) => {
+const useOrders = (userUUID?: string) => {
   const getToken = useAuthToken();
 
   const query = useQuery({
@@ -11,7 +11,13 @@ const useOrders = (userUUID: string) => {
     enabled: !!userUUID,
   });
 
-  return { query };
+
+  const allOrdersQuery = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => getOrders(getToken),
+  });
+
+  return { query, allOrdersQuery };
 };
 
 export default useOrders;

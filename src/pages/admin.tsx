@@ -1,5 +1,6 @@
 import {
   Folder,
+  History,
   KeyRound,
   PackageSearch,
   UserSearch,
@@ -8,6 +9,7 @@ import {
 import Head from "next/head";
 import AdminOptions from "~/components/admin-options";
 import Categories from "~/components/data-tables/categories";
+import Orders from "~/components/data-tables/orders";
 import ProductKeys from "~/components/data-tables/product-keys";
 import Products from "~/components/data-tables/products";
 import Users from "~/components/data-tables/users";
@@ -41,6 +43,12 @@ export const ADMIN_TABS: (TabType & { icon: React.ReactNode })[] = [
     value: "users",
     content: <Users />,
     icon: <UserSearch size={16} />,
+  },
+  {
+    label: "Order History",
+    value: "order-history",
+    content: <Orders />,
+    icon: <History size={16} />,
   },
   {
     label: "Options",

@@ -1,4 +1,5 @@
 import { type ColumnDef, type Row } from "@tanstack/react-table";
+import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -206,6 +207,16 @@ export const getColumns = (): ColumnDef<OrderType>[] => [
   {
     accessorKey: "invoiceLink",
     header: "Invoice Link",
+    cell: ({ row }) => (
+      <a
+        href={row.original.invoiceLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-max items-center gap-1 underline underline-offset-4"
+      >
+        View Invoice <ExternalLink size={16} />
+      </a>
+    ),
     enableSorting: false,
   },
   {

@@ -36,11 +36,13 @@ type DataTableToolBarProps<TData> = {
   handleAdd?: (
     newRow: ProductType | ProductKeyType[] | CategoryType,
   ) => Promise<void>;
+  isEditable?: boolean;
 };
 
 const DataTableToolBar = <TData,>({
   table,
   handleAdd,
+  isEditable = true,
 }: DataTableToolBarProps<TData>) => {
   const { user } = useUserStore();
   const { editMode, toggleEditMode } = useUIStore();
@@ -183,7 +185,7 @@ const DataTableToolBar = <TData,>({
               </DrawerContent>
             </Drawer>
           )}
-        {user?.role === "admin" && (
+        {user?.role === "admin" && isEditable && (
           <div className="flex items-center gap-2">
             <Label htmlFor="mode" className="sr-only capitalize">
               {editMode ? "Edit" : "View"} Mode

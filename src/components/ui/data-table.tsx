@@ -37,6 +37,7 @@ interface DataTableProps<TData, TValue> {
   handleAdd?: (
     newRow: ProductType | ProductKeyType[] | CategoryType,
   ) => Promise<void>;
+  isEditable?: boolean;
 }
 
 declare module "@tanstack/react-table" {
@@ -82,6 +83,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   handleAdd,
+  isEditable = true,
 }: DataTableProps<TData, TValue>) {
   const expiryColumn = columns.find(
     (column) => isAccessorColumn(column) && column.accessorKey === "expiry",
@@ -145,7 +147,11 @@ export function DataTable<TData, TValue>({
 
   return (
     <>
-      <DataTableToolBar table={table} handleAdd={handleAdd} />
+      <DataTableToolBar
+        table={table}
+        handleAdd={handleAdd}
+        isEditable={isEditable}
+      />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
