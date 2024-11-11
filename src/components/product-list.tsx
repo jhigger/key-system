@@ -170,7 +170,7 @@ const ProductList = () => {
     );
 
     if (!minPurchase) {
-      toast.error("Minimum purchase not found in admin options");
+      toast.error("Minimum Purchase not found in admin options");
       return;
     }
 
@@ -416,6 +416,13 @@ const ProductList = () => {
     (productField) => productField.category === currentCategory.value,
   );
 
+  const minPurchase = adminOptions?.find((o) => o.name === "Minimum Purchase");
+
+  if (!minPurchase) {
+    toast.error("Minimum Purchase not found in admin options");
+    return;
+  }
+
   const minSpendDiscounted = adminOptions?.find(
     (o) => o.name === "Minimum Spend Discounted",
   );
@@ -458,9 +465,16 @@ const ProductList = () => {
         <Card className="mx-auto w-full max-w-screen-lg">
           <CardHeader>
             <div className="w-full rounded-md bg-green-500/80 p-4 text-sm text-green-50">
-              <b>Note:</b> You can now proceed to checkout! Spend over $
-              {minSpendDiscounted.value} to receive a ${discount.value}{" "}
-              discount.
+              <b>Note:</b>{" "}
+              {calculateTotal(
+                form
+                  .watch("products")
+                  .filter(
+                    (product) => product.category === currentCategory.value,
+                  ),
+              ) < Number(minPurchase.value)
+                ? `You need to spend a minimum of $${minPurchase.value} to proceed to checkout.`
+                : `You can now proceed to checkout! Spend over $${minSpendDiscounted.value} to receive a $${discount.value} discount.`}
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
