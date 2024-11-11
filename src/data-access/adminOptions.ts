@@ -9,7 +9,8 @@ export const getAdminOptions = async (getToken: () => Promise<string | null>): P
 
   const { data: adminOptions, error: adminOptionsError } = await supabase(token)
     .from("admin_options")
-    .select("*");
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (adminOptionsError) {
     throw new Error(adminOptionsError.message);
